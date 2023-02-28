@@ -1,0 +1,75 @@
+---
+title: "Setbp1_KidneyPathwayAnalysis_10"
+author: "Jordan Whitlock"
+output:     
+  html_document:
+      toc: true
+      toc_depth: 2
+      toc_float: true
+---
+This analysis comes after 'Setbp1_CellTypesKidney_08.Rmd' and precedes 'Setbp1_PseudobulkCounts10'
+
+# *Single-nuclei analysis: Perform Pathway enrichment analysis*
+
+
+## Code: 
+
+Accompanying dry lab notebook for this analysis is here: https://docs.google.com/document/d/1FO_Je9oxbBFF9S_k-8tVF2t4ba88O4C77sw1v7DIFec/edit?usp=sharing
+
+#### Loading in libraries:
+```{r}
+library(Seurat)
+library(enrichR)
+library(msigdbr)
+library(gprofiler2)
+```
+
+#### Load in the object
+```{r}
+load("/data/user/jbarham3/jw_cellspecific/jw_cellspecific/setbp1_clean/outputs/blymph_het_DEG025.Rdata")
+load("/data/user/jbarham3/jw_cellspecific/jw_cellspecific/setbp1_clean/outputs/CDPC_het_DEG025.Rdata")
+load("/data/user/jbarham3/jw_cellspecific/jw_cellspecific/setbp1_clean/outputs/CDICA_het_DEG025.Rdata")
+load("/data/user/jbarham3/jw_cellspecific/jw_cellspecific/setbp1_clean/outputs/CDICB_het_DEG025.Rdata")
+load("/data/user/jbarham3/jw_cellspecific/jw_cellspecific/setbp1_clean/outputs/DCT_het_DEG025.Rdata")
+load("/data/user/jbarham3/jw_cellspecific/jw_cellspecific/setbp1_clean/outputs/DLH_het_DEG025.Rdata")
+load("/data/user/jbarham3/jw_cellspecific/jw_cellspecific/setbp1_clean/outputs/endo_het_DEG025.Rdata")
+load("/data/user/jbarham3/jw_cellspecific/jw_cellspecific/setbp1_clean/outputs/fibro_het_DEG025.Rdata")
+load("/data/user/jbarham3/jw_cellspecific/jw_cellspecific/setbp1_clean/outputs/GPE_het_DEG025.Rdata")
+load("/data/user/jbarham3/jw_cellspecific/jw_cellspecific/setbp1_clean/outputs/LOH_het_DEG025.Rdata")
+load("/data/user/jbarham3/jw_cellspecific/jw_cellspecific/setbp1_clean/outputs/macro_het_DEG025.Rdata")
+load("/data/user/jbarham3/jw_cellspecific/jw_cellspecific/setbp1_clean/outputs/PCTS1_het_DEG025.Rdata")
+load("/data/user/jbarham3/jw_cellspecific/jw_cellspecific/setbp1_clean/outputs/PCTS2_het_DEG025.Rdata")
+load("/data/user/jbarham3/jw_cellspecific/jw_cellspecific/setbp1_clean/outputs/podo_het_DEG025.Rdata")
+load("/data/user/jbarham3/jw_cellspecific/jw_cellspecific/setbp1_clean/outputs/PST_het_DEG025.Rdata")
+load("/data/user/jbarham3/jw_cellspecific/jw_cellspecific/setbp1_clean/outputs/Tcell_het_DEG025.Rdata")
+```
+
+General Notes on Pathway Analysis and GSEA from Lizzy:
+Disgennet is great for looking at diseases, she recommends KEGG or wiki pathways are also good in addition to all of the GO!  
+
+Check that you are doing gsea and not over representation analysis. For GSEA you SORT your DEG list by fold change going from + to - . Contrastingly, if you are performing and over representation analysis then you have to split the lists into an upregulated list ad a down regulated list. Look at msigdb can provide the most up to date pathway/enrichment lists. 
+
+#### GSEA with msigDBr:
+```{r}
+#create a gene rank
+
+#grab gene sets of interest
+msigdbmgmt <- msigdbr::msigdbr("Mus musculus")
+msigdbmgmt <- as.data.frame(msigdbmgmt)
+
+#list gene sets avaiable:
+unique(msigdbmgmt$gs_subcat)
+```
+
+
+#### Hypogeometric enrichment test with enrichR:
+https://nbisweden.github.io/workshop-scRNAseq/labs/compiled/seurat/seurat_05_dge.html#Differential_expression_across_conditions
+```{r}
+#list all databases available for enrichment analysis:
+enrichR::listEnrichrDbs()
+```
+
+
+#### GSEA:
+https://nbisweden.github.io/workshop-scRNAseq/labs/compiled/seurat/seurat_05_dge.html#Gene_Set_Enrichment_Analysis_(GSEA)
+

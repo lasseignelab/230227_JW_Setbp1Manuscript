@@ -1,0 +1,45 @@
+---
+title: "Setbp1_MarkersCortex_05"
+author: "Jordan Whitlock"
+date: '2022-09-07'
+output:     
+  html_document:
+      toc: true
+      toc_depth: 2
+      toc_float: true
+---
+This analysis comes after 'Setbp1_Clustering_06.Rmd' and precedes 'Setbp1_CellTypesCortex_08.Rmd'
+
+# *Single-nuclei analysis: FindMarkers Cerebral Cortex*
+* Loading libraries
+* Selecting resolution
+* Finding all markers for cerebral cortex
+
+## Code: 
+
+Accompanying dry lab notebook for this analysis is here: https://docs.google.com/document/d/1FO_Je9oxbBFF9S_k-8tVF2t4ba88O4C77sw1v7DIFec/edit?usp=sharing
+
+### Setting up libraries:
+
+```{r}
+#loading packages
+library(Seurat)
+library(here)
+
+#loading in the objects
+load(here("data/cerebral_leiden.Rdata"))
+```
+
+```{r}
+#setting selected resolution
+select.resolution = "RNA_snn_res.0.9"
+cerebral.int <- SetIdent(cerebral.int, value = select.resolution)
+```
+
+```{r}
+#compute highly differential expression for brain
+cerebral_markers_genes <- FindAllMarkers(cerebral.int, log2FC.threshold = 0.2, test.use = "wilcox",
+                                         min.pct = 0.1, min.diff.pct = 0.2, only.pos = TRUE, max.cells.per.ident = 50, 
+                                         assay = "RNA")
+save(cerebral_markers_genes, file = here("results/cerebral_markers.Rdata"))
+```
