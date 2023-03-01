@@ -9,7 +9,7 @@ output:
       toc_float: true
 ---
 
-This analysis comes after 'Setbp1_Clustering_06.Rmd' and precedes 'Setbp1_CellTypesKidney_08.Rmd'
+This analysis comes after 'Setbp1_Clustering_04.Rmd' and precedes 'Setbp1_CellTypesKidney_06.Rmd'
 
 # *Single-nuclei analysis: FindMarkers Kidney*
 * Loading libraries
@@ -22,24 +22,32 @@ Accompanying dry lab notebook for this analysis is here: https://docs.google.com
 
 
 ```{r}
-#loading packages
+# loading packages
 library(Seurat)
 library(here)
 
-#loading in the objects
+# loading in the objects
 load(here("data/ukidney_leiden.Rdata"))
 ```
 
 ```{r}
-#setting selected resolution
-select.resolution = "RNA_snn_res.0.9"
-kidney.int <- SetIdent(kidney.int, value = select.resolution)
+# setting selected resolution
+select_resolution <- "RNA_snn_res.0.9"
+kidney.int <- SetIdent(kidney.int, value = select_resolution)
 ```
 
 ```{r}
-#compute highly differential gene expression for kidney
-kidney_markers_genes <- FindAllMarkers(kidney.int, log2FC.threshold = 0.2, test.use = "wilcox",
-                                         min.pct = 0.1, min.diff.pct = 0.2, only.pos = TRUE, max.cells.per.ident = 50, 
-                                         assay = "RNA")
+# compute highly differential gene expression for kidney
+kidney_markers_genes <- FindAllMarkers(kidney.int,
+  log2FC.threshold = 0.2, test.use = "wilcox",
+  min.pct = 0.1, min.diff.pct = 0.2, only.pos = TRUE, max.cells.per.ident = 50,
+  assay = "RNA"
+)
 save(kidney_markers_genes, file = here("results/kidney_markers.Rdata"))
+```
+
+```{r}
+# run style
+style_file(here("src/seurat_scripts/Setbp1_MarkersKidney_05.Rmd"))
+# lintr was run as well
 ```

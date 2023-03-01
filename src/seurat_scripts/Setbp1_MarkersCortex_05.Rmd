@@ -8,7 +8,7 @@ output:
       toc_depth: 2
       toc_float: true
 ---
-This analysis comes after 'Setbp1_Clustering_06.Rmd' and precedes 'Setbp1_CellTypesCortex_08.Rmd'
+This analysis comes after 'Setbp1_Clustering_04.Rmd' and precedes 'Setbp1_CellTypesCortex_06.Rmd'
 
 # *Single-nuclei analysis: FindMarkers Cerebral Cortex*
 * Loading libraries
@@ -22,24 +22,34 @@ Accompanying dry lab notebook for this analysis is here: https://docs.google.com
 ### Setting up libraries:
 
 ```{r}
-#loading packages
+# loading packages
 library(Seurat)
 library(here)
+library(styler)
+library(lintr)
 
-#loading in the objects
+# loading in the objects
 load(here("data/cerebral_leiden.Rdata"))
 ```
 
 ```{r}
-#setting selected resolution
-select.resolution = "RNA_snn_res.0.9"
-cerebral.int <- SetIdent(cerebral.int, value = select.resolution)
+# setting selected resolution
+select_resolution <- "RNA_snn_res.0.9"
+cerebral.int <- SetIdent(cerebral.int, value = select_resolution)
 ```
 
 ```{r}
-#compute highly differential expression for brain
-cerebral_markers_genes <- FindAllMarkers(cerebral.int, log2FC.threshold = 0.2, test.use = "wilcox",
-                                         min.pct = 0.1, min.diff.pct = 0.2, only.pos = TRUE, max.cells.per.ident = 50, 
-                                         assay = "RNA")
+# compute highly differential expression for brain
+cerebral_markers_genes <- FindAllMarkers(cerebral.int,
+  log2FC.threshold = 0.2, test.use = "wilcox",
+  min.pct = 0.1, min.diff.pct = 0.2, only.pos = TRUE, max.cells.per.ident = 50,
+  assay = "RNA"
+)
 save(cerebral_markers_genes, file = here("results/cerebral_markers.Rdata"))
+```
+
+```{r}
+# run style
+style_file(here("src/seurat_scripts/Setbp1_MarkersCortex_05.Rmd"))
+# lintr was run as well
 ```
