@@ -29,6 +29,8 @@ library(Seurat)
 library(cowplot)
 library(DoubletFinder)
 library(here)
+library(styler)
+library(lintr)
 ```
 
 can pick up analysis from here. Note this data is just filtered for nCount_RNA, mitochondria, and Malat1. No normalization or scaling has taken place. 
@@ -50,11 +52,19 @@ Before doing doublet detection we need to run scaling, variable gene selection a
 ```{r}
 for (i in 1:length(split_sample)) {
     split_sample[[i]] <- NormalizeData(split_sample[[i]], verbose = FALSE)
-    split_sample[[i]] <- FindVariableFeatures(split_sample[[i]], selection.method = "vst",
-        nfeatures = 4000, verbose = FALSE)
-    split_sample[[i]] <- ScaleData(split_sample[[i]], vars.to.regress = c("percent_mito", "nFeature_RNA"), assay = "RNA")
-    split_sample[[i]] <- RunPCA(split_sample[[i]], verbose = F, npcs = 30) #make sure this matches the RunUMAP below 
-    split_sample[[i]] <- RunUMAP(split_sample[[i]], verbose = F, dims = 1:30) #make sure this matches the RunPCA npcs
+    split_sample[[i]] <- FindVariableFeatures(split_sample[[i]],
+                                              selection.method = "vst",
+                                              nfeatures = 4000,
+                                              verbose = FALSE)
+    split_sample[[i]] <- ScaleData(split_sample[[i]],
+                                vars.to.regress = c("percent_mito", "nFeature_RNA"),
+                                assay = "RNA")
+    split_sample[[i]] <- RunPCA(split_sample[[i]],
+                                verbose = FALSE,
+                                npcs = 30) #make sure this matches the RunUMAP below
+    split_sample[[i]] <- RunUMAP(split_sample[[i]],
+                                verbose = FALSE,
+                                dims = 1:30) #make sure this matches the RunPCA npcs
 }
 ```
 
@@ -83,201 +93,199 @@ DoubletFinder takes the following arguments:
 *nExp ~ This defines the pANN threshold used to make final doublet/singlet predictions. This value can best be estimated from cell loading densities into the 10X/Drop-Seq device, and adjusted according to the estimated proportion of homotypic doublets.
 ```{r}
 #K1
-  # define pK: (no ground-truth) 
-    sweep.res.list_kidney <- paramSweep_v3(split_sample$K1, PCs = 1:30, sct = FALSE)
-    sweep.stats_kidney <- summarizeSweep(sweep.res.list_kidney, GT = FALSE)
-    bcmvn_kidney <- find.pK(sweep.stats_kidney)
-    
-    pK=as.numeric(as.character(bcmvn_kidney$pK))
-    BCmetric=bcmvn_kidney$BCmetric
-    pK_choose = pK[which(BCmetric %in% max(BCmetric))]
-    
-    par(mar=c(5,4,4,8)+1,cex.main=1.2,font.main=2)
-    plot(x = pK, y = BCmetric, pch = 16,type="b",
-    col = "blue",lty=1)
-    abline(v=pK_choose,lwd=2,col='red',lty=2)
+  # define pK: (no ground-truth)
+    sweep_res_list_kidney <- paramSweep_v3(split_sample$K1, PCs = 1:30, sct = FALSE)
+    sweep_stats_kidney <- summarizeSweep(sweep_res_list_kidney, GT = FALSE)
+    bcmvn_kidney <- find.pK(sweep_stats_kidney)
+    pK <- as.numeric(as.character(bcmvn_kidney$pK))
+    BCmetric <- bcmvn_kidney$BCmetric
+    pK_choose <- pK[which(BCmetric %in% max(BCmetric))]
+
+    par(mar = c(5, 4, 4, 8) + 1, cex.main = 1.2, font.main = 2)
+    plot(x = pK, y = BCmetric, pch = 16, type = "b",
+    col = "blue", lty = 1)
+    abline(v = pK_choose, lwd = 2, col = "red", lty = 2)
     title("The BCmvn distributions")
-    text(pK_choose,max(BCmetric),as.character(pK_choose),pos = 4,col = "red") 
+    text(pK_choose, max(BCmetric), as.character(pK_choose), pos = 4, col = "red")
 
   # define the expected number of doublets in nuclei.
     nExp <- round(ncol(split_sample$K1) * 0.102)  # expect 10.2% doublets
-    split_sample$K1 <- doubletFinder_v3(split_sample$K1, pN = 0.25, pK = 0.09, nExp = nExp, PCs = 1:30) 
-    
+    split_sample$K1 <- doubletFinder_v3(split_sample$K1, pN = 0.25, pK = 0.09, nExp = nExp, PCs = 1:30)
+
   # name of the DF prediction can change, so extract the correct column name.
-    DF.name = colnames(split_sample$K1@meta.data)[grepl("DF.classification", colnames(split_sample$K1@meta.data))]
+    DF.name <- colnames(split_sample$K1@meta.data)[grepl("DF.classification", colnames(split_sample$K1@meta.data))]
     cowplot::plot_grid(ncol = 2, DimPlot(split_sample$K1, group.by = "orig.ident") + NoAxes(),
                        DimPlot(split_sample$K1, group.by = DF.name) + NoAxes())
     VlnPlot(split_sample$K1, features = "nFeature_RNA", group.by = DF.name, pt.size = 0.1)
-  
   #REMOVE DOUBLETS:
-    split_sample$K1 = split_sample$K1[, split_sample$K1@meta.data[, DF.name] == "Singlet"]
-  #revisualize: 
+    split_sample$K1 <- split_sample$K1[, split_sample$K1@meta.data[, DF.name] == "Singlet"]
+  #revisualize:
     cowplot::plot_grid(ncol = 2, DimPlot(split_sample$K1, group.by = "orig.ident") + NoAxes(),
                        DimPlot(split_sample$K1, group.by = DF.name) + NoAxes())
-    
+
 #K2
-  # define pK: (no ground-truth) 
-    sweep.res.list_kidney <- paramSweep_v3(split_sample$K2, PCs = 1:30, sct = FALSE)
-    sweep.stats_kidney <- summarizeSweep(sweep.res.list_kidney, GT = FALSE)
-    bcmvn_kidney <- find.pK(sweep.stats_kidney)
-    
-    pK=as.numeric(as.character(bcmvn_kidney$pK))
-    BCmetric=bcmvn_kidney$BCmetric
-    pK_choose = pK[which(BCmetric %in% max(BCmetric))]
-    
-    par(mar=c(5,4,4,8)+1,cex.main=1.2,font.main=2)
-    plot(x = pK, y = BCmetric, pch = 16,type="b",
-    col = "blue",lty=1)
-    abline(v=pK_choose,lwd=2,col='red',lty=2)
+  # define pK: (no ground-truth)
+    sweep_res_list_kidney <- paramSweep_v3(split_sample$K2, PCs = 1:30, sct = FALSE)
+    sweep_stats_kidney <- summarizeSweep(sweep_res_list_kidney, GT = FALSE)
+    bcmvn_kidney <- find.pK(sweep_stats_kidney)
+
+    pK <- as.numeric(as.character(bcmvn_kidney$pK))
+    BCmetric <- bcmvn_kidney$BCmetric
+    pK_choose <- pK[which(BCmetric %in% max(BCmetric))]
+
+    par(mar = c(5, 4, 4, 8) + 1, cex.main = 1.2, font.main = 2)
+    plot(x = pK, y = BCmetric, pch = 16, type = "b",
+    col = "blue", lty = 1)
+    abline(v = pK_choose, lwd = 2, col = "red", lty = 2)
     title("The BCmvn distributions")
-    text(pK_choose,max(BCmetric),as.character(pK_choose),pos = 4,col = "red")
-    
+    text(pK_choose, max(BCmetric), as.character(pK_choose), pos = 4, col = "red")
+
   # define the expected number of doublets in nuclei.
     nExp <- round(ncol(split_sample$K2) * 0.146)  # expect 14.6% doublets
     split_sample$K2 <- doubletFinder_v3(split_sample$K2, pN = 0.25, pK = 0.15, nExp = nExp, PCs = 1:30)
-    
+
   # name of the DF prediction can change, so extract the correct column name.
-    DF.name = colnames(split_sample$K2@meta.data)[grepl("DF.classification", colnames(split_sample$K2@meta.data))]
+    DF.name <- colnames(split_sample$K2@meta.data)[grepl("DF.classification", colnames(split_sample$K2@meta.data))]
     cowplot::plot_grid(ncol = 2, DimPlot(split_sample$K2, group.by = "orig.ident") + NoAxes(),
                        DimPlot(split_sample$K2, group.by = DF.name) + NoAxes())
     VlnPlot(split_sample$K2, features = "nFeature_RNA", group.by = DF.name, pt.size = 0.1)
  
   #REMOVE DOUBLETS:
-    split_sample$K2 = split_sample$K2[, split_sample$K2@meta.data[, DF.name] == "Singlet"]
-  #revisualize: 
+    split_sample$K2 <- split_sample$K2[, split_sample$K2@meta.data[, DF.name] == "Singlet"]
+  #revisualize:
     cowplot::plot_grid(ncol = 2, DimPlot(split_sample$K2, group.by = "orig.ident") + NoAxes(),
-                       DimPlot(split_sample$K2, group.by = DF.name) + NoAxes())     
+                       DimPlot(split_sample$K2, group.by = DF.name) + NoAxes())
 #K3
-  # define pK: (no ground-truth) 
-    sweep.res.list_kidney <- paramSweep_v3(split_sample$K3, PCs = 1:30, sct = FALSE)
-    sweep.stats_kidney <- summarizeSweep(sweep.res.list_kidney, GT = FALSE)
-    bcmvn_kidney <- find.pK(sweep.stats_kidney)
-    
-    pK=as.numeric(as.character(bcmvn_kidney$pK))
-    BCmetric=bcmvn_kidney$BCmetric
-    pK_choose = pK[which(BCmetric %in% max(BCmetric))]
-    
-    par(mar=c(5,4,4,8)+1,cex.main=1.2,font.main=2)
-    plot(x = pK, y = BCmetric, pch = 16,type="b",
-    col = "blue",lty=1)
-    abline(v=pK_choose,lwd=2,col='red',lty=2)
+  # define pK: (no ground-truth)
+    sweep_res_list_kidney <- paramSweep_v3(split_sample$K3, PCs = 1:30, sct = FALSE)
+    sweep_stats_kidney <- summarizeSweep(sweep_res_list_kidney, GT = FALSE)
+    bcmvn_kidney <- find.pK(sweep_stats_kidney)
+
+    pK <- as.numeric(as.character(bcmvn_kidney$pK))
+    BCmetric <- bcmvn_kidney$BCmetric
+    pK_choose <- pK[which(BCmetric %in% max(BCmetric))]
+
+    par(mar = c(5, 4, 4, 8) + 1, cex.main = 1.2, font.main = 2)
+    plot(x = pK, y = BCmetric, pch = 16, type = "b",
+    col = "blue", lty = 1)
+    abline(v = pK_choose, lwd = 2, col = "red", lty = 2)
     title("The BCmvn distributions")
-    text(pK_choose,max(BCmetric),as.character(pK_choose),pos = 4,col = "red")
-    
+    text(pK_choose, max(BCmetric), as.character(pK_choose), pos = 4, col = "red")
+
   # define the expected number of doublets in nuclei.
     nExp <- round(ncol(split_sample$K3) * 0.086)  # expect 8.6% doublets
     split_sample$K3 <- doubletFinder_v3(split_sample$K3, pN = 0.25, pK = 0.01, nExp = nExp, PCs = 1:30)
-    
+
   # name of the DF prediction can change, so extract the correct column name.
-    DF.name = colnames(split_sample$K3@meta.data)[grepl("DF.classification", colnames(split_sample$K3@meta.data))]
+    DF.name <- colnames(split_sample$K3@meta.data)[grepl("DF.classification", colnames(split_sample$K3@meta.data))]
     cowplot::plot_grid(ncol = 2, DimPlot(split_sample$K3, group.by = "orig.ident") + NoAxes(),
                        DimPlot(split_sample$K3, group.by = DF.name) + NoAxes())
     VlnPlot(split_sample$K3, features = "nFeature_RNA", group.by = DF.name, pt.size = 0.1)
-    
+
   #REMOVE DOUBLETS:
-    split_sample$K3 = split_sample$K3[, split_sample$K3@meta.data[, DF.name] == "Singlet"]
-  #revisualize: 
+    split_sample$K3 <- split_sample$K3[, split_sample$K3@meta.data[, DF.name] == "Singlet"]
+  #revisualize:
     cowplot::plot_grid(ncol = 2, DimPlot(split_sample$K3, group.by = "orig.ident") + NoAxes(),
-                       DimPlot(split_sample$K3, group.by = DF.name) + NoAxes())   
-    
+                       DimPlot(split_sample$K3, group.by = DF.name) + NoAxes())
+
 #K4
-  # define pK: (no ground-truth) 
-    sweep.res.list_kidney <- paramSweep_v3(split_sample$K4, PCs = 1:30, sct = FALSE)
-    sweep.stats_kidney <- summarizeSweep(sweep.res.list_kidney, GT = FALSE)
-    bcmvn_kidney <- find.pK(sweep.stats_kidney) 
-    
-    pK=as.numeric(as.character(bcmvn_cerebral$pK))
-    BCmetric=bcmvn_cerebral$BCmetric
-    pK_choose = pK[which(BCmetric %in% max(BCmetric))]
-    
-    par(mar=c(5,4,4,8)+1,cex.main=1.2,font.main=2)
-    plot(x = pK, y = BCmetric, pch = 16,type="b",
-    col = "blue",lty=1)
-    abline(v=pK_choose,lwd=2,col='red',lty=2)
+  # define pK: (no ground-truth)
+    sweep_res_list_kidney <- paramSweep_v3(split_sample$K4, PCs = 1:30, sct = FALSE)
+    sweep_stats_kidney <- summarizeSweep(sweep_res_list_kidney, GT = FALSE)
+    bcmvn_kidney <- find.pK(sweep_stats_kidney)
+
+    pK <- as.numeric(as.character(bcmvn_cerebral$pK))
+    BCmetric <- bcmvn_cerebral$BCmetric
+    pK_choose <- pK[which(BCmetric %in% max(BCmetric))]
+
+    par(mar = c(5, 4, 4, 8) + 1, cex.main = 1.2, font.main = 2)
+    plot(x = pK, y = BCmetric, pch = 16, type = "b",
+    col = "blue", lty = 1)
+    abline(v = pK_choose, lwd = 2, col = "red", lty = 2)
     title("The BCmvn distributions")
-    text(pK_choose,max(BCmetric),as.character(pK_choose),pos = 4,col = "red")
-    
+    text(pK_choose, max(BCmetric), as.character(pK_choose), pos = 4, col = "red")
+
   # define the expected number of doublets in nuclei.
     nExp <- round(ncol(split_sample$K4) * 0.088)  # expect 8.8% doublets
     split_sample$K4 <- doubletFinder_v3(split_sample$K4, pN = 0.25, pK = 0.23, nExp = nExp, PCs = 1:30)
-    
+
   # name of the DF prediction can change, so extract the correct column name.
-    DF.name = colnames(split_sample$K4@meta.data)[grepl("DF.classification", colnames(split_sample$K4@meta.data))]
+    DF.name <- colnames(split_sample$K4@meta.data)[grepl("DF.classification", colnames(split_sample$K4@meta.data))]
     cowplot::plot_grid(ncol = 2, DimPlot(split_sample$K4, group.by = "orig.ident") + NoAxes(),
                        DimPlot(split_sample$K4, group.by = DF.name) + NoAxes())
     VlnPlot(split_sample$K4, features = "nFeature_RNA", group.by = DF.name, pt.size = 0.1)
-    
+
   #REMOVE DOUBLETS:
-    split_sample$K4 = split_sample$K4[, split_sample$K4@meta.data[, DF.name] == "Singlet"]
-  #revisualize: 
+    split_sample$K4 <- split_sample$K4[, split_sample$K4@meta.data[, DF.name] == "Singlet"]
+  #revisualize:
     cowplot::plot_grid(ncol = 2, DimPlot(split_sample$K4, group.by = "orig.ident") + NoAxes(),
-                       DimPlot(split_sample$K4, group.by = DF.name) + NoAxes())   
-    
+                       DimPlot(split_sample$K4, group.by = DF.name) + NoAxes())
+
 #K5
-  # define pK: (no ground-truth) 
-    sweep.res.list_kidney <- paramSweep_v3(split_sample$K5, PCs = 1:30, sct = FALSE)
-    sweep.stats_kidney <- summarizeSweep(sweep.res.list_kidney, GT = FALSE)
-    bcmvn_kidney <- find.pK(sweep.stats_kidney)
-    
-    pK=as.numeric(as.character(bcmvn_cerebral$pK))
-    BCmetric=bcmvn_cerebral$BCmetric
-    pK_choose = pK[which(BCmetric %in% max(BCmetric))]
-    
-    par(mar=c(5,4,4,8)+1,cex.main=1.2,font.main=2)
-    plot(x = pK, y = BCmetric, pch = 16,type="b",
-    col = "blue",lty=1)
-    abline(v=pK_choose,lwd=2,col='red',lty=2)
+  # define pK: (no ground-truth)
+    sweep_res_list_kidney <- paramSweep_v3(split_sample$K5, PCs = 1:30, sct = FALSE)
+    sweep_stats_kidney <- summarizeSweep(sweep_res_list_kidney, GT = FALSE)
+    bcmvn_kidney <- find.pK(sweep_stats_kidney)
+
+    pK <- as.numeric(as.character(bcmvn_cerebral$pK))
+    BCmetric <- bcmvn_cerebral$BCmetric
+    pK_choose <- pK[which(BCmetric %in% max(BCmetric))]
+
+    par(mar = c(5, 4, 4, 8) + 1, cex.main = 1.2, font.main = 2)
+    plot(x = pK, y = BCmetric, pch = 16, type = "b",
+    col = "blue", lty = 1)
+    abline(v = pK_choose, lwd = 2, col = "red", lty = 2)
     title("The BCmvn distributions")
-    text(pK_choose,max(BCmetric),as.character(pK_choose),pos = 4,col = "red")
-    
+    text(pK_choose, max(BCmetric), as.character(pK_choose), pos = 4, col = "red")
+
   # define the expected number of doublets in nuclei.
     nExp <- round(ncol(split_sample$K5) * 0.106)  # expect 10.6% doublets
     split_sample$K5 <- doubletFinder_v3(split_sample$K5, pN = 0.25, pK = 0.23, nExp = nExp, PCs = 1:30)
-    
+
   # name of the DF prediction can change, so extract the correct column name.
-    DF.name = colnames(split_sample$K5@meta.data)[grepl("DF.classification", colnames(split_sample$K5@meta.data))]
+    DF.name <- colnames(split_sample$K5@meta.data)[grepl("DF.classification", colnames(split_sample$K5@meta.data))]
     cowplot::plot_grid(ncol = 2, DimPlot(split_sample$K5, group.by = "orig.ident") + NoAxes(),
                        DimPlot(split_sample$K5, group.by = DF.name) + NoAxes())
     VlnPlot(split_sample$K5, features = "nFeature_RNA", group.by = DF.name, pt.size = 0.1)
-  
+
   #REMOVE DOUBLETS:
-    split_sample$K5 = split_sample$K5[, split_sample$K5@meta.data[, DF.name] == "Singlet"]
-  #revisualize: 
+    split_sample$K5 <- split_sample$K5[, split_sample$K5@meta.data[, DF.name] == "Singlet"]
+  #revisualize:
     cowplot::plot_grid(ncol = 2, DimPlot(split_sample$K5, group.by = "orig.ident") + NoAxes(),
-                       DimPlot(split_sample$K5, group.by = DF.name) + NoAxes()) 
-        
+                       DimPlot(split_sample$K5, group.by = DF.name) + NoAxes())
+
 #K6
-  # define pK: (no ground-truth) 
-    sweep.res.list_kidney <- paramSweep_v3(split_sample$K6, PCs = 1:30, sct = FALSE)
-    sweep.stats_kidney <- summarizeSweep(sweep.res.list_kidney, GT = FALSE)
-    bcmvn_kidney <- find.pK(sweep.stats_kidney)
-    
-    pK=as.numeric(as.character(bcmvn_cerebral$pK))
-    BCmetric=bcmvn_cerebral$BCmetric
-    pK_choose = pK[which(BCmetric %in% max(BCmetric))]
-    
-    par(mar=c(5,4,4,8)+1,cex.main=1.2,font.main=2)
-    plot(x = pK, y = BCmetric, pch = 16,type="b",
-    col = "blue",lty=1)
-    abline(v=pK_choose,lwd=2,col='red',lty=2)
+  # define pK: (no ground-truth)
+    sweep_res_list_kidney <- paramSweep_v3(split_sample$K6, PCs = 1:30, sct = FALSE)
+    sweep_stats_kidney <- summarizeSweep(sweep_res_list_kidney, GT = FALSE)
+    bcmvn_kidney <- find.pK(sweep_stats_kidney)
+
+    pK <- as.numeric(as.character(bcmvn_cerebral$pK))
+    BCmetric <- bcmvn_cerebral$BCmetric
+    pK_choose <- pK[which(BCmetric %in% max(BCmetric))]
+
+    par(mar = c(5, 4, 4, 8) + 1, cex.main = 1.2, font.main = 2)
+    plot(x = pK, y = BCmetric, pch = 16, type = "b",
+    col = "blue", lty = 1)
+    abline(v = pK_choose, lwd = 2, col = "red", lty = 2)
     title("The BCmvn distributions")
-    text(pK_choose,max(BCmetric),as.character(pK_choose),pos = 4,col = "red")
-    
+    text(pK_choose, max(BCmetric), as.character(pK_choose), pos = 4, col = "red")
+
   # define the expected number of doublets in nuclei.
     nExp <- round(ncol(split_sample$K6) * 0.097)  # expect 9.7% doublets
     split_sample$K6 <- doubletFinder_v3(split_sample$K6, pN = 0.25, pK = 0.23, nExp = nExp, PCs = 1:30)
-    
+
   # name of the DF prediction can change, so extract the correct column name.
-    DF.name = colnames(split_sample$K6@meta.data)[grepl("DF.classification", colnames(split_sample$K6@meta.data))]
+    DF.name <- colnames(split_sample$K6@meta.data)[grepl("DF.classification", colnames(split_sample$K6@meta.data))]
     cowplot::plot_grid(ncol = 2, DimPlot(split_sample$K6, group.by = "orig.ident") + NoAxes(),
                        DimPlot(split_sample$K6, group.by = DF.name) + NoAxes())
     VlnPlot(split_sample$K6, features = "nFeature_RNA", group.by = DF.name, pt.size = 0.1)
-   
+
   #REMOVE DOUBLETS:
-    split_sample$K6 = split_sample$K6[, split_sample$K6@meta.data[, DF.name] == "Singlet"]
-  #revisualize: 
+    split_sample$K6 <- split_sample$K6[, split_sample$K6@meta.data[, DF.name] == "Singlet"]
+  #revisualize:
     cowplot::plot_grid(ncol = 2, DimPlot(split_sample$K6, group.by = "orig.ident") + NoAxes(),
-                       DimPlot(split_sample$K6, group.by = DF.name) + NoAxes())    
+                       DimPlot(split_sample$K6, group.by = DF.name) + NoAxes())
 ```
 
 #merge seurat object that has no doublets now:
@@ -299,8 +307,8 @@ for (i in 1:length(split_sample)) {
     split_sample[[i]] <- FindVariableFeatures(split_sample[[i]], selection.method = "vst",
         nfeatures = 4000, verbose = FALSE)
     split_sample[[i]] <- ScaleData(split_sample[[i]], vars.to.regress = c("percent_mito", "nFeature_RNA"), assay = "RNA")
-    split_sample[[i]] <- RunPCA(split_sample[[i]], verbose = F, npcs = 30)
-    split_sample[[i]] <- RunUMAP(split_sample[[i]], verbose = F, dims = 1:30)
+    split_sample[[i]] <- RunPCA(split_sample[[i]], verbose = FALSE, npcs = 30)
+    split_sample[[i]] <- RunUMAP(split_sample[[i]], verbose = FALSE, dims = 1:30)
 }
 ```
 
@@ -315,208 +323,208 @@ For the kidney, doublets were estimated as follows:
 
 ```{r}
 #J1
-  # define pK: (no ground-truth) 
+  # define pK: (no ground-truth)
     sweep.res.list_cerebral <- paramSweep_v3(split_sample$J1, PCs = 1:30, sct = FALSE)
     sweep.stats_cerebral <- summarizeSweep(sweep.res.list_cerebral, GT = FALSE)
     bcmvn_cerebral <- find.pK(sweep.stats_cerebral)
-    
-    pK=as.numeric(as.character(bcmvn_cerebral$pK))
-    BCmetric=bcmvn_cerebral$BCmetric
-    pK_choose = pK[which(BCmetric %in% max(BCmetric))]
-    
-    par(mar=c(5,4,4,8)+1,cex.main=1.2,font.main=2)
-    plot(x = pK, y = BCmetric, pch = 16,type="b",
-    col = "blue",lty=1)
-    abline(v=pK_choose,lwd=2,col='red',lty=2)
+
+    pK <- as.numeric(as.character(bcmvn_cerebral$pK))
+    BCmetric <- bcmvn_cerebral$BCmetric
+    pK_choose <- pK[which(BCmetric %in% max(BCmetric))]
+
+    par(mar = c(5, 4, 4, 8) + 1, cex.main = 1.2, font.main = 2)
+    plot(x = pK, y = BCmetric, pch = 16, type = "b",
+    col = "blue", lty = 1)
+    abline(v = pK_choose, lwd = 2, col = "red", lty = 2)
     title("The BCmvn distributions")
-    text(pK_choose,max(BCmetric),as.character(pK_choose),pos = 4,col = "red")
-    
+    text(pK_choose, max(BCmetric), as.character(pK_choose), pos = 4, col = "red")
+
   # define the expected number of doublet cellscells.
     nExp <- round(ncol(split_sample$J1) * 0.04)  # expect 4% doublets
     split_sample$J1 <- doubletFinder_v3(split_sample$J1, pN = 0.25, pK = 0.15, nExp = nExp, PCs = 1:30)
-    
+
   # name of the DF prediction can change, so extract the correct column name.
-    DF.name = colnames(split_sample$J1@meta.data)[grepl("DF.classification", colnames(split_sample$J1@meta.data))]
+    DF.name <- colnames(split_sample$J1@meta.data)[grepl("DF.classification", colnames(split_sample$J1@meta.data))]
     cowplot::plot_grid(ncol = 2, DimPlot(split_sample$J1, group.by = "orig.ident") + NoAxes(),
                        DimPlot(split_sample$J1, group.by = DF.name) + NoAxes())
-    
+
   VlnPlot(split_sample$J1, features = "nFeature_RNA", group.by = DF.name, pt.size = 0.1)
-   
+
   #REMOVE DOUBLETS:
-    split_sample$J1 = split_sample$J1[, split_sample$J1@meta.data[, DF.name] == "Singlet"]
-  #revisualize: 
+    split_sample$J1 <- split_sample$J1[, split_sample$J1@meta.data[, DF.name] == "Singlet"]
+  #revisualize:
     cowplot::plot_grid(ncol = 2, DimPlot(split_sample$J1, group.by = "orig.ident") + NoAxes(),
-                       DimPlot(split_sample$J1, group.by = DF.name) + NoAxes())    
-    
+                       DimPlot(split_sample$J1, group.by = DF.name) + NoAxes())
+
 #J2
-  # define pK: (no ground-truth) 
+  # define pK: (no ground-truth)
     sweep.res.list_cerebral <- paramSweep_v3(split_sample$J2, PCs = 1:30, sct = FALSE)
     sweep.stats_cerebral <- summarizeSweep(sweep.res.list_cerebral, GT = FALSE)
     bcmvn_cerebral <- find.pK(sweep.stats_cerebral)
-    
-    pK=as.numeric(as.character(bcmvn_cerebral$pK))
-    BCmetric=bcmvn_cerebral$BCmetric
-    pK_choose = pK[which(BCmetric %in% max(BCmetric))]
-    
-    par(mar=c(5,4,4,8)+1,cex.main=1.2,font.main=2)
-    plot(x = pK, y = BCmetric, pch = 16,type="b",
-    col = "blue",lty=1)
-    abline(v=pK_choose,lwd=2,col='red',lty=2)
+
+    pK <- as.numeric(as.character(bcmvn_cerebral$pK))
+    BCmetric <- bcmvn_cerebral$BCmetric
+    pK_choose <- pK[which(BCmetric %in% max(BCmetric))]
+
+    par(mar = c(5, 4, 4, 8) + 1, cex.main = 1.2, font.main = 2)
+    plot(x = pK, y = BCmetric, pch = 16, type = "b",
+    col = "blue", lty = 1)
+    abline(v = pK_choose, lwd = 2, col = "red", lty = 2)
     title("The BCmvn distributions")
-    text(pK_choose,max(BCmetric),as.character(pK_choose),pos = 4,col = "red")
-    
+    text(pK_choose, max(BCmetric), as.character(pK_choose), pos = 4, col = "red")
+
   # define the expected number of doublet cellscells.
     nExp <- round(ncol(split_sample$J2) * 0.054)  # expect 5.4% doublets
     split_sample$J2 <- doubletFinder_v3(split_sample$J2, pN = 0.25, pK = 0.3, nExp = nExp, PCs = 1:30)
-    
+
   # name of the DF prediction can change, so extract the correct column name.
-    DF.name = colnames(split_sample$J2@meta.data)[grepl("DF.classification", colnames(split_sample$J2@meta.data))]
+    DF.name <- colnames(split_sample$J2@meta.data)[grepl("DF.classification", colnames(split_sample$J2@meta.data))]
     cowplot::plot_grid(ncol = 2, DimPlot(split_sample$J2, group.by = "orig.ident") + NoAxes())
     cowplot::plot_grid(ncol = 2, DimPlot(split_sample$J2, group.by = DF.name) + NoAxes())
-    
+
   VlnPlot(split_sample$J2, features = "nFeature_RNA", group.by = DF.name, pt.size = 0.1)
-   
+
   #REMOVE DOUBLETS:
-    split_sample$J2 = split_sample$J2[, split_sample$J2@meta.data[, DF.name] == "Singlet"]
-  #revisualize: 
+    split_sample$J2 <- split_sample$J2[, split_sample$J2@meta.data[, DF.name] == "Singlet"]
+  #revisualize:
     cowplot::plot_grid(ncol = 2, DimPlot(split_sample$J2, group.by = "orig.ident") + NoAxes(),
-                       DimPlot(split_sample$J2, group.by = DF.name) + NoAxes())      
-    
+                       DimPlot(split_sample$J2, group.by = DF.name) + NoAxes())
+
 #J3
-  # define pK: (no ground-truth) 
+  # define pK: (no ground-truth)
     sweep.res.list_cerebral <- paramSweep_v3(split_sample$J3, PCs = 1:30, sct = FALSE)
     sweep.stats_cerebral <- summarizeSweep(sweep.res.list_cerebral, GT = FALSE)
     bcmvn_cerebral <- find.pK(sweep.stats_cerebral)
-    
-    pK=as.numeric(as.character(bcmvn_cerebral$pK))
-    BCmetric=bcmvn_cerebral$BCmetric
-    pK_choose = pK[which(BCmetric %in% max(BCmetric))]
-    
-    par(mar=c(5,4,4,8)+1,cex.main=1.2,font.main=2)
-    plot(x = pK, y = BCmetric, pch = 16,type="b",
-    col = "blue",lty=1)
-    abline(v=pK_choose,lwd=2,col='red',lty=2)
+
+    pK <- as.numeric(as.character(bcmvn_cerebral$pK))
+    BCmetric <- bcmvn_cerebral$BCmetric
+    pK_choose <- pK[which(BCmetric %in% max(BCmetric))]
+
+    par(mar = c(5, 4, 4, 8) + 1, cex.main = 1.2, font.main = 2)
+    plot(x = pK, y = BCmetric, pch = 16, type = "b",
+    col = "blue", lty = 1)
+    abline(v = pK_choose, lwd = 2, col = "red", lty = 2)
     title("The BCmvn distributions")
-    text(pK_choose,max(BCmetric),as.character(pK_choose),pos = 4,col = "red")
-    
+    text(pK_choose, max(BCmetric), as.character(pK_choose), pos = 4, col = "red")
+
   # define the expected number of doublet cellscells.
     nExp <- round(ncol(split_sample$J3) * 0.078)  # expect 7.8% doublets
     split_sample$J3 <- doubletFinder_v3(split_sample$J3, pN = 0.25, pK = 0.3, nExp = nExp, PCs = 1:30)
-    
+
   # name of the DF prediction can change, so extract the correct column name.
-    DF.name = colnames(split_sample$J3@meta.data)[grepl("DF.classification", colnames(split_sample$J3@meta.data))]
+    DF.name <- colnames(split_sample$J3@meta.data)[grepl("DF.classification", colnames(split_sample$J3@meta.data))]
     cowplot::plot_grid(ncol = 2, DimPlot(split_sample$J3, group.by = "orig.ident") + NoAxes(),
                        DimPlot(split_sample$J3, group.by = DF.name) + NoAxes())
-    
+
   VlnPlot(split_sample$J3, features = "nFeature_RNA", group.by = DF.name, pt.size = 0.1)
-   
+
   #REMOVE DOUBLETS:
-    split_sample$J3 = split_sample$J3[, split_sample$J3@meta.data[, DF.name] == "Singlet"]
-  #revisualize: 
+    split_sample$J3 <- split_sample$J3[, split_sample$J3@meta.data[, DF.name] == "Singlet"]
+  #revisualize:
     cowplot::plot_grid(ncol = 2, DimPlot(split_sample$J3, group.by = "orig.ident") + NoAxes(),
-                       DimPlot(split_sample$J3, group.by = DF.name) + NoAxes())    
-    
+                       DimPlot(split_sample$J3, group.by = DF.name) + NoAxes())
+
 #J4
-  # define pK: (no ground-truth) 
+  # define pK: (no ground-truth)
     sweep.res.list_cerebral <- paramSweep_v3(split_sample$J4, PCs = 1:30, sct = FALSE)
     sweep.stats_cerebral <- summarizeSweep(sweep.res.list_cerebral, GT = FALSE)
     bcmvn_cerebral <- find.pK(sweep.stats_cerebral)
-    
-    pK=as.numeric(as.character(bcmvn_cerebral$pK))
-    BCmetric=bcmvn_cerebral$BCmetric
-    pK_choose = pK[which(BCmetric %in% max(BCmetric))]
-    
-    par(mar=c(5,4,4,8)+1,cex.main=1.2,font.main=2)
-    plot(x = pK, y = BCmetric, pch = 16,type="b",
-    col = "blue",lty=1)
-    abline(v=pK_choose,lwd=2,col='red',lty=2)
+
+    pK <- as.numeric(as.character(bcmvn_cerebral$pK))
+    BCmetric <- bcmvn_cerebral$BCmetric
+    pK_choose <- pK[which(BCmetric %in% max(BCmetric))]
+
+    par(mar = c(5, 4, 4, 8) + 1, cex.main = 1.2, font.main = 2)
+    plot(x = pK, y = BCmetric, pch = 16, type = "b",
+    col = "blue", lty = 1)
+    abline(v = pK_choose, lwd = 2, col = "red", lty = 2)
     title("The BCmvn distributions")
-    text(pK_choose,max(BCmetric),as.character(pK_choose),pos = 4,col = "red")
-    
+    text(pK_choose, max(BCmetric), as.character(pK_choose), pos = 4, col = "red")
+
   # define the expected number of doublet cellscells.
     nExp <- round(ncol(split_sample$J4) * 0.079)  # expect 7.9% doublets
     split_sample$J4 <- doubletFinder_v3(split_sample$J4, pN = 0.25, pK = 0.08, nExp = nExp, PCs = 1:30)
-    
+
   # name of the DF prediction can change, so extract the correct column name.
-    DF.name = colnames(split_sample$J4@meta.data)[grepl("DF.classification", colnames(split_sample$J4@meta.data))]
+    DF.name <- colnames(split_sample$J4@meta.data)[grepl("DF.classification", colnames(split_sample$J4@meta.data))]
     cowplot::plot_grid(ncol = 2, DimPlot(split_sample$J4, group.by = "orig.ident") + NoAxes(),
                        DimPlot(split_sample$J4, group.by = DF.name) + NoAxes())
-    
+
   VlnPlot(split_sample$J4, features = "nFeature_RNA", group.by = DF.name, pt.size = 0.1)
-   
+
   #REMOVE DOUBLETS:
-    split_sample$J4 = split_sample$J4[, split_sample$J4@meta.data[, DF.name] == "Singlet"]
-  #revisualize: 
+    split_sample$J4 <- split_sample$J4[, split_sample$J4@meta.data[, DF.name] == "Singlet"]
+  #revisualize:
     cowplot::plot_grid(ncol = 2, DimPlot(split_sample$J4, group.by = "orig.ident") + NoAxes(),
-                       DimPlot(split_sample$J4, group.by = DF.name) + NoAxes())    
-    
+                       DimPlot(split_sample$J4, group.by = DF.name) + NoAxes())
+
 #J13
-  # define pK: (no ground-truth) 
+  # define pK: (no ground-truth)
     sweep.res.list_cerebral <- paramSweep_v3(split_sample$J13, PCs = 1:30, sct = FALSE)
     sweep.stats_cerebral <- summarizeSweep(sweep.res.list_cerebral, GT = FALSE)
     bcmvn_cerebral <- find.pK(sweep.stats_cerebral)
-    
-    pK=as.numeric(as.character(bcmvn_cerebral$pK))
-    BCmetric=bcmvn_cerebral$BCmetric
-    pK_choose = pK[which(BCmetric %in% max(BCmetric))]
-    
-    par(mar=c(5,4,4,8)+1,cex.main=1.2,font.main=2)
-    plot(x = pK, y = BCmetric, pch = 16,type="b",
-    col = "blue",lty=1)
-    abline(v=pK_choose,lwd=2,col='red',lty=2)
+
+    pK <- as.numeric(as.character(bcmvn_cerebral$pK))
+    BCmetric <- bcmvn_cerebral$BCmetric
+    pK_choose <- pK[which(BCmetric %in% max(BCmetric))]
+
+    par(mar = c(5, 4, 4, 8) + 1, cex.main = 1.2, font.main = 2)
+    plot(x = pK, y = BCmetric, pch = 16, type = "b",
+    col = "blue", lty = 1)
+    abline(v = pK_choose, lwd = 2, col = "red", lty = 2)
     title("The BCmvn distributions")
-    text(pK_choose,max(BCmetric),as.character(pK_choose),pos = 4,col = "red")
-    
+    text(pK_choose, max(BCmetric), as.character(pK_choose), pos = 4, col = "red")
+
   # define the expected number of doublet cellscells.
     nExp <- round(ncol(split_sample$J13) * 0.071)  # expect 7.1% doublets
     split_sample$J13 <- doubletFinder_v3(split_sample$J13, pN = 0.25, pK = 0.16, nExp = nExp, PCs = 1:30)
-    
+
   # name of the DF prediction can change, so extract the correct column name.
-    DF.name = colnames(split_sample$J13@meta.data)[grepl("DF.classification", colnames(split_sample$J13@meta.data))]
+    DF.name <- colnames(split_sample$J13@meta.data)[grepl("DF.classification", colnames(split_sample$J13@meta.data))]
     cowplot::plot_grid(ncol = 2, DimPlot(split_sample$J13, group.by = "orig.ident") + NoAxes(),
                        DimPlot(split_sample$J13, group.by = DF.name) + NoAxes())
-   
+
   VlnPlot(split_sample$J13, features = "nFeature_RNA", group.by = DF.name, pt.size = 0.1)
-   
+
   #REMOVE DOUBLETS:
-    split_sample$J13 = split_sample$J13[, split_sample$J13@meta.data[, DF.name] == "Singlet"]
-  #revisualize: 
+    split_sample$J13 <- split_sample$J13[, split_sample$J13@meta.data[, DF.name] == "Singlet"]
+  #revisualize:
     cowplot::plot_grid(ncol = 2, DimPlot(split_sample$J13, group.by = "orig.ident") + NoAxes(),
-                       DimPlot(split_sample$J13, group.by = DF.name) + NoAxes())      
-     
-#J15  
-  # define pK: (no ground-truth) 
+                       DimPlot(split_sample$J13, group.by = DF.name) + NoAxes())
+
+#J15
+  # define pK: (no ground-truth)
     sweep.res.list_cerebral <- paramSweep_v3(split_sample$J15, PCs = 1:30, sct = FALSE)
     sweep.stats_cerebral <- summarizeSweep(sweep.res.list_cerebral, GT = FALSE)
     bcmvn_cerebral <- find.pK(sweep.stats_cerebral)
-    
-    pK=as.numeric(as.character(bcmvn_cerebral$pK))
-    BCmetric=bcmvn_cerebral$BCmetric
-    pK_choose = pK[which(BCmetric %in% max(BCmetric))]
-    
-    par(mar=c(5,4,4,8)+1,cex.main=1.2,font.main=2)
-    plot(x = pK, y = BCmetric, pch = 16,type="b",
-    col = "blue",lty=1)
-    abline(v=pK_choose,lwd=2,col='red',lty=2)
+
+    pK <- as.numeric(as.character(bcmvn_cerebral$pK))
+    BCmetric <- bcmvn_cerebral$BCmetric
+    pK_choose <- pK[which(BCmetric %in% max(BCmetric))]
+
+    par(mar = c(5, 4, 4, 8) + 1, cex.main = 1.2, font.main = 2)
+    plot(x = pK, y = BCmetric, pch = 16, type = "b",
+    col = "blue", lty = 1)
+    abline(v = pK_choose, lwd = 2, col = "red", lty = 2)
     title("The BCmvn distributions")
-    text(pK_choose,max(BCmetric),as.character(pK_choose),pos = 4,col = "red")
-    
+    text(pK_choose, max(BCmetric), as.character(pK_choose), pos = 4, col = "red")
+
   # define the expected number of doublet cellscells.
     nExp <- round(ncol(split_sample$J15) * 0.067)  # expect 6.7% doublets
     split_sample$J15 <- doubletFinder_v3(split_sample$J15, pN = 0.25, pK = 0.23, nExp = nExp, PCs = 1:30)
-    
+
   # name of the DF prediction can change, so extract the correct column name.
-    DF.name = colnames(split_sample$J15@meta.data)[grepl("DF.classification", colnames(split_sample$J15@meta.data))]
+    DF.name <- colnames(split_sample$J15@meta.data)[grepl("DF.classification", colnames(split_sample$J15@meta.data))]
     cowplot::plot_grid(ncol = 2, DimPlot(split_sample$J15, group.by = "orig.ident") + NoAxes(),
                        DimPlot(split_sample$J15, group.by = DF.name) + NoAxes())
-    
+
   VlnPlot(split_sample$J15, features = "nFeature_RNA", group.by = DF.name, pt.size = 0.1)
-   
+
   #REMOVE DOUBLETS:
-    split_sample$J15 = split_sample$J15[, split_sample$J15@meta.data[, DF.name] == "Singlet"]
-  #revisualize: 
+    split_sample$J15 <- split_sample$J15[, split_sample$J15@meta.data[, DF.name] == "Singlet"]
+  #revisualize:
     cowplot::plot_grid(ncol = 2, DimPlot(split_sample$J15, group.by = "orig.ident") + NoAxes(),
-                       DimPlot(split_sample$J15, group.by = DF.name) + NoAxes())    
+                       DimPlot(split_sample$J15, group.by = DF.name) + NoAxes())
 ```
 
 #merge seurat object that has no doublets now:
@@ -524,6 +532,12 @@ For the kidney, doublets were estimated as follows:
 cerebral_seurat_filtered <- merge(x = split_sample$J1, y = c(split_sample$J2, split_sample$J3, split_sample$J4, split_sample$J13, split_sample$J15))
 
 save(cerebral_seurat_filtered, file = here("data/nodoublet_setbp1_cerebral_seurat.Rdata"))
+```
+
+```{r}
+# run style
+style_file(here("src/seurat_scripts/Setbp1_QC_01.Rmd"))
+# lintr was run as well
 ```
 
 This script is followed by 'Setbp1_integration_03.Rmd'
