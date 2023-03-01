@@ -18,10 +18,14 @@ output:
 
 Accompanying dry lab notebook for this analysis is here: https://docs.google.com/document/d/1FO_Je9oxbBFF9S_k-8tVF2t4ba88O4C77sw1v7DIFec/edit?usp=sharing
 
+This analysis follows 'Setbp1_MarkersKidney_05.Rmd' and precedes "Setbp1_DGEkidney_07.Rmd"
+
 ####load in libraries:
 ```{r}
 library(Seurat)
 library(ggplot2)
+library(styler)
+library(lintr)
 ```
 
 ####load in markers:
@@ -32,16 +36,16 @@ load(here("results/kidney_markers.Rdata"))
 *also be sure that the previously generated clustered objects at resolution 0.8 are here if not loaded already, run below chunk:
 ```{r}
 load(here("data/kidney_leiden.Rdata"))
-select.resolution = "RNA_snn_res.0.9"
-kidney.int <- SetIdent(kidney.int, value = select.resolution)
+select_resolution <- "RNA_snn_res.0.9"
+kidney_int <- SetIdent(kidney_int, value = select_resolution)
 ```
 
 #### identify the top25 markers for kidney :
 ```{r}
-#top 25 kidney
-kidney_markers_genes %>%
-    group_by(cluster) %>%
-    top_n(-25, p_val_adj) -> kidney_top25
+# top 25 kidney
+kidney_top25 <- kidney_markers_genes %>%
+  group_by(cluster) %>%
+  top_n(-25, p_val_adj)
 kidney_top25
 ```
 
@@ -51,128 +55,125 @@ see notes on resources used to do this here: https://docs.google.com/document/d/
 ##### known markers from papers (https://www.science.org/doi/pdf/10.1126/science.aar2131):
 ```{r}
 features <- c("Nrp1", "Kdr", "Nphs1", "Nphs2", "Slc27a2", "Lrp2", "Slc12a1", "Umod", "Slc12a3", "Pvalb", "Aqp2", "Hsd11b2", "Atp6v1g3", "Atp6v0d2", "Insrr", "Rhbg", "Mki67", "Cdca3", "Plac8", "S100a4", "C1qa", "C1qb", "S100a8", "S100a9", "Cd79a", "Cd79b", "Ltb", "Cxcr6", "Gzma", "Nkg7", "Stmn1")
-#pdf("/data/user/jbarham3/jw_cellspecific/jw_cellspecific/outputs/220815_kidney_celltype_markers.pdf")
-VlnPlot(kidney.int, features, stack = TRUE, sort = FALSE, flip = TRUE) +
-        theme(legend.position = "none") + ggtitle("Kidney Cell-type Identity Markers from Literature")
-#dev.off()
-#pdf("/data/user/jbarham3/jw_cellspecific/jw_cellspecific/outputs/220815_kidney_dot_celltype_markers.pdf")
-DotPlot(object = kidney.int, features = features, assay = "RNA") +
-        theme(legend.position = "right") + ggtitle("Kidney Cell-type Identity Markers from Literature") + coord_flip()
-#dev.off()
-#DotPlot(object = kidney.int, features = features, assay = "RNA", split.by = "type") + theme(legend.position = "right") + ggtitle("Kidney Cell-type Identity Markers") 
 
-#additional markers:
-DotPlot(object = kidney.int, features = c("Ehd3", "Plat", "Vim", "S100a4", "Aqp1", "Bst1", "Slc5a2", "Slc5a12", "Fxyd2", "Hrsp12", "Atp11a", "Slc13a3", "Slc4a1", "Aqp6", "Slc26a4", "Hmx2"), assay = "RNA") +
-        theme(legend.position = "right") + ggtitle("Additional Kidney Cell-type Identity Markers from Literature") + coord_flip()
+VlnPlot(kidney_int, features, stack = TRUE, sort = FALSE, flip = TRUE) +
+  theme(legend.position = "none") + ggtitle("Kidney Cell-type Identity Markers from Literature")
+
+DotPlot(object = kidney_int, features = features, assay = "RNA") +
+  theme(legend.position = "right") + ggtitle("Kidney Cell-type Identity Markers from Literature") + coord_flip()
+
+# additional markers:
+DotPlot(object = kidney_int, features = c("Ehd3", "Plat", "Vim", "S100a4", "Aqp1", "Bst1", "Slc5a2", "Slc5a12", "Fxyd2", "Hrsp12", "Atp11a", "Slc13a3", "Slc4a1", "Aqp6", "Slc26a4", "Hmx2"), assay = "RNA") +
+  theme(legend.position = "right") + ggtitle("Additional Kidney Cell-type Identity Markers from Literature") + coord_flip()
 ```
 
 #### known markers from Human Protein Atlas (https://www.proteinatlas.org/ENSG00000105825-TFPI2/single+cell+type/kidney)
 
 ```{r}
-features1 <- c("Cd19", "Cr2", "Ms4a1", "Gzmb", "Il3ra", "Cebpe", "Hdc", "Ms4a2", "Cd163", "Cd68", "Marco", "Mrc1", "Msr1", "Fcgr3a", "Kir2dl4", "Pim2", "Cd3e", "Cd4", "Cd8a", "Foxp3", "Il17a") 
-              
+features1 <- c("Cd19", "Cr2", "Ms4a1", "Gzmb", "Il3ra", "Cebpe", "Hdc", "Ms4a2", "Cd163", "Cd68", "Marco", "Mrc1", "Msr1", "Fcgr3a", "Kir2dl4", "Pim2", "Cd3e", "Cd4", "Cd8a", "Foxp3", "Il17a")
+
 features2 <- c("Cd34", "Pecam1", "Sele", "Slc2a1", "Vwf", "Col3a1", "Fbn1", "Lum", "Acta2", "Actg2", "Cnn1", "Myh11", "Aqp2", "Cldn8", "Pvalb", "Tmem213", "Slc12a1", "Tmem72", "Umod", "Miox", "Nat8", "Slc22a8", "Tmem174")
-#pdf("/data/user/jbarham3/jw_cellspecific/jw_cellspecific/outputs/220815_kidney_celltype_markers.pdf")
-VlnPlot(kidney.int, features1, stack = TRUE, sort = FALSE, flip = TRUE) +
-        theme(legend.position = "none") + ggtitle("Kidney Cell-type Identity Markers from HPA F1")
-VlnPlot(kidney.int, features2, stack = TRUE, sort = FALSE, flip = TRUE) +
-        theme(legend.position = "none") + ggtitle("Kidney Cell-type Identity Markers from HPA F2")
-DotPlot(object = kidney.int, features = features1, assay = "RNA") +
-        theme(legend.position = "right") + ggtitle("Kidney Cell-type Identity Markers from HPA F1") + coord_flip()
-DotPlot(object = kidney.int, features = features2, assay = "RNA") +
-        theme(legend.position = "right") + ggtitle("Kidney Cell-type Identity Markers from HPA F2") + coord_flip()
+
+VlnPlot(kidney_int, features1, stack = TRUE, sort = FALSE, flip = TRUE) +
+  theme(legend.position = "none") + ggtitle("Kidney Cell-type Identity Markers from HPA F1")
+VlnPlot(kidney_int, features2, stack = TRUE, sort = FALSE, flip = TRUE) +
+  theme(legend.position = "none") + ggtitle("Kidney Cell-type Identity Markers from HPA F2")
+DotPlot(object = kidney_int, features = features1, assay = "RNA") +
+  theme(legend.position = "right") + ggtitle("Kidney Cell-type Identity Markers from HPA F1") + coord_flip()
+DotPlot(object = kidney_int, features = features2, assay = "RNA") +
+  theme(legend.position = "right") + ggtitle("Kidney Cell-type Identity Markers from HPA F2") + coord_flip()
 ```
 
 #### known markers from additional papers (https://www.nature.com/articles/s41597-019-0351-8/tables/4):
 ```{r}
 features <- c("Slc13a3", "Slc34a1", "Gpx3", "Dcxr", "Slc22a8", "Slc22a7", "Krt8", "Krt18", "Cd24", "Vcam1", "Lyz", "Cd14", "Gnly", "Nkg7", "Cd3d", "Cd3e", "Il7r", "Cd79a", "Cd79b", "Umod", "Defb1", "Cldn8", "Aqp2", "Atp6v1g3", "Atp6v0d2", "Tmem213")
-DotPlot(object = kidney.int, features = features, assay = "RNA") + theme(legend.position = "right") + ggtitle("Kidney Cell-type Identity Markers from Paper") + coord_flip()
+DotPlot(object = kidney_int, features = features, assay = "RNA") + theme(legend.position = "right") + ggtitle("Kidney Cell-type Identity Markers from Paper") + coord_flip()
 ```
 ------- FINAL CELL TYPE MARKERS -------
 
 #Glomerular Parietal Epithelial Cells:
 ```{r}
-FeaturePlot(kidney.int, features = c("Krt8", "Krt18"), reduction = "umap_harmony")
+FeaturePlot(kidney_int, features = c("Krt8", "Krt18"), reduction = "umap_harmony")
 ```
 
 #B Lymphocytes:
 ```{r}
-FeaturePlot(kidney.int, features = c("Cd79a", "Cd79b", "Ltb"), reduction = "umap_harmony")
+FeaturePlot(kidney_int, features = c("Cd79a", "Cd79b", "Ltb"), reduction = "umap_harmony")
 ```
 
 #T lymphocytes: 
 ```{r}
-FeaturePlot(kidney.int, features = c("Msa4"), reduction = "umap_harmony")
+FeaturePlot(kidney_int, features = c("Msa4"), reduction = "umap_harmony")
 ```
 
 #Loop of Henle (LOH):
 ```{r}
-FeaturePlot(kidney.int, features = c("Umod", "Slc12a1"), reduction = "umap_harmony")
+FeaturePlot(kidney_int, features = c("Umod", "Slc12a1"), reduction = "umap_harmony")
 ```
 
 #Macrophages:
 ```{r}
-FeaturePlot(kidney.int, features = c("C1qb", "C1qa"), reduction = "umap_harmony")
+FeaturePlot(kidney_int, features = c("C1qb", "C1qa"), reduction = "umap_harmony")
 ```
 
 #Collecting Duct - Intercalating Cell Type A (CD-IC-A):
 ```{r}
-FeaturePlot(kidney.int, features = c("Rhbg", "Slc4a1", "Aqp6", "Insrr", "Atp6v0d2", "Atp6v1g3"), reduction = "umap_harmony")
+FeaturePlot(kidney_int, features = c("Rhbg", "Slc4a1", "Aqp6", "Insrr", "Atp6v0d2", "Atp6v1g3"), reduction = "umap_harmony")
 ```
 
 #Collecting Duct - Intercalating Cell Type B (CD-IC-B):
 ```{r}
-FeaturePlot(kidney.int, features = c("Rhbg", "Slc25a4", "Hmx2", "Insrr", "Atp6v0d2", "Atp6v1g3"), reduction = "umap_harmony")
+FeaturePlot(kidney_int, features = c("Rhbg", "Slc25a4", "Hmx2", "Insrr", "Atp6v0d2", "Atp6v1g3"), reduction = "umap_harmony")
 ```
 
 #Collecting Duct - Principal Cell (CD-PC):
 ```{r}
-FeaturePlot(kidney.int, features = c("Hsd11b2", "Aqp2", "Rhbg"), reduction = "umap_harmony")
+FeaturePlot(kidney_int, features = c("Hsd11b2", "Aqp2", "Rhbg"), reduction = "umap_harmony")
 ```
 
 #Proximal convoluted tubule segment 2 (PCT-S2)cells:
 ```{r}
-FeaturePlot(kidney.int, features = c("Fxyd2"), reduction = "umap_harmony")
+FeaturePlot(kidney_int, features = c("Fxyd2"), reduction = "umap_harmony")
 ```
 
 #Proximal convoluted tubule segment 1 (PCT-S1)cells:
 ```{r}
-FeaturePlot(kidney.int, features = c("Slc5a2", "Slc5a12"), reduction = "umap_harmony")
+FeaturePlot(kidney_int, features = c("Slc5a2", "Slc5a12"), reduction = "umap_harmony")
 ```
 
 #Proximal convoluted tubule cells:
 ```{r}
-FeaturePlot(kidney.int, features = c("Knl1", "Lrp", "Slc27a2", "Tmem174", "Nat8", "Slc22a8"), reduction = "umap_harmony")
+FeaturePlot(kidney_int, features = c("Knl1", "Lrp", "Slc27a2", "Tmem174", "Nat8", "Slc22a8"), reduction = "umap_harmony")
 ```
 
 #Proximal straight tubule cells (PST):
 ```{r}
-FeaturePlot(kidney.int, features = c("Atp11a", "Slc13a3"), reduction = "umap_harmony")
+FeaturePlot(kidney_int, features = c("Atp11a", "Slc13a3"), reduction = "umap_harmony")
 ```
 
 #Endothelial cells:
 ```{r}
-FeaturePlot(kidney.int, features = c("Kdr", "Ehd3", "Nrp1"), reduction = "umap_harmony")
+FeaturePlot(kidney_int, features = c("Kdr", "Ehd3", "Nrp1"), reduction = "umap_harmony")
 ```
 
 #Fibroblasts:
 ```{r}
-FeaturePlot(kidney.int, features = c("Plac8", "S100a4"), reduction = "umap_harmony")
+FeaturePlot(kidney_int, features = c("Plac8", "S100a4"), reduction = "umap_harmony")
 ```
 
 #Distal Convoluted Tubule (DCT):
 ```{r}
-FeaturePlot(kidney.int, features = c("Umod", "Slc12a3", "Pvalb"), reduction = "umap_harmony")
+FeaturePlot(kidney_int, features = c("Umod", "Slc12a3", "Pvalb"), reduction = "umap_harmony")
 ```
 
 #Podocytes:
 ```{r}
-FeaturePlot(kidney.int, features = c("Nphs1", "Nphs2"), reduction = "umap_harmony")
+FeaturePlot(kidney_int, features = c("Nphs1", "Nphs2"), reduction = "umap_harmony")
 ```
 
 #Descending Loop of Henle (DLH):
 ```{r}
-FeaturePlot(kidney.int, features = c("Bst1", "Aqp1"), reduction = "umap_harmony")
+FeaturePlot(kidney_int, features = c("Bst1", "Aqp1"), reduction = "umap_harmony")
 ```
 
 **no pericytes, natural killer cells, or dendritic cells, or smooth muscle
@@ -183,47 +184,48 @@ FeaturePlot(kidney.int, features = c("Bst1", "Aqp1"), reduction = "umap_harmony"
 ## assigning kidney cell markers
 
 ```{r}
-kidney.int.celltypes <- SetIdent(kidney.int, value = select.resolution)
-kidney.int.celltypes <- RenameIdents(kidney.int, 
-                                       "1" = "PCT.S2",
-                                       "2" = "endothelial",
-                                       "3" = "PST", 
-                                       "4" = "PST",
-                                       "5" = "PST",
-                                       "6" = "PCT.S1", 
-                                       "7" = "LOH",
-                                       "8" = "LOH",
-                                       "9" = "endothelial",
-                                       "10" = "endothelial",
-                                       "11" = "DCT",
-                                       "12" = "PST",
-                                       "13" = "CD.PC",
-                                       "14" = "PCT.S2",
-                                       "15" = "CD.PC",
-                                       "16" = "macrophages",
-                                       "17" = "fibroblasts",
-                                       "18" = "DCT",
-                                       "19" = "DLH",
-                                       "20" = "CD.PC",
-                                       "21" = "CD.IC.typeA",
-                                       "22" = "CD.IC.typeB", 
-                                       "23" = "DLH",
-                                       "24" = "endothelial",
-                                       "25" = "PCT.S2",
-                                       "26" = "PCT.S2", 
-                                       "27" = "PCT.S1",
-                                       "28" = "Glomerular.PE",
-                                       "29" = "fibroblasts",
-                                       "30" = "podocytes",
-                                       "31" = "PCT.S1",
-                                       "32" = "endothelial",
-                                       "33" = "T.lymphocytes",
-                                       "34" = "B.lymphocytes",
-                                       "35" = "PST",
-                                       "36" = "endothelial")
-kidney.int.celltypes <- AddMetaData(object = kidney.int.celltypes, as.vector(kidney.int.celltypes@active.ident), col.name = "cell_type")
+kidney_int_celltypes <- SetIdent(kidney_int, value = select_resolution)
+kidney_int_celltypes <- RenameIdents(kidney_int,
+  "1" = "PCT.S2",
+  "2" = "endothelial",
+  "3" = "PST",
+  "4" = "PST",
+  "5" = "PST",
+  "6" = "PCT.S1",
+  "7" = "LOH",
+  "8" = "LOH",
+  "9" = "endothelial",
+  "10" = "endothelial",
+  "11" = "DCT",
+  "12" = "PST",
+  "13" = "CD.PC",
+  "14" = "PCT.S2",
+  "15" = "CD.PC",
+  "16" = "macrophages",
+  "17" = "fibroblasts",
+  "18" = "DCT",
+  "19" = "DLH",
+  "20" = "CD.PC",
+  "21" = "CD.IC.typeA",
+  "22" = "CD.IC.typeB",
+  "23" = "DLH",
+  "24" = "endothelial",
+  "25" = "PCT.S2",
+  "26" = "PCT.S2",
+  "27" = "PCT.S1",
+  "28" = "Glomerular.PE",
+  "29" = "fibroblasts",
+  "30" = "podocytes",
+  "31" = "PCT.S1",
+  "32" = "endothelial",
+  "33" = "T.lymphocytes",
+  "34" = "B.lymphocytes",
+  "35" = "PST",
+  "36" = "endothelial"
+)
+kidney_int_celltypes <- AddMetaData(object = kidney_int_celltypes, as.vector(kidney_int_celltypes@active.ident), col.name = "cell_type")
 
-save(kidney.int.celltypes, file = here("data/kidney_integrated_celltypes.Rdata"))
+save(kidney_int_celltypes, file = here("data/kidney_integrated_celltypes.Rdata"))
 load(here("data/kidney_integrated_celltypes.Rdata"))
 ```
 
@@ -231,76 +233,80 @@ load(here("data/kidney_integrated_celltypes.Rdata"))
 
 #### Visualizing kidney data with cell types:
 ```{r}
-p1 <- DimPlot(kidney.int.celltypes, reduction = "umap_harmony", group.by = "type", cols = c("control" = "#FE6100", "heterozygous" = "#FFB000")) + theme(text = element_text(size = 20), legend.title = element_text(face = "bold")) + labs(color = "Condition", title = NULL)
-p2 <- DimPlot(kidney.int.celltypes, reduction = "umap_harmony", group.by = "orig.ident")
-p3 <- DimPlot(kidney.int.celltypes, reduction = "umap_harmony", group.by = "cell_type", cols = c("B.lymphocytes" = "#FFBE1D","CD.IC.typeA" = "#4E3801", "CD.IC.typeB" = "#EEDF37", "CD.PC" = "#F03F00", "DCT" = "#6D0404","DLH" = "#AA6320", "endothelial" = "#CF9400","fibroblasts" = "#FFC8C4", "Glomerular.PE" = "#FF7600", "LOH" = "#AA937E", "macrophages" = "#C70F0F", "PCT.S1" = "#A85A5A", "PCT.S2" = "#F8766D",  "podocytes" = "#BD085E", "PST" = "#948802", "T.lymphocytes" = "#FFE196")) + theme(text = element_text(size = 20), legend.title = element_text(face = "bold")) + labs(color = "kidney cell type", title = NULL)
-p0 <- DimPlot(kidney.int.celltypes, reduction = "umap_harmony", group.by = "RNA_snn_res.0.9", label = TRUE, repel = TRUE)
-png(filename = here("results/figures/kidney_setbp1_UMAP_final.png"),
-    width = 1200,
-    height = 600)
+p1 <- DimPlot(kidney_int_celltypes, reduction = "umap_harmony", group.by = "type", cols = c("control" = "#FE6100", "heterozygous" = "#FFB000")) + theme(text = element_text(size = 20), legend.title = element_text(face = "bold")) + labs(color = "Condition", title = NULL)
+p2 <- DimPlot(kidney_int_celltypes, reduction = "umap_harmony", group.by = "orig.ident")
+p3 <- DimPlot(kidney_int_celltypes, reduction = "umap_harmony", group.by = "cell_type", cols = c("B.lymphocytes" = "#FFBE1D", "CD.IC.typeA" = "#4E3801", "CD.IC.typeB" = "#EEDF37", "CD.PC" = "#F03F00", "DCT" = "#6D0404", "DLH" = "#AA6320", "endothelial" = "#CF9400", "fibroblasts" = "#FFC8C4", "Glomerular.PE" = "#FF7600", "LOH" = "#AA937E", "macrophages" = "#C70F0F", "PCT.S1" = "#A85A5A", "PCT.S2" = "#F8766D", "podocytes" = "#BD085E", "PST" = "#948802", "T.lymphocytes" = "#FFE196")) + theme(text = element_text(size = 20), legend.title = element_text(face = "bold")) + labs(color = "kidney cell type", title = NULL)
+p0 <- DimPlot(kidney_int_celltypes, reduction = "umap_harmony", group.by = "RNA_snn_res.0.9", label = TRUE, repel = TRUE)
+png(
+  filename = here("results/figures/kidney_setbp1_UMAP_final.png"),
+  width = 1200,
+  height = 600
+)
 p1 + p3
 dev.off()
 p1
 p2
 p3
 p0
-split_pt <- SplitObject(kidney.int.celltypes, split.by = "type")
+split_pt <- SplitObject(kidney_int_celltypes, split.by = "type")
 het_pt <- table(split_pt$heterozygous@meta.data$cell_type)
 het_pt <- as.data.frame(het_pt)
 het_pt$Var1 <- as.character(het_pt$Var1)
-ggplot(het_pt, aes(y = Var1, fill = Var1), ) + geom_bar(aes(x = Freq), stat = "identity") +
+ggplot(het_pt, aes(y = Var1, fill = Var1), ) +
+  geom_bar(aes(x = Freq), stat = "identity") +
   theme_bw(base_size = 15) +
   ylab("All Samples") +
   xlab("Cell-type Counts") +
   ggtitle("Comparison of cell-type proportions across heterozygous samples") +
-  #scale_fill_manual(values = brewer.pal(12, "Paired")) +
+  # scale_fill_manual(values = brewer.pal(12, "Paired")) +
   theme(legend.title = element_blank(), axis.text.x = element_text(angle = 45))
 ctrl_pt <- table(split_pt$control@meta.data$cell_type)
 ctrl_pt <- as.data.frame(ctrl_pt)
 ctrl_pt$Var1 <- as.character(ctrl_pt$Var1)
-ggplot(ctrl_pt, aes(y = Var1, fill = Var1), ) + geom_bar(aes(x = Freq), stat = "identity") +
+ggplot(ctrl_pt, aes(y = Var1, fill = Var1), ) +
+  geom_bar(aes(x = Freq), stat = "identity") +
   theme_bw(base_size = 15) +
   ylab("All Samples") +
   xlab("Cell-type Counts") +
   ggtitle("Comparison of cell-type proportions across Control samples") +
-  #scale_fill_manual(values = brewer.pal(12, "Paired")) +
+  # scale_fill_manual(values = brewer.pal(12, "Paired")) +
   theme(legend.title = element_blank(), axis.text.x = element_text(angle = 45))
-pt <- table(kidney.int.celltypes@meta.data$cell_type, kidney.int.celltypes@meta.data$type)
+pt <- table(kidney_int_celltypes@meta.data$cell_type, kidney_int_celltypes@meta.data$type)
 pt <- as.data.frame(pt)
 pt$Var1 <- as.character(pt$Var1)
 pt$Var2 <- as.character(pt$Var2)
-ggplot(pt, aes(y = Var1, x = Freq, fill = Var2))+
+ggplot(pt, aes(y = Var1, x = Freq, fill = Var2)) +
   geom_bar(position = "dodge", stat = "identity") +
   theme_bw(base_size = 15) +
   ylab("Cell-types") +
   xlab("Nuclei Counts") +
   ggtitle("Comparison of cell-type proportions across conditions") +
-  #scale_fill_manual(values = brewer.pal(12, "Paired")) +
+  # scale_fill_manual(values = brewer.pal(12, "Paired")) +
   theme(legend.title = element_blank(), axis.text.x = element_text(angle = 45))
 ```
 #### rechecking out the bimodality-- seeing if bimodality is explained by cell types
 ```{r}
-kidney.int.celltypes@meta.data %>% 
-  	ggplot(aes(color=cell_type, x=nCount_RNA, fill= cell_type)) + 
-  	geom_density(alpha = 0.2) + 
-  	scale_x_log10() + 
-  	theme_classic() +
-  	ylab("Cell density") +
-  	geom_vline(xintercept = 500)
-kidney.int.celltypes@meta.data %>% 
-  	ggplot(aes(color=cell_type, x=nFeature_RNA, fill= cell_type)) + 
-  	geom_density(alpha = 0.2) + 
-  	scale_x_log10() + 
-  	theme_classic() +
-  	ylab("Cell density") +
-  	geom_vline(xintercept = 500)
-kidney.int.celltypes@meta.data %>% 
-  	ggplot(aes(color=type, x=nCount_RNA, fill= type)) + 
-  	geom_density(alpha = 0.2) + 
-  	scale_x_log10() + 
-  	theme_classic() +
-  	ylab("Cell density") +
-  	geom_vline(xintercept = 500)
+kidney_int_celltypes@meta.data %>%
+  ggplot(aes(color = cell_type, x = nCount_RNA, fill = cell_type)) +
+  geom_density(alpha = 0.2) +
+  scale_x_log10() +
+  theme_classic() +
+  ylab("Cell density") +
+  geom_vline(xintercept = 500)
+kidney_int_celltypes@meta.data %>%
+  ggplot(aes(color = cell_type, x = nFeature_RNA, fill = cell_type)) +
+  geom_density(alpha = 0.2) +
+  scale_x_log10() +
+  theme_classic() +
+  ylab("Cell density") +
+  geom_vline(xintercept = 500)
+kidney_int_celltypes@meta.data %>%
+  ggplot(aes(color = type, x = nCount_RNA, fill = type)) +
+  geom_density(alpha = 0.2) +
+  scale_x_log10() +
+  theme_classic() +
+  ylab("Cell density") +
+  geom_vline(xintercept = 500)
 ```
 
 ### setting clean final list of kidney cell type markers:
@@ -311,114 +317,117 @@ final_kidney_features <- c("Krt8", "Krt18", "Cd79a", "Cd79b", "Ltb", "Msa4", "Um
 
 #### plotting nuclei proportions stacked with cell type markers
 ```{r}
-#rename pt vairable V1 to ident:
+# rename pt vairable V1 to ident:
 colnames(pt) <- c("ident", "Condition", "Freq")
 
-#set plot to save
+# set plot to save
 pdf(file = here("results/figures/KidneyFig2A.pdf"), width = 20, height = 30)
-#png(file = "/data/user/jbarham3/jw_cellspecific/jw_cellspecific/setbp1_clean/outputs/KidneyFig2A.png")
 
-#generate plot
-yy <- VlnPlot(kidney.int.celltypes, final_kidney_features, stack = TRUE, sort = FALSE, flip = TRUE, assay = "RNA", group.by = "cell_type", fill.by = "ident", cols = c("PCT.S2" = "#F8766D", "endothelial" = "#CF9400", "PST" = "#948802", "PCT.S1" = "#A85A5A", "LOH" = "#AA937E", "DCT" = "#6D0404", "CD.PC" = "#F03F00", "macrophages" = "#C70F0F", "fibroblasts" = "#FFC8C4", "DLH" = "#AA6320", "CD.IC.typeA" = "#4E3801", "CD.IC.typeB" = "#EEDF37", "Glomerular.PE" = "#FF7600", "podocytes" = "#BD085E", "T.lymphocytes" = "#FFE196", "B.lymphocytes" = "#FFBE1D")) + labs(fill = "Cell Type") + theme_bw() + theme(legend.position = "left") + theme(axis.text.x = element_blank()) + theme(axis.title.x = element_blank()) + theme(panel.grid = element_blank()) + theme(strip.text.y.right = element_text(angle = 0))
+# generate plot
+yy <- VlnPlot(kidney_int_celltypes, final_kidney_features, stack = TRUE, sort = FALSE, flip = TRUE, assay = "RNA", group.by = "cell_type", fill.by = "ident", cols = c("PCT.S2" = "#F8766D", "endothelial" = "#CF9400", "PST" = "#948802", "PCT.S1" = "#A85A5A", "LOH" = "#AA937E", "DCT" = "#6D0404", "CD.PC" = "#F03F00", "macrophages" = "#C70F0F", "fibroblasts" = "#FFC8C4", "DLH" = "#AA6320", "CD.IC.typeA" = "#4E3801", "CD.IC.typeB" = "#EEDF37", "Glomerular.PE" = "#FF7600", "podocytes" = "#BD085E", "T.lymphocytes" = "#FFE196", "B.lymphocytes" = "#FFBE1D")) + labs(fill = "Cell Type") + theme_bw() + theme(legend.position = "left") + theme(axis.text.x = element_blank()) + theme(axis.title.x = element_blank()) + theme(panel.grid = element_blank()) + theme(strip.text.y.right = element_text(angle = 0))
 
 
-xx <- ggplot(pt, aes(x = ident, y = Freq, fill = Condition))+
+xx <- ggplot(pt, aes(x = ident, y = Freq, fill = Condition)) +
   geom_bar(position = "dodge", stat = "identity") +
   ggtitle("Kidney Cortex Cell-type Nuclei Proportions and Identity Markers") +
   theme(plot.title = element_text(hjust = 0.5)) +
   ylab("Nuclei Counts") +
-  geom_text(aes(label=Freq), position=position_dodge(width=0.9), vjust= 0.5, angle = 90, hjust = -.1)+
+  geom_text(aes(label = Freq), position = position_dodge(width = 0.9), vjust = 0.5, angle = 90, hjust = -.1) +
   scale_fill_manual(values = c("control" = "#FE6100", "heterozygous" = "#FFB000")) +
   theme_bw() +
   theme(panel.border = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
-  theme(axis.text.x = element_blank()) + 
-  theme(axis.text.y = element_blank()) + 
+  theme(axis.text.x = element_blank()) +
+  theme(axis.text.y = element_blank()) +
   theme(axis.title.x = element_blank()) +
   theme(axis.ticks = element_blank()) +
-  theme(legend.position = "left") 
+  theme(legend.position = "left")
 
 
-#saving plot to outputs
-xx/yy 
+# saving plot to outputs
+xx / yy
 dev.off()
 ```
 
 ```{r}
-
-#set plot to save
+# set plot to save
 pdf(file = here("results/figures/DotKidneyFig2A.pdf"), width = 20, height = 30)
-#png(file = "/data/user/jbarham3/jw_cellspecific/jw_cellspecific/setbp1_clean/outputs/KidneyFig2A.png")
 
 
-pt <- table(Idents(kidney.int.celltypes), kidney.int.celltypes$type)
+pt <- table(Idents(kidney_int_celltypes), kidney_int_celltypes$type)
 pt <- as.data.frame(pt)
 pt$Var1 <- as.character(pt$Var1)
 
-#calculate proportions
-stats <- pt %>% group_by(Var2, Var1) %>%
+# calculate proportions
+stats <- pt %>%
+  group_by(Var2, Var1) %>%
   summarise(Nb = Freq) %>%
   mutate(C = sum(Nb)) %>%
-  mutate(prop = Nb/C*100)
+  mutate(prop = Nb / C * 100)
 
 stats$prop <- round(stats$prop, digits = 1)
 
 colnames(stats) <- c("Condition", "Cell_type", "Nb", "C", "prop")
 
-#generate plot
-yy <- DotPlot(kidney.int.celltypes, unique(final_kidney_features), assay = "RNA", group.by = "cell_type", cols = c("black", "#EECB00")) + labs(fill = "Cell Type") + theme_bw() + theme(legend.position = "left") + theme(axis.title.x = element_blank()) + theme(panel.grid = element_blank()) + theme(axis.text.x = element_text(angle = 90)) + coord_flip()
+# generate plot
+yy <- DotPlot(kidney_int_celltypes, unique(final_kidney_features), assay = "RNA", group.by = "cell_type", cols = c("black", "#EECB00")) + labs(fill = "Cell Type") + theme_bw() + theme(legend.position = "left") + theme(axis.title.x = element_blank()) + theme(panel.grid = element_blank()) + theme(axis.text.x = element_text(angle = 90)) + coord_flip()
 
 
-xx <- ggplot(stats, aes(x = Cell_type, y = prop, fill = Condition))+
+xx <- ggplot(stats, aes(x = Cell_type, y = prop, fill = Condition)) +
   geom_bar(position = "dodge", stat = "identity") +
-  #ggtitle("Kidney Cortex Cell-type Nuclei Proportions and Identity Markers") +
+  # ggtitle("Kidney Cortex Cell-type Nuclei Proportions and Identity Markers") +
   theme(plot.title = element_text(hjust = 0.5)) +
   ylab("Nuclei Counts") +
-  geom_text(aes(label=prop), position=position_dodge(width=0.9), vjust= -0.5, angle = 0)+
+  geom_text(aes(label = prop), position = position_dodge(width = 0.9), vjust = -0.5, angle = 0) +
   scale_fill_manual(values = c("control" = "#FE6100", "heterozygous" = "#FFB000")) +
   theme_bw() +
   theme(panel.border = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
-  theme(axis.text.x = element_blank()) + 
-  theme(axis.text.y = element_blank()) + 
+  theme(axis.text.x = element_blank()) +
+  theme(axis.text.y = element_blank()) +
   theme(axis.title.x = element_blank()) +
   theme(axis.ticks = element_blank()) +
-  theme(legend.position = "left", plot.margin = margin(0.1)) 
+  theme(legend.position = "left", plot.margin = margin(0.1))
 
 
-#saving plot to outputs
-xx/yy 
+# saving plot to outputs
+xx / yy
 dev.off()
 ```
 
 ```{r}
-#rename pt vairable V1 to ident:
+# rename pt vairable V1 to ident:
 colnames(pt) <- c("ident", "Condition", "Freq")
 
-#set plot to save
+# set plot to save
 pdf(file = here("results/figures/DotkidneyFig2A.pdf"), width = 20, height = 30)
-#png(file = "/data/user/jbarham3/jw_cellspecific/jw_cellspecific/setbp1_clean/outputs/kidneyFig2A.png")
 
-#generate plot
-yy <- DotPlot(kidney.int.celltypes, final_kidney_features, assay = "RNA", group.by = "cell_type") + labs(fill = "Cell Type") + theme_bw() + theme(legend.position = "left") + theme(axis.title.y = element_blank()) + theme(axis.title.x = element_blank()) + theme(panel.grid = element_blank()) + theme(axis.text.x = element_text(angle = 45)) + coord_flip()
+# generate plot
+yy <- DotPlot(kidney_int_celltypes, final_kidney_features, assay = "RNA", group.by = "cell_type") + labs(fill = "Cell Type") + theme_bw() + theme(legend.position = "left") + theme(axis.title.y = element_blank()) + theme(axis.title.x = element_blank()) + theme(panel.grid = element_blank()) + theme(axis.text.x = element_text(angle = 45)) + coord_flip()
 
 
-xx <- ggplot(pt, aes(x = ident, y = Freq, fill = Condition))+
+xx <- ggplot(pt, aes(x = ident, y = Freq, fill = Condition)) +
   geom_bar(position = "dodge", stat = "identity") +
   ggtitle("Kidney Cell-type Nuclei Proportions and Identity Markers") +
   theme(plot.title = element_text(hjust = 0.5)) +
   ylab("Nuclei Counts") +
-  geom_text(aes(label=Freq), position=position_dodge(width=0.9), vjust= 0.5, angle = 90, hjust = -.1)+
+  geom_text(aes(label = Freq), position = position_dodge(width = 0.9), vjust = 0.5, angle = 90, hjust = -.1) +
   scale_fill_manual(values = c("control" = "#FE6100", "heterozygous" = "#FFB000")) +
   theme_bw() +
   theme(panel.border = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
-  theme(axis.text.x = element_blank()) + 
-  theme(axis.text.y = element_blank()) + 
+  theme(axis.text.x = element_blank()) +
+  theme(axis.text.y = element_blank()) +
   theme(axis.title.x = element_blank()) +
   theme(axis.ticks = element_blank()) +
-  theme(legend.position = "left") 
+  theme(legend.position = "left")
 
 
-#saving plot to outputs
-xx/yy 
+# saving plot to outputs
+xx / yy
 dev.off()
 ```
 This script is followed by 'Setbp1_DGEkidney_07.Rmd'
+
+```{r}
+# run style
+style_file(here("src/seurat_scripts/Setbp1_CellTypesKidney_06.Rmd"))
+# lintr was run as well
+```
