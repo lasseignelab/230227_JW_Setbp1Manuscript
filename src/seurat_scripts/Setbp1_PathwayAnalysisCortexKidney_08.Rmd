@@ -10,7 +10,7 @@ editor_options:
   chunk_output_type: inline
 ---
 
-This analysis comes after 'Setbp1_CellTypesDGEcortex_09.Rmd', 'Setbp1_CellTypesDGEkidney_09.Rmd' and precedes 'Setbp1_PANDAcortex_11.Rmd', 'Setbp1_PANDAkidney_11.Rmd' 
+This analysis comes after 'Setbp1_CellTypesDGEcortex_07.Rmd', 'Setbp1_CellTypesDGEkidney_07.Rmd' and precedes 'Setbp1_PANDAcortex_10.Rmd', 'Setbp1_PANDAkidney_10.Rmd' 
 
 ## Code: 
 
@@ -28,71 +28,72 @@ library(rrvgo)
 library(dplyr)
 library(readr)
 library(here)
+library(lintr)
+library(styler)
 source(here("src/functions/functions.R"))
 ```
 
 #### loading outputs at log2FC of 0.1 from previous script:
 ```{r}
-#creating vector of DEG file paths for for loop
-files.list <- list.files(here("results/DEG/DEG_01/"), pattern = "het_DEG01", full.names = TRUE)
-files.list
+# creating vector of DEG file paths for for loop
+files_list <- list.files(here("results/DEG/DEG_01/"), pattern = "het_DEG01", full.names = TRUE)
+files_list
 
-#loading in all DEG files:
-for(i in files.list){
+# loading in all DEG files:
+for (i in files_list) {
   load(i)
 }
-
 ```
 
 #### formatting all DEG into a single data frame:
 Combining the p-value, gene, and differential expression data, while adding a cell type tag and binding all cell-type specific data frames together
 ```{r}
-cortex.list <- list(inhibitory = inhibitory.neurons_het, microglia = microglia_het, excitatory.neurons = excitatory.neurons_het, opcs = opcs_het, oligodendrocytes = oligodendrocytes_het, astrocytes = astrocytes_het, mural.cells = mural.cells_het)
+cortex_list <- list(inhibitory = inhibitory.neurons_het, microglia = microglia_het, excitatory.neurons = excitatory.neurons_het, opcs = opcs_het, oligodendrocytes = oligodendrocytes_het, astrocytes = astrocytes_het, mural.cells = mural.cells_het)
 
-#wrangling data
+# wrangling data
 colval <- c("p_val", "gene", "diffexpressed")
-cortex.list <- lapply(cortex.list, "[", , colval) #subsets for the columns that match the title specified in names_subset vector
+cortex_list <- lapply(cortex_list, "[", , colval) # subsets for the columns that match the title specified in names_subset vector
 
-## grab list names 
-n <- names(cortex.list)
+## grab list names
+n <- names(cortex_list)
 
-## add new columns for "celltype" with the name of the list as the value 
-cortex.list <- lapply(names(cortex.list), function(x) {
-  cortex.list[[x]] %>%
-  mutate(celltype = x)
+## add new columns for "celltype" with the name of the list as the value
+cortex_list <- lapply(names(cortex_list), function(x) {
+  cortex_list[[x]] %>%
+    mutate(celltype = x)
 })
 
 ## combining list into single dataframe
-het_cortex_DEGS <- bind_rows(cortex.list)
+het_cortex_DEGS <- bind_rows(cortex_list)
 rownames(het_cortex_DEGS) <- NULL
 
-# saving dataframe as a csv to outputs folder 
-#write.csv(het_cortex_DEGS, file = "/data/user/jbarham3/jw_cellspecific/jw_cellspecific/setbp1_clean/outputs/het_cortex_DEG.csv")
+# saving dataframe as a csv to outputs folder
+# write.csv(het_cortex_DEGS, file = "/data/user/jbarham3/jw_cellspecific/jw_cellspecific/setbp1_clean/outputs/het_cortex_DEG.csv")
 ```
 
 ```{r}
-kidney.list <- list(blymph = blymph_het, CD.PC = CD.PC_het, CDIC.A = CDIC.A_het, CDIC.B = CDIC.B_het, DCT = DCT_het, DLH = DLH_het, endothelial = endo_het, fibroblasts = fibro_het, Glomerular.PE = Glomerular.PE_het, LOH = LOH_het, macrophages = macro_het, PCT.S1 = PCT.S1_het, PCT.S2 = PCT.S2_het, podocytes = podo_het, PST = PST_het, tlymph = Tcell_het)
+kidney_list <- list(blymph = blymph_het, CD.PC = CD.PC_het, CDIC.A = CDIC.A_het, CDIC.B = CDIC.B_het, DCT = DCT_het, DLH = DLH_het, endothelial = endo_het, fibroblasts = fibro_het, Glomerular.PE = Glomerular.PE_het, LOH = LOH_het, macrophages = macro_het, PCT.S1 = PCT.S1_het, PCT.S2 = PCT.S2_het, podocytes = podo_het, PST = PST_het, tlymph = Tcell_het)
 
 
-#wrangling data
+# wrangling data
 colval <- c("p_val", "gene", "diffexpressed")
-kidney.list <- lapply(kidney.list, "[", , colval) #subsets for the columns that match the title specified in names_subset vector
+kidney_list <- lapply(kidney_list, "[", , colval) # subsets for the columns that match the title specified in names_subset vector
 
-## grab list names 
-n <- names(kidney.list)
+## grab list names
+n <- names(kidney_list)
 
-## add new columns for "celltype" with the name of the list as the value 
-kidney.list <- lapply(names(kidney.list), function(x) {
-  kidney.list[[x]] %>%
-  mutate(celltype = x)
+## add new columns for "celltype" with the name of the list as the value
+kidney_list <- lapply(names(kidney_list), function(x) {
+  kidney_list[[x]] %>%
+    mutate(celltype = x)
 })
 
 ## combining list into single dataframe
-het_kidney_DEGS <- bind_rows(kidney.list)
+het_kidney_DEGS <- bind_rows(kidney_list)
 rownames(het_kidney_DEGS) <- NULL
 
-# saving dataframe as a csv to outputs folder 
-#write.csv(het_kidney_DEGS, file = "/data/user/jbarham3/jw_cellspecific/jw_cellspecific/setbp1_clean/outputs/het_kidney_DEG.csv")
+# saving dataframe as a csv to outputs folder
+# write.csv(het_kidney_DEGS, file = "/data/user/jbarham3/jw_cellspecific/jw_cellspecific/setbp1_clean/outputs/het_kidney_DEG.csv")
 ```
 
 #### Pathway Analysis Function (gprofiler2)
@@ -146,20 +147,19 @@ classes: None
 Explanation for bonferroni correction selection is here: https://www.biostars.org/p/267078/#:~:text=The%20Bonferroni%20correction%20is%20important,obtain%20an%20expected%20error%20rate.
 
 ```{r}
-
 ```
 
 
 # Plotting Dotplots for DEG in Cerebral Cortex (up and down together):
 ```{r}
-cell.types <- unique(het_cortex_DEGS$celltype) #total of 7
-for (i in cell.types) {
+cell_types <- unique(het_cortex_DEGS$celltype) # total of 7
+for (i in cell_types) {
   # filter genes by cell type ----------
   genes <- as.list(het_cortex_DEGS %>% filter(celltype == i))
   # submit genes to pathway analysis function ----------
   fea_result_filt <- fea_DGE(genes = genes, organism = "mmusculus")
   # plot dotplot and add title based on input variable ----------
-  plot <- bubbleplot(fea_result_filt) + 
+  plot <- bubbleplot(fea_result_filt) +
     ggtitle(paste0("Top 50 Perturbed Pathways Associated with Predicted Target Genes in ", i)) +
     theme(plot.title = element_text(hjust = 0.5, size = 12))
   print(plot)
@@ -169,23 +169,23 @@ for (i in cell.types) {
 #### Looking at upregulated and downregulated enrichment 
 prefiltered genes to be upregulated geenes or downregulated genes and then used same forloop as before
 ```{r}
-#upregulated:
-cell.types <- unique(het_cortex_DEGS$celltype) #total of 7
+# upregulated:
+cell_types <- unique(het_cortex_DEGS$celltype) # total of 7
 het_cortex_DEGS_UP <- het_cortex_DEGS %>% filter(diffexpressed == "UP")
 
 cortex_UP_result_list <- list()
 
-for (i in cell.types) {
+for (i in cell_types) {
   # filter genes by cell type ----------
   genes <- as.list(het_cortex_DEGS_UP %>% filter(celltype == i))
   # submit genes to pathway analysis function ----------
   fea_result_filt <- fea_DGE(genes = genes, organism = "mmusculus")
-  #storing results ----------
+  # storing results ----------
   cortex_UP_result_list[[i]] <- fea_result_filt
   # set png to save plot to ----------
-  png(paste0("FEA_pathways_up_",i, ".png"), width = 1000, height = 1000)
+  png(paste0("FEA_pathways_up_", i, ".png"), width = 1000, height = 1000)
   # plot dotplot and add title based on input variable ----------
-  plot <- bubbleplot(fea_result_filt) + 
+  plot <- bubbleplot(fea_result_filt) +
     ggtitle(paste0("Top 50 Upregulated Pathways Associated with Predicted Target Genes in ", i)) +
     theme(plot.title = element_text(hjust = 0.5, size = 12))
   # finish plotting ----------
@@ -195,70 +195,72 @@ for (i in cell.types) {
 
 
 
-#downregulated:
-cell.types <- unique(het_cortex_DEGS$celltype) #total of 7
+# downregulated:
+cell_types <- unique(het_cortex_DEGS$celltype) # total of 7
 het_cortex_DEGS_DOWN <- het_cortex_DEGS %>% filter(diffexpressed == "DOWN")
 cortex_DOWN_result_list <- list()
-for (i in cell.types) {
+for (i in cell_types) {
   # filter genes by cell type ----------
   genes <- as.list(het_cortex_DEGS_DOWN %>% filter(celltype == i))
   # submit genes to pathway analysis function ----------
   fea_result_filt <- fea_DGE(genes = genes, organism = "mmusculus")
-  #storing results ----------
+  # storing results ----------
   cortex_DOWN_result_list[[i]] <- fea_result_filt
   # set png to save plot to ----------
-  png(paste0("FEA_pathways_down_",i, ".png"), width = 1000, height = 1000)
+  png(paste0("FEA_pathways_down_", i, ".png"), width = 1000, height = 1000)
   # plot dotplot and add title based on input variable ----------
-  plot <- bubbleplot(fea_result_filt) + 
+  plot <- bubbleplot(fea_result_filt) +
     ggtitle(paste0("Top 50 Downregulated Pathways Associated with Predicted Target Genes in ", i)) +
     theme(plot.title = element_text(hjust = 0.5, size = 12))
   # finish plotting ----------
   print(plot)
-  dev.off() 
+  dev.off()
 }
 ```
 
 
 
 ```{r}
-#up and down side by side 
-cell.types <- unique(het_cortex_DEGS$celltype) #total of 7
+# up and down side by side
+cell_types <- unique(het_cortex_DEGS$celltype) # total of 7
 cortex_DEG_result_list <- list()
-for (i in cell.types) {
+for (i in cell_types) {
   # filter genes by cell type ----------
-  genes <- as.list(het_cortex_DEGS%>% filter(celltype == i))
+  genes <- as.list(het_cortex_DEGS %>% filter(celltype == i))
   # submit genes to pathway analysis function ----------
   fea_res <- combined_fea_DGE(het_cortex_DEGS, organism = "mmusculus")
-  #storing results ----------
+  # storing results ----------
   cortex_DEG_result_list[[i]] <- fea_res
   # set png to save plot to ----------
-  png(paste0(here("results/figures/SUPP_FEA_pathways_Setbp1_het_",i, ".png")), width = 1000, height = 1000)
+  png(paste0(here("results/figures/SUPP_FEA_pathways_Setbp1_het_", i, ".png")), width = 1000, height = 1000)
   # plot dotplot and add title based on input variable ----------
-  plot <- ggplot(fea_res$combined, aes(x = direction, y = reorder(term_name, -p_value), size = intersection_size, fill =
-                 p_value)) +
-                 geom_point(alpha = 0.7, shape = 21) +
-                 scale_size(range = c(2, 10), name = "Intersection Size") + 
-                 scale_fill_distiller(palette = "Purples") + 
-                 labs(x = "Direction", y = "Functional Enrichment Terms") + 
+  plot <- ggplot(fea_res$combined, aes(
+    x = direction, y = reorder(term_name, -p_value), size = intersection_size, fill =
+      p_value
+  )) +
+    geom_point(alpha = 0.7, shape = 21) +
+    scale_size(range = c(2, 10), name = "Intersection Size") +
+    scale_fill_distiller(palette = "Purples") +
+    labs(x = "Direction", y = "Functional Enrichment Terms") +
     ggtitle(paste0("Top 50 Pathways Associated with Differentially Expressed Genes in ", i)) +
     theme(plot.title = element_text(hjust = 0.5, size = 12))
   # finish plotting ----------
   print(plot)
-  dev.off() 
+  dev.off()
 }
 ```
 
 
 # Plotting Dotplots for DEG in kidney Cortex (up and down together):
 ```{r}
-cell.types <- unique(het_kidney_DEGS$celltype) #total of 7
-for (i in cell.types) {
+cell_types <- unique(het_kidney_DEGS$celltype) # total of 7
+for (i in cell_types) {
   # filter genes by cell type ----------
   genes <- as.list(het_kidney_DEGS %>% filter(celltype == i))
   # submit genes to pathway analysis function ----------
   fea_result_filt <- fea_DGE(genes = genes, organism = "mmusculus")
   # plot dotplot and add title based on input variable ----------
-  plot <- bubbleplot(fea_result_filt) + 
+  plot <- bubbleplot(fea_result_filt) +
     ggtitle(paste0("Top 50 Perturbed Pathways Associated with Predicted Target Genes in ", i)) +
     theme(plot.title = element_text(hjust = 0.5, size = 12))
   print(plot)
@@ -268,78 +270,80 @@ for (i in cell.types) {
 #### Looking at upregulated and downregulated
 prefiltered genes to be upregulated geenes or downregulated genes and then used same forloop as before
 ```{r}
-#upregulated:
-cell.types <- unique(het_kidney_DEGS$celltype) #total of 7
+# upregulated:
+cell_types <- unique(het_kidney_DEGS$celltype) # total of 7
 het_kidney_DEGS_UP <- het_kidney_DEGS %>% filter(diffexpressed == "UP")
 kidney_UP_result_list <- list()
 
-for (i in cell.types) {
+for (i in cell_types) {
   # filter genes by cell type ----------
   genes <- as.list(het_kidney_DEGS_UP %>% filter(celltype == i))
   # submit genes to pathway analysis function ----------
   fea_result_filt <- fea_DGE(genes = genes, organism = "mmusculus")
-  #storing results ----------
-  kidney_UP_result_list[[i]] <- fea_result_filt  
+  # storing results ----------
+  kidney_UP_result_list[[i]] <- fea_result_filt
   # set png to save plot to ----------
-  png(paste0(here("results/figures/FEA_pathways_up_",i, ".png")), width = 1000, height = 1000)
+  png(paste0(here("results/figures/FEA_pathways_up_", i, ".png")), width = 1000, height = 1000)
   # plot dotplot and add title based on input variable ----------
-  plot <- bubbleplot(fea_result_filt) + 
+  plot <- bubbleplot(fea_result_filt) +
     ggtitle(paste0("Top 50 Upregulated Pathways Associated with Predicted Target Genes in ", i)) +
     theme(plot.title = element_text(hjust = 0.5, size = 12))
   # finish plotting ----------
   print(plot)
-  dev.off() 
+  dev.off()
 }
 
-#downregulated:
-cell.types <- unique(het_kidney_DEGS$celltype) #total of 7
+# downregulated:
+cell_types <- unique(het_kidney_DEGS$celltype) # total of 7
 het_kidney_DEGS_DOWN <- het_kidney_DEGS %>% filter(diffexpressed == "DOWN")
 kidney_DOWN_result_list <- list()
 
-for (i in cell.types) {
+for (i in cell_types) {
   # filter genes by cell type ----------
   genes <- as.list(het_kidney_DEGS_DOWN %>% filter(celltype == i))
   # submit genes to pathway analysis function ----------
   fea_result_filt <- fea_DGE(genes = genes, organism = "mmusculus")
-  #storing results ----------
+  # storing results ----------
   kidney_DOWN_result_list[[i]] <- fea_result_filt
   # set png to save plot to ----------
-  png(paste0(here("results/figures/FEA_pathways_down_",i, ".png")), width = 1000, height = 1000)
+  png(paste0(here("results/figures/FEA_pathways_down_", i, ".png")), width = 1000, height = 1000)
   # plot dotplot and add title based on input variable ----------
-  plot <- bubbleplot(fea_result_filt) + 
+  plot <- bubbleplot(fea_result_filt) +
     ggtitle(paste0("Top 50 Downregulated Pathways Associated with Predicted Target Genes in ", i)) +
     theme(plot.title = element_text(hjust = 0.5, size = 12))
   # finish plotting ----------
   print(plot)
-  dev.off() 
+  dev.off()
 }
 ```
 
 ```{r}
-#up and down side by side 
-cell.types <- unique(het_kidney_DEGS$celltype) #total of 16
+# up and down side by side
+cell_types <- unique(het_kidney_DEGS$celltype) # total of 16
 kidney_DEG_result_list <- list()
-for (i in cell.types) {
+for (i in cell_types) {
   # filter genes by cell type ----------
-  genes <- as.list(het_kidney_DEGS%>% filter(celltype == i))
+  genes <- as.list(het_kidney_DEGS %>% filter(celltype == i))
   # submit genes to pathway analysis function ----------
   fea_res <- combined_fea_DGE(het_kidney_DEGS, organism = "mmusculus")
-  #storing results ----------
+  # storing results ----------
   kidney_DEG_result_list[[i]] <- fea_res
   # set png to save plot to ----------
-  png(paste0(here("results/figures/SUPP_FEA_pathways_Setbp1_het_",i, ".png")), width = 1000, height = 1000)
+  png(paste0(here("results/figures/SUPP_FEA_pathways_Setbp1_het_", i, ".png")), width = 1000, height = 1000)
   # plot dotplot and add title based on input variable ----------
-  plot <- ggplot(fea_res$combined, aes(x = direction, y = reorder(term_name, -p_value), size = intersection_size, fill =
-                 p_value)) +
-                 geom_point(alpha = 0.7, shape = 21) +
-                 scale_size(range = c(2, 10), name = "Intersection Size") + 
-                 scale_fill_distiller(palette = "Purples") + 
-                 labs(x = "Direction", y = "Functional Enrichment Terms") + 
+  plot <- ggplot(fea_res$combined, aes(
+    x = direction, y = reorder(term_name, -p_value), size = intersection_size, fill =
+      p_value
+  )) +
+    geom_point(alpha = 0.7, shape = 21) +
+    scale_size(range = c(2, 10), name = "Intersection Size") +
+    scale_fill_distiller(palette = "Purples") +
+    labs(x = "Direction", y = "Functional Enrichment Terms") +
     ggtitle(paste0("Top 50 Pathways Associated with Differentially Expressed Genes in ", i)) +
     theme(plot.title = element_text(hjust = 0.5, size = 12))
   # finish plotting ----------
   print(plot)
-  dev.off() 
+  dev.off()
 }
 ```
 
@@ -360,77 +364,88 @@ ids in your orgdb
 
 alter their scatterplot function (from Lizzy)
 ```{r}
-scatterPlot <- function (simMatrix, reducedTerms, size = "score", addLabel = TRUE, 
-    labelSize = 3) 
-{
-    if (!all(sapply(c("ggplot2", "ggrepel"), requireNamespace, 
-        quietly = TRUE))) {
-        stop("Packages ggplot2, ggrepel and/or its dependencies not available. ", 
-            "Consider installing them before using this function.", 
-            call. = FALSE)
-    }
-    x <- cmdscale(as.matrix(as.dist(1 - simMatrix)), eig = TRUE, 
-        k = 2)
-    df <- cbind(as.data.frame(x$points), reducedTerms[match(rownames(x$points), 
-        reducedTerms$go), c("term", "parent", "parentTerm", "size")])
-    p <- ggplot2::ggplot(df, ggplot2::aes(x = V1, y = V2, color = parentTerm)) + 
-        ggplot2::geom_point(ggplot2::aes(size = size), alpha = 0.5) + 
-        ggplot2::scale_color_discrete(guide = "none") + ggplot2::scale_size_continuous(guide = "none", 
-        range = c(0, 25)) + ggplot2::scale_x_continuous(name = "") + 
-        ggplot2::scale_y_continuous(name = "") + ggplot2::theme_minimal() + 
-        ggplot2::theme(axis.text.x = ggplot2::element_blank(), 
-            axis.text.y = ggplot2::element_blank())
-    if (addLabel) {
-        p + ggrepel::geom_label_repel(aes(label = parentTerm), 
-            data = subset(df, parent == rownames(df)), box.padding = grid::unit(0.5, 
-                "lines"), size = labelSize, max.overlaps = 20)
-    }
-    else {
-        p
-    }
+scatterPlot <- function(
+    simMatrix, reducedTerms, size = "score", addLabel = TRUE,
+    labelSize = 3) {
+  if (!all(sapply(c("ggplot2", "ggrepel"), requireNamespace,
+    quietly = TRUE
+  ))) {
+    stop("Packages ggplot2, ggrepel and/or its dependencies not available. ",
+      "Consider installing them before using this function.",
+      call. = FALSE
+    )
+  }
+  x <- cmdscale(as.matrix(as.dist(1 - simMatrix)),
+    eig = TRUE,
+    k = 2
+  )
+  df <- cbind(as.data.frame(x$points), reducedTerms[match(
+    rownames(x$points),
+    reducedTerms$go
+  ), c("term", "parent", "parentTerm", "size")])
+  p <- ggplot2::ggplot(df, ggplot2::aes(x = "V1", y = "V2", color = "parentTerm")) +
+    ggplot2::geom_point(ggplot2::aes(size = size), alpha = 0.5) +
+    ggplot2::scale_color_discrete(guide = "none") +
+    ggplot2::scale_size_continuous(
+      guide = "none",
+      range = c(0, 25)
+    ) +
+    ggplot2::scale_x_continuous(name = "") +
+    ggplot2::scale_y_continuous(name = "") +
+    ggplot2::theme_minimal() +
+    ggplot2::theme(
+      axis.text.x = ggplot2::element_blank(),
+      axis.text.y = ggplot2::element_blank()
+    )
+  if (addLabel) {
+    p + ggrepel::geom_label_repel(aes(label = "parentTerm"),
+      data = subset(df, parent == rownames(df)), box.padding = grid::unit(
+        0.5,
+        "lines"
+      ), size = labelSize, max.overlaps = 20
+    )
+  } else {
+    p
+  }
 }
 ```
 
 #test for one cell type:
 ```{r}
-cell.types <- names(cortex_UP_result_list) #total of 7
+cell_types <- names(cortex_UP_result_list) # total of 7
 
-##GO:BP
+## GO:BP
 
-  # filter enrichment list for source ----------
-  go_up <- cortex_UP_result_list$excitatory.neurons %>% filter(source == "GO:BP")
-  go_down <- cortex_DOWN_result_list$excitatory.neurons %>% filter(source == "GO:BP")
-  go <- rbind(go_up, go_down)
-  # create sim matrix ----------
-  simMatrix <- calculateSimMatrix(go$term_id, orgdb = "org.Mm.eg.db", ont = "BP", method = "Wang")
-  scores <- setNames(-log10(go$p_value), go$term_id)
-  reducedTerms <- reduceSimMatrix(simMatrix, scores, threshold=0.70, orgdb="org.Mm.eg.db") #0.7 is the default threshold
-  # set png to save plot to ----------
-  #png("Setbp1_FEA_pathways_scatterplotoverview_hetcortex_ex.png", width = 20, height = 20)
-  # plot scatterplot and add title based on input variable ----------
-  sp <- scatterPlot(simMatrix, reducedTerms, labelSize = 2.5) + labs(title = "Ex GO:BP Pathway Enrichment Overview in Heterozygous Setbp1 Cortex")
-  print(sp)
-  #dev.off()
-  # set png to save plot to ----------
-  #png("Setbp1_FEA_pathways_treeplotoverview_hetcortex_ex.png", width = 20, height = 20)
-  # create treeplot ---------
-  tm <- treemapPlot(reducedTerms, title = "ex GO:BP Pathway Enrichment Overview in Heterozygous Setbp1 Cortex")
-  print(tm)
-  #dev.off()
-  # set png to save plot to ----------
-  #png("Setbp1_FEA_pathways_heatmapoverview_hetcortex_ex.png", width = 20, height = 20)
-  # create treeplot ---------
-  hm <- heatmapPlot(simMatrix, reducedTerms, annotateParent=TRUE, annotationLabel="parentTerm", fontsize=6, title = "Ex GO:BP Pathway Enrichment Overview in Heterozygous Setbp1 Cortex")
-  print(hm)
-  #dev.off()
+# filter enrichment list for source ----------
+go_up <- cortex_UP_result_list$excitatory.neurons %>% filter(source == "GO:BP")
+go_down <- cortex_DOWN_result_list$excitatory.neurons %>% filter(source == "GO:BP")
+go <- rbind(go_up, go_down)
+# create sim matrix ----------
+simMatrix <- calculateSimMatrix(go$term_id, orgdb = "org.Mm.eg.db", ont = "BP", method = "Wang")
+scores <- setNames(-log10(go$p_value), go$term_id)
+reducedTerms <- reduceSimMatrix(simMatrix, scores, threshold = 0.70, orgdb = "org.Mm.eg.db") # 0.7 is the default threshold
+
+# plot scatterplot and add title based on input variable ----------
+sp <- scatterPlot(simMatrix, reducedTerms, labelSize = 2.5) + labs(title = "Ex GO:BP Pathway Enrichment Overview in Heterozygous Setbp1 Cortex")
+print(sp)
+
+
+# create treeplot ---------
+tm <- treemapPlot(reducedTerms, title = "ex GO:BP Pathway Enrichment Overview in Heterozygous Setbp1 Cortex")
+print(tm)
+
+
+# create treeplot ---------
+hm <- heatmapPlot(simMatrix, reducedTerms, annotateParent = TRUE, annotationLabel = "parentTerm", fontsize = 6, title = "Ex GO:BP Pathway Enrichment Overview in Heterozygous Setbp1 Cortex")
+print(hm)
 ```
 
 
 ```{r}
-cell.types <- names(cortex_UP_result_list) #total of 16
+cell_types <- names(cortex_UP_result_list) # total of 16
 
-##GO:BP
-for (i in cell.types) {
+## GO:BP
+for (i in cell_types) {
   # filter enrichment list for source ----------
   go_up <- cortex_UP_result_list$i %>% filter(source == "GO:BP")
   go_down <- cortex_DOWN_result_list$i %>% filter(source == "GO:BP")
@@ -438,32 +453,32 @@ for (i in cell.types) {
   # create sim matrix ----------
   simMatrix <- calculateSimMatrix(go$term_id, orgdb = "org.Mm.eg.db", ont = "BP", method = "Wang")
   scores <- setNames(-log10(go$p_value), go$term_id)
-  reducedTerms <- reduceSimMatrix(simMatrix, scores, threshold=0.70, orgdb="org.Mm.eg.db") #0.7 is the default threshold
+  reducedTerms <- reduceSimMatrix(simMatrix, scores, threshold = 0.70, orgdb = "org.Mm.eg.db") # 0.7 is the default threshold
   # set png to save plot to ----------
-  png(paste0(here("results/figures/Setbp1_FEA_pathways_scatterplotoverview_hetcortex",i, ".png")), width = 20, height = 20)
+  png(paste0(here("results/figures/Setbp1_FEA_pathways_scatterplotoverview_hetcortex", i, ".png")), width = 20, height = 20)
   # plot scatterplot and add title based on input variable ----------
   sp <- scatterPlot(simMatrix, reducedTerms, labelSize = 2.5) + labs(title = paste0(i, " GO:BP Pathway Enrichment Overview in Heterozygous Setbp1 Cortex"))
   print(sp)
   dev.off()
   # set png to save plot to ----------
-  png(paste0(here("results/figures/Setbp1_FEA_pathways_treeplotoverview_hetcortex",i, ".png")), width = 20, height = 20)
+  png(paste0(here("results/figures/Setbp1_FEA_pathways_treeplotoverview_hetcortex", i, ".png")), width = 20, height = 20)
   # create treeplot ---------
   tm <- treemapPlot(reducedTerms, title = paste0(i, " GO:BP Pathway Enrichment Overview in Heterozygous Setbp1 Cortex"))
   print(tm)
   dev.off()
   # set png to save plot to ----------
-  png(paste0(here("results/figures/Setbp1_FEA_pathways_heatmapoverview_hetcortex",i, ".png")), width = 20, height = 20)
+  png(paste0(here("results/figures/Setbp1_FEA_pathways_heatmapoverview_hetcortex", i, ".png")), width = 20, height = 20)
   # create treeplot ---------
-  hm <- heatmapPlot(simMatrix, reducedTerms, annotateParent=TRUE, annotationLabel="parentTerm", fontsize=6, title = paste0(i, " GO:BP Pathway Enrichment Overview in Heterozygous Setbp1 Cortex"))
+  hm <- heatmapPlot(simMatrix, reducedTerms, annotateParent = TRUE, annotationLabel = "parentTerm", fontsize = 6, title = paste0(i, " GO:BP Pathway Enrichment Overview in Heterozygous Setbp1 Cortex"))
   print(hm)
   dev.off()
 }
 
 
-cell.types <- names(kidney_UP_result_list) #total of 16, grabbingcelltype names
+cell_types <- names(kidney_UP_result_list) # total of 16, grabbingcelltype names
 
-##GO:BP
-for (i in cell.types) {
+## GO:BP
+for (i in cell_types) {
   # filter enrichment list for source ----------
   go_up <- kidney_UP_result_list %>% filter(source == "GO:BP")
   go_down <- kidney_DOWN_result_list %>% filter(source == "GO:BP")
@@ -471,18 +486,18 @@ for (i in cell.types) {
   # create sim matrix ----------
   simMatrix <- calculateSimMatrix(go$term_id, orgdb = "org.Mm.eg.db", ont = "BP", method = "Wang")
   scores <- setNames(-log10(go$p_value), go_39$term_id)
-  reducedTerms <- reduceSimMatrix(simMatrix, scores, threshold=0.70, orgdb="org.Mm.eg.db") #0.7 is the default threshold
+  reducedTerms <- reduceSimMatrix(simMatrix, scores, threshold = 0.70, orgdb = "org.Mm.eg.db") # 0.7 is the default threshold
   # set png to save plot to ----------
-  png(paste0(here("results/figures/Setbp1_FEA_pathways_overview_hetkidney",i, ".png")), width = 20, height = 20)
+  png(paste0(here("results/figures/Setbp1_FEA_pathways_overview_hetkidney", i, ".png")), width = 20, height = 20)
   # plot scatterplot and add title based on input variable ----------
   sp <- scatterPlot(simMatrix, reducedTerms, labelSize = 2.5) + labs(title = paste0(i, " GO:BP Pathway Enrichment Overview in Heterozygous Setbp1 Kidney"))
   print(sp)
   dev.off()
 }
 
-##GO:MF
+## GO:MF
 
-##GO:CC
+## GO:CC
 ```
 
 #### Side by side FEA 
@@ -496,12 +511,12 @@ This can be done using a custom data source using 'upload_GMT_file'. GMT files c
 
 #### Building custom source:
 ```{r}
-#downloading gmt file from msigdb
-download.file(url = "http://www.gsea-msigdb.org/gsea/msigdb/human/download_geneset.jsp?geneSetName=SETBP1_TARGET_GENES&fileType=gmt", destfile = "SETBP1geneset.gmt") #now located in the setbp1_clean directory in inputs/processed/msigdb 
+# downloading gmt file from msigdb
+download.file(url = "http://www.gsea-msigdb.org/gsea/msigdb/human/download_geneset.jsp?geneSetName=SETBP1_TARGET_GENES&fileType=gmt", destfile = "SETBP1geneset.gmt") # now located in the setbp1_clean directory in inputs/processed/msigdb
 ```
 ```{r}
-#creating gmt file for analysis as a new source 
-upload_GMT_file(gmtfile = here("/data/processed/SETBP1geneset.gmt")) #upload only needed once, therefore commented out and use custom annoation ID specified below for subsequent analysis
+# creating gmt file for analysis as a new source
+upload_GMT_file(gmtfile = here("/data/processed/SETBP1geneset.gmt")) # upload only needed once, therefore commented out and use custom annoation ID specified below for subsequent analysis
 ```
 The following output is generated:
 * Your custom annotations ID is gp__15WK_wxVS_DNA
@@ -512,7 +527,7 @@ In order to incorporate this into the above analysis, I re-run the for loops but
 #### Running FEA for grofiler2 with custom Setbp1 gene set:
 
 ```{r}
-#wrangling vector of genes from SETBP1geneset.gmt converted by SynGO
+# wrangling vector of genes from SETBP1geneset.gmt converted by SynGO
 SETBP1geneset_syngo <- read_csv("/data/user/jbarham3/jw_cellspecific/jw_cellspecific/setbp1_clean/inputs/processed/msigdb/SETBP1genset_syngo.csv")
 target_genes <- SETBP1geneset_syngo$symbol
 target_genes <- na.exclude(target_genes)
@@ -522,114 +537,117 @@ target_genes <- na.exclude(target_genes)
 #### Looking at upregulated and downregulated for kidney
 prefiltered genes to be upregulated geenes or downregulated genes and then used same forloop as before
 ```{r}
-#up and down side by side  
-cell.types <- unique(het_kidney_DEGS$celltype) #total of 16
-for (i in cell.types[5]) { 
+# up and down side by side
+cell_types <- unique(het_kidney_DEGS$celltype) # total of 16
+for (i in cell_types[5]) {
   # filter genes by cell type ----------
   genes <- het_kidney_DEGS %>% filter(celltype == i)
   # filter 'genes' input sot that gost query is on genes from custom SETBP1geneset.gmt, and has been convereted to mouse using Syngo (https://www.syngoportal.org/convert) and output was stored in setbp1 clean directory in 'inputs/processed/msigdb' and processed in above chunk
   targets <- genes %>% filter(gene == target_genes)
-  #target_genes <- genes %>% filter(gene == c("AASDH", "ABT1", "AFF1", "ANAPC7", "ARL5B", "ASB7", "BAG5", "BET1L", "BRCA1", "C4orf36", "C4orf46", "CCDC174", "CCDC184", "CDK8", "CDKN2C", "CENPBD2P", "CEP192", "CEP192-DT", "CEP290", "CEPT1", "CHEK1", "CHERP", "CIAO3", "CLEC16A", "CNIH2", "COA8", "COX4I1", "CRLS1", "CTNNBL1", "CWF19L2", "CYB5D2", "CZIB", "CZIB-DT", "DCAF8", "DDI2", "DGCR6L", "DLAT", "DNAI7", "DNAJC19", "DNAJC9-AS1", "DPH5", "DPH5-DT", "DPY30", "DRAM2", "E4F1", "EED", "EEF1G", "EIF3D", "EIF3K", "EIF4B", "ELP3", "EMC8", "ENSG00000170846", "EPC2", "EPRS1", "ESYT1", "ETFDH", "ETFRF1", "FAAP100", "FAF1", "FAM174B", "FAM229B", "FAM230G", "FKBP15", "FKTN", "FKTN-AS1", "GGCX", "GNL3", "GOLGA7", "HAX1", "HM13", "HS2ST1", "IFT122", "IPO8", "ITFG1", "KIAA2013", "KIFBP", "KLHDC9", "KLRC2", "LEO1", "LINC02482", "LINS1", "LRRCC1", "LSM4", "MAP4K1", "MBD4", "MCM8-AS1", "MCTS1", "MCTS2", "MED29", "MEF2C", "MKS1", "MPC1", "MPC1-DT", "MRFAP1", "MRFAP1L1", "MRPL15", "MRPS12", "MRPS16", "MT-ND6", "MT-RNR1", "MT-TE", "MT-TF", "MT-TP", "MTCO3P12", "MYO9A", "MZF1", "NAA30", "NAALADL2", "NBR1", "NBR2", "NCOA5", "NDFIP2", "NDUFAB1", "NDUFS5", "NEURL4", "NOL6", "NSUN5", "NSUN6", "NUDT9", "PAF1", "PARG", "PARGP1", "PBRM1", "PCNX4", "PCNX4-DT", "PDPR", "PDPR2P", "PDSS2", "PHAF1", "PHKB", "PIGK", "PKN2", "PPP5C", "PSMB6", "PSMD8", "RAD52", "RALGAPA1", "RBM33", "RBM33-DT", "RIOK2", "RNF111", "RNF139", "RNF139-DT", "RPS16", "RPS6KL1", "SARS2", "SELENOF", "SENP8" ,"SFR1", "SLC31A1", "SNORD13", "SOX2-OT", "SUGT1P1", "SUPT5H" ,"TAF13", "TAF5", "TAFAZZIN", "TBC1D23", "TBC1D8", "TCEA1", "TGDS", "TIMM23", "TIMM23B", "TMEM177", "TMTC3", "TOMM7","TRAPPC5", "TSEN2", "TTC23", "TTI2", "TUBE1", "TXNL1" ,"UBR1", "USP48", "UTP14A", "UTP25", "VAMP8", "WDR7", "ZC3H10" ,"ZC3H15", "ZEB1", "ZEB1-AS1", "ZMAT2", "ZNF330", "ZNF862", "ZNHIT6", "ZZEF1"))
+  # target_genes <- genes %>% filter(gene == c("AASDH", "ABT1", "AFF1", "ANAPC7", "ARL5B", "ASB7", "BAG5", "BET1L", "BRCA1", "C4orf36", "C4orf46", "CCDC174", "CCDC184", "CDK8", "CDKN2C", "CENPBD2P", "CEP192", "CEP192-DT", "CEP290", "CEPT1", "CHEK1", "CHERP", "CIAO3", "CLEC16A", "CNIH2", "COA8", "COX4I1", "CRLS1", "CTNNBL1", "CWF19L2", "CYB5D2", "CZIB", "CZIB-DT", "DCAF8", "DDI2", "DGCR6L", "DLAT", "DNAI7", "DNAJC19", "DNAJC9-AS1", "DPH5", "DPH5-DT", "DPY30", "DRAM2", "E4F1", "EED", "EEF1G", "EIF3D", "EIF3K", "EIF4B", "ELP3", "EMC8", "ENSG00000170846", "EPC2", "EPRS1", "ESYT1", "ETFDH", "ETFRF1", "FAAP100", "FAF1", "FAM174B", "FAM229B", "FAM230G", "FKBP15", "FKTN", "FKTN-AS1", "GGCX", "GNL3", "GOLGA7", "HAX1", "HM13", "HS2ST1", "IFT122", "IPO8", "ITFG1", "KIAA2013", "KIFBP", "KLHDC9", "KLRC2", "LEO1", "LINC02482", "LINS1", "LRRCC1", "LSM4", "MAP4K1", "MBD4", "MCM8-AS1", "MCTS1", "MCTS2", "MED29", "MEF2C", "MKS1", "MPC1", "MPC1-DT", "MRFAP1", "MRFAP1L1", "MRPL15", "MRPS12", "MRPS16", "MT-ND6", "MT-RNR1", "MT-TE", "MT-TF", "MT-TP", "MTCO3P12", "MYO9A", "MZF1", "NAA30", "NAALADL2", "NBR1", "NBR2", "NCOA5", "NDFIP2", "NDUFAB1", "NDUFS5", "NEURL4", "NOL6", "NSUN5", "NSUN6", "NUDT9", "PAF1", "PARG", "PARGP1", "PBRM1", "PCNX4", "PCNX4-DT", "PDPR", "PDPR2P", "PDSS2", "PHAF1", "PHKB", "PIGK", "PKN2", "PPP5C", "PSMB6", "PSMD8", "RAD52", "RALGAPA1", "RBM33", "RBM33-DT", "RIOK2", "RNF111", "RNF139", "RNF139-DT", "RPS16", "RPS6KL1", "SARS2", "SELENOF", "SENP8" ,"SFR1", "SLC31A1", "SNORD13", "SOX2-OT", "SUGT1P1", "SUPT5H" ,"TAF13", "TAF5", "TAFAZZIN", "TBC1D23", "TBC1D8", "TCEA1", "TGDS", "TIMM23", "TIMM23B", "TMEM177", "TMTC3", "TOMM7","TRAPPC5", "TSEN2", "TTC23", "TTI2", "TUBE1", "TXNL1" ,"UBR1", "USP48", "UTP14A", "UTP25", "VAMP8", "WDR7", "ZC3H10" ,"ZC3H15", "ZEB1", "ZEB1-AS1", "ZMAT2", "ZNF330", "ZNF862", "ZNHIT6", "ZZEF1"))
   # submit genes to pathway analysis function ----------
-  fea_res <- combined_fea_set(genes = targets, organism = "mmusculus") 
-  # set png to save plot to ----------
-  #png(paste0("/data/user/jbarham3/jw_cellspecific/jw_cellspecific/setbp1_clean/outputs/Figs/SUPP_FEA_pathways_Setbp1Targets_het_",i, ".png"), width = 1000, height = 1000)
+  fea_res <- combined_fea_set(genes = targets, organism = "mmusculus")
+
   # plot dotplot and add title based on input variable ----------
-  plot <- ggplot(fea_res$combined, aes(x = direction, y = reorder(term_name, -p_value), size = intersection_size, fill =
-                 p_value)) +
-                 geom_point(alpha = 0.7, shape = 21) +
-                 scale_size(range = c(2, 10), name = "Intersection Size") + 
-                 scale_fill_distiller(palette = "Purples") + 
-                 labs(x = "Direction", y = "Functional Enrichment Terms") + 
+  plot <- ggplot(fea_res$combined, aes(
+    x = direction, y = reorder(term_name, -p_value), size = intersection_size, fill =
+      p_value
+  )) +
+    geom_point(alpha = 0.7, shape = 21) +
+    scale_size(range = c(2, 10), name = "Intersection Size") +
+    scale_fill_distiller(palette = "Purples") +
+    labs(x = "Direction", y = "Functional Enrichment Terms") +
     ggtitle(paste0("Top 50 Pathways Associated with Differentially Expressed Target Genes in ", i)) +
     theme(plot.title = element_text(hjust = 0.5, size = 12))
   # finish plotting ----------
   print(plot)
-  #dev.off() 
+
 }
 ```
 
 
 ```{r}
-#upregulated:
-cell.types <- unique(het_kidney_DEGS$celltype) #total of 7
+# upregulated:
+cell_types <- unique(het_kidney_DEGS$celltype) # total of 7
 het_kidney_DEGS_UP <- het_kidney_DEGS %>% filter(diffexpressed == "UP")
-for (i in cell.types) {
+for (i in cell_types) {
   # filter genes by cell type ----------
   genes <- as.list(het_kidney_DEGS_UP %>% filter(celltype == i))
   genes2 <- as.vector(genes)
   # submit genes to pathway analysis function ----------
   fea_result_filt <- fea_set(genes = genes, organism = "gp__15WK_wxVS_DNA")
   # set png to save plot to ----------
-  png(paste0(here("results/figures/FEA_SETBP1pathways_up_",podocytes, ".png")), width = 1000, height = 1000)
+  png(paste0(here("results/figures/FEA_SETBP1pathways_up_", podocytes, ".png")), width = 1000, height = 1000)
   # plot dotplot and add title based on input variable ----------
-  plot <- bubbleplot(fea_result_filt) + 
+  plot <- bubbleplot(fea_result_filt) +
     ggtitle(paste0("Top 50 SETBP1 Upregulated Pathways Associated with Differentially Expressed Target Genes in ", i)) +
     theme(plot.title = element_text(hjust = 0.5, size = 12))
   # finish plotting ----------
   print(plot)
-  dev.off() 
+  dev.off()
 }
 
-#downregulated:
-cell.types <- unique(het_kidney_DEGS$celltype) #total of 7
+# downregulated:
+cell_types <- unique(het_kidney_DEGS$celltype) # total of 7
 het_kidney_DEGS_DOWN <- het_kidney_DEGS %>% filter(diffexpressed == "DOWN")
-for (i in cell.types) {
+for (i in cell_types) {
   # filter genes by cell type ----------
   genes <- as.list(het_kidney_DEGS_DOWN %>% filter(celltype == i))
   # submit genes to pathway analysis function ----------
   fea_result_filt <- fea_set(genes = genes, organism = "gp__15WK_wxVS_DNA")
   # set png to save plot to ----------
-  png(paste0(here("results/figures/FEA_SETBP1pathways_down_",i, ".png")), width = 1000, height = 1000)
+  png(paste0(here("results/figures/FEA_SETBP1pathways_down_", i, ".png")), width = 1000, height = 1000)
   # plot dotplot and add title based on input variable ----------
-  plot <- bubbleplot(fea_result_filt) + 
+  plot <- bubbleplot(fea_result_filt) +
     ggtitle(paste0("Top 50 Downregulated SETBP1 Pathways Associated with Differentially Expressed Target Genes in ", i)) +
     theme(plot.title = element_text(hjust = 0.5, size = 12))
   # finish plotting ----------
   print(plot)
-  dev.off() 
+  dev.off()
 }
 ```
 
 ```{r}
-#up and down side by side  
-cell.types <- unique(het_cortex_DEGS$celltype) #total of 16
-for (i in cell.types) {
+# up and down side by side
+cell_types <- unique(het_cortex_DEGS$celltype) # total of 16
+for (i in cell_types) {
   # filter genes by cell type ----------
-  genes <- as.list(het_cortex_DEGS%>% filter(celltype == i))
+  genes <- as.list(het_cortex_DEGS %>% filter(celltype == i))
   # submit genes to pathway analysis function ----------
   fea_res <- combined_fea_set(het_cortex_DEGS, organism = "gp__15WK_wxVS_DNA")
   # set png to save plot to ----------
-  png(paste0(here("results/figures/SUPP_FEA_pathways_Setbp1Targets_het_",i, ".png")), width = 1000, height = 1000)
+  png(paste0(here("results/figures/SUPP_FEA_pathways_Setbp1Targets_het_", i, ".png")), width = 1000, height = 1000)
   # plot dotplot and add title based on input variable ----------
-  plot <- ggplot(fea_res$combined, aes(x = direction, y = reorder(term_name, -p_value), size = intersection_size, fill =
-                 p_value)) +
-                 geom_point(alpha = 0.7, shape = 21) +
-                 scale_size(range = c(2, 10), name = "Intersection Size") + 
-                 scale_fill_distiller(palette = "Purples") + 
-                 labs(x = "Direction", y = "Functional Enrichment Terms") + 
+  plot <- ggplot(fea_res$combined, aes(
+    x = direction, y = reorder(term_name, -p_value), size = intersection_size, fill =
+      p_value
+  )) +
+    geom_point(alpha = 0.7, shape = 21) +
+    scale_size(range = c(2, 10), name = "Intersection Size") +
+    scale_fill_distiller(palette = "Purples") +
+    labs(x = "Direction", y = "Functional Enrichment Terms") +
     ggtitle(paste0("Top 50 Pathways Associated with Differentially Expressed Target Genes in ", i)) +
     theme(plot.title = element_text(hjust = 0.5, size = 12))
   # finish plotting ----------
   print(plot)
-  dev.off() 
+  dev.off()
 }
 ```
 
 
 ```{r}
-#upregulated:
-cell.types <- unique(het_cortex_DEGS$celltype) #total of 7
+# upregulated:
+cell_types <- unique(het_cortex_DEGS$celltype) # total of 7
 het_cortex_DEGS_UP <- het_cortex_DEGS %>% filter(diffexpressed == "UP")
-for (i in cell.types) {
+for (i in cell_types) {
   # filter genes by cell type ----------
   genes <- as.list(het_cortex_DEGS_UP %>% filter(celltype == i))
   # submit genes to pathway analysis function ----------
   fea_result_filt <- fea_DGE(genes = genes, organism = "gp__15WK_wxVS_DNA")
   # set png to save plot to ----------
-  png(paste0(here("results/figures/FEA_SETBP1pathways_up_",i, ".png")), width = 1000, height = 1000)
+  png(paste0(here("results/figures/FEA_SETBP1pathways_up_", i, ".png")), width = 1000, height = 1000)
   # plot dotplot and add title based on input variable ----------
-  plot <- bubbleplot(fea_result_filt) + 
+  plot <- bubbleplot(fea_result_filt) +
     ggtitle(paste0("Top 50 Upregulated SETBP1 Pathways Associated with Predicted Target Genes in ", i)) +
     theme(plot.title = element_text(hjust = 0.5, size = 12))
   # finish plotting ----------
@@ -637,24 +655,30 @@ for (i in cell.types) {
   dev.off()
 }
 
-#downregulated:
-cell.types <- unique(het_cortex_DEGS$celltype) #total of 7
+# downregulated:
+cell_types <- unique(het_cortex_DEGS$celltype) # total of 7
 het_cortex_DEGS_DOWN <- het_cortex_DEGS %>% filter(diffexpressed == "DOWN")
-for (i in cell.types) {
+for (i in cell_types) {
   # filter genes by cell type ----------
   genes <- as.list(het_cortex_DEGS_DOWN %>% filter(celltype == i))
   # submit genes to pathway analysis function ----------
   fea_result_filt <- fea_DGE(genes = genes, organism = "gp__15WK_wxVS_DNA")
   # set png to save plot to ----------
-  png(paste0(here("results/figures/FEA_SETBP1pathways_down_",i, ".png")), width = 1000, height = 1000)
+  png(paste0(here("results/figures/FEA_SETBP1pathways_down_", i, ".png")), width = 1000, height = 1000)
   # plot dotplot and add title based on input variable ----------
-  plot <- bubbleplot(fea_result_filt) + 
+  plot <- bubbleplot(fea_result_filt) +
     ggtitle(paste0("Top 50 Downregulated SETBP1 Pathways Associated with Predicted Target Genes in ", i)) +
     theme(plot.title = element_text(hjust = 0.5, size = 12))
   # finish plotting ----------
   print(plot)
-  dev.off() 
+  dev.off()
 }
+```
+
+```{r}
+# run style
+style_file(here("src/seurat_scripts/Setbp1_PathwayAnalysisCortexKidney_08.Rmd"))
+# lintr was run as well
 ```
 
 # Session Info
