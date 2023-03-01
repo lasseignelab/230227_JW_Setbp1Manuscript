@@ -9,20 +9,23 @@ While performing gene targeting score analysis looking across cell types (https:
 ```{r load-libraries}
 library(Seurat)
 library(clustree)
+library(here)
+library(styler)
+library(lintr)
 ```
 
 ```{r load-object}
-load("/data/user/jbarham3/jw_cellspecific/jw_cellspecific/outputs/220815_setbp1_cerebralintcelltypes.Rdata")
-select.resolution = "RNA_snn_res.0.9"
-cerebral.int.celltypes <- SetIdent(cerebral.int.celltypes, value = select.resolution)
+load(here("data/setbp1_cerebralintcelltypes.Rdata"))
+select_resolution <- "RNA_snn_res.0.9"
+cerebral_int_celltypes <- SetIdent(cerebral_int_celltypes, value = select_resolution)
 
-DimPlot(cerebral.int.celltypes, reduction = "umap_harmony", group.by = "cell_type")
+DimPlot(cerebral_int_celltypes, reduction = "umap_harmony", group.by = "cell_type")
 ```
 
 Note: When prompted about miniconda, reply "N".
 ```{r subcluster-oligo}
 # Subset data.int.celltypes cluster1 and sub-cluster
-subset <- subset(cerebral.int.celltypes, idents = "oligodendrocytes")
+subset <- subset(cerebral_int_celltypes, idents = "oligodendrocytes")
 
 p1 <- DimPlot(subset, reduction = "umap_harmony", group.by = "seurat_clusters", label = TRUE)
 p2 <- DimPlot(subset, reduction = "umap_harmony", group.by = "orig.ident", label = TRUE)
@@ -33,14 +36,16 @@ subset <- FindClusters(subset, graph.name = "RNA_snn", resolution = 0.9, algorit
 
 clustree(subset@meta.data, prefix = "RNA_snn_res.")
 
-cerebral_markers_genes <- FindAllMarkers(subset, log2FC.threshold = 0.2, test.use = "wilcox",
-                                         min.pct = 0.1, min.diff.pct = 0.2, only.pos = TRUE, max.cells.per.ident = 50, 
-                                         assay = "RNA")
+cerebral_markers_genes <- FindAllMarkers(subset,
+  log2FC.threshold = 0.2, test.use = "wilcox",
+  min.pct = 0.1, min.diff.pct = 0.2, only.pos = TRUE, max.cells.per.ident = 50,
+  assay = "RNA"
+)
 
-# visualize markers at 0.9 resolution 
+# visualize markers at 0.9 resolution
 p4 <- DimPlot(subset, reduction = "umap_harmony", group.by = "seurat_clusters", label = TRUE)
 
-png("/data/user/jbarham3/jw_cellspecific/jw_cellspecific/setbp1_clean/outputs/Seurat/Setbp1_cortex_oligo_subcluster_UMAP.png", width = 1000, height = 500)
+png(here("results/figures/Setbp1_cortex_oligo_subcluster_UMAP.png"), width = 1000, height = 500)
 (p1 + p2) / (p3 + p4)
 dev.off
 ```
@@ -48,17 +53,17 @@ dev.off
 
 ```{r subcluster-mural}
 # Subset data.int.celltypes cluster1 and sub-cluster
-subset <- subset(cerebral.int.celltypes, idents = "mural.cells")
+subset <- subset(cerebral_int_celltypes, idents = "mural.cells")
 
-png("/data/user/jbarham3/jw_cellspecific/jw_cellspecific/setbp1_clean/outputs/Seurat/Setbp1_cortex_mural_subcluster_seuratclusterUMAP.png", width = 1000, height = 500)
+png(here("results/seurat/Setbp1_cortex_mural_subcluster_seuratclusterUMAP.png"), width = 1000, height = 500)
 p1 <- DimPlot(subset, reduction = "umap_harmony", group.by = "seurat_clusters", label = TRUE)
 p1
 dev.off()
-png("/data/user/jbarham3/jw_cellspecific/jw_cellspecific/setbp1_clean/outputs/Seurat/Setbp1_cortex_mural_subcluster_identUMAP.png", width = 1000, height = 500)
+png(here("results/seurat/Setbp1_cortex_mural_subcluster_identUMAP.png"), width = 1000, height = 500)
 p2 <- DimPlot(subset, reduction = "umap_harmony", group.by = "orig.ident", label = FALSE)
 p2
 dev.off()
-png("/data/user/jbarham3/jw_cellspecific/jw_cellspecific/setbp1_clean/outputs/Seurat/Setbp1_cortex_mural_subcluster_conditionUMAP.png", width = 1000, height = 500)
+png(here("results/seurat/Setbp1_cortex_mural_subcluster_conditionUMAP.png"), width = 1000, height = 500)
 p3 <- DimPlot(subset, reduction = "umap_harmony", group.by = "type", label = FALSE)
 p3
 dev.off()
@@ -68,12 +73,14 @@ subset <- FindClusters(subset, graph.name = "RNA_snn", resolution = 0.9, algorit
 
 clustree(subset@meta.data, prefix = "RNA_snn_res.")
 
-cerebral_markers_genes <- FindAllMarkers(subset, log2FC.threshold = 0.2, test.use = "wilcox",
-                                         min.pct = 0.1, min.diff.pct = 0.2, only.pos = TRUE, max.cells.per.ident = 50, 
-                                         assay = "RNA")
+cerebral_markers_genes <- FindAllMarkers(subset,
+  log2FC.threshold = 0.2, test.use = "wilcox",
+  min.pct = 0.1, min.diff.pct = 0.2, only.pos = TRUE, max.cells.per.ident = 50,
+  assay = "RNA"
+)
 
-# visualize markers at 0.9 resolution 
-png("/data/user/jbarham3/jw_cellspecific/jw_cellspecific/setbp1_clean/outputs/Seurat/Setbp1_cortex_mural_subcluster_UMAP.png", width = 1000, height = 500)
+# visualize markers at 0.9 resolution
+png(here("results/seurat//Setbp1_cortex_mural_subcluster_UMAP.png"), width = 1000, height = 500)
 p4 <- DimPlot(subset, reduction = "umap_harmony", group.by = "seurat_clusters", label = FALSE)
 p4
 dev.off()
