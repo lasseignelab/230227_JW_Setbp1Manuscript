@@ -9,7 +9,7 @@ date: "`r Sys.Date()`"
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-#**EDIT THIS DOCUMENT, NOT README.md** 
+**EDIT THIS DOCUMENT, NOT README.md** 
 
 # README Template 
 **[Replace this header with your project name]**
@@ -28,9 +28,41 @@ Include a code chunk on how to install your package
 **[if project will not be a package]** - this section should be titled "Dependencies" or "Scripts"
 Include a code chunk (if relevant) on what your project depends on. Include a "script tree" on how to reproduce your results with descriptions for all scripts
 
+### Scripts:
+
+├── 230227_JW_Setbp1Manuscript.Rproj
+├── bin
+│   ├── docker (cotains Dockerfile and helper script for running Docker in HPC on Cheaha using Singularity)
+│   │   ├── database.conf
+│   │   ├── Dockerfile
+│   │   ├── run_rstudio_singularity.sh
+│   │   └── setbp1_manuscript_1.0.0.sif
+│   │   
+│   └── README
+└── src
+    ├── functions (contains a source script for all functions created for this project)
+    │   └── functions.R
+    ├── README
+    └── seurat_scripts (includes all scripts for snRNA-seq QC, filtering, preprocessing, cell type assignment, and DGE analysis with pathway enrichment)
+        ├── Setbp1_CellTypesCortex_06.Rmd
+        ├── Setbp1_CellTypesKidney_06.Rmd
+        ├── Setbp1_Clustering_04.Rmd
+        ├── Setbp1_Clustering_leiden_04
+        ├── Setbp1_Clustering_leiden_04.R
+        ├── Setbp1_Cortex_subclustering.Rmd
+        ├── Setbp1_DGEcortex_07.Rmd
+        ├── Setbp1_DGEkidney_07.Rmd
+        ├── Setbp1_DoubletFinder_02.Rmd
+        ├── Setbp1_Integration_03.Rmd
+        ├── Setbp1_MarkersCortex_05.Rmd
+        ├── Setbp1_MarkersKidney_05.Rmd
+        ├── Setbp1_PathwayAnalysisCortexKidney_08.Rmd
+        └── Setbp1_QC_01.Rmd
+
+
 ## Authors 
 
-List co-authors if known here. 
+Jordan H. Whitlock, Tabea M. Soelter, Timothy C. Howton, Eliabeth J. Wilk, Vishal H. Oza, Brittany N. Lasseigne
 
 ## Lasseigne Lab 
 
@@ -40,7 +72,8 @@ List co-authors if known here.
 
 ## Funding 
 
-List project funding sources. 
+CMDB T32
+Lasseigne Lab Start Up Funds
 
 ## Acknowledgements 
 
