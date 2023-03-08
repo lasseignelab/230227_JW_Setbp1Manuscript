@@ -1,0 +1,276 @@
+---
+title: "Setbp1_Integration_03"
+author: "Jordan Whitlock"
+date: '2022-09-06'
+output:     
+  html_document:
+      toc: true
+      toc_depth: 2
+      toc_float: true
+---
+
+This analysis follows 'Setbp1_DoubletFinder_02.Rmd'. 
+
+```{r}
+library(devtools)
+library(magrittr)
+library(SingleCellExperiment)
+library(readr)
+library(dplyr)
+library(Matrix)
+library(Matrix.utils)
+library(Seurat)
+library(cowplot)
+library(ggplot2)
+library(tidyverse)
+library(kBET)
+library(DoubletFinder)
+library(harmony)
+library(clustree)
+library(purrr)
+library(edgeR)
+library(here)
+library(styler)
+library(lintr)
+```
+
+
+# Load in the object after doublets are removed
+```{r}
+load(here("data/nodoublet_setbp1_cerebral_seurat.Rdata")) #cerebral_seurat_filtered
+load(here("data/nodoublet_setbp1_kidney_seurat.Rdata")) #kidney_seurat_filtered
+```
+
+### Normalize FindVariableFeatures and Integrate -- Harmony
+
+#### normalize data:
+```{r}
+kidney_seurat_filtered <- NormalizeData(kidney_seurat_filtered)
+
+cerebral_seurat_filtered <- NormalizeData(cerebral_seurat_filtered)
+```
+
+#### feature selection:
+kidney
+```{r}
+suppressWarnings(suppressMessages(kidney_seurat_filtered <- FindVariableFeatures(kidney_seurat_filtered,
+  selection.method = "vst",
+  nfeatures = 4000,
+  verbose = FALSE,
+  assay = "RNA"))) # changed from std 2000 for nFeatures based on data distribution
+
+top20_kidney <- head(VariableFeatures(kidney_seurat_filtered), 20)
+LabelPoints(plot = VariableFeaturePlot(kidney_seurat_filtered),
+            points = top20_kidney,
+            repel = TRUE)
+```
+
+cerebral
+```{r}
+suppressWarnings(suppressMessages(cerebral_seurat_filtered <- FindVariableFeatures(cerebral_seurat_filtered,
+  selection.method = "vst",
+  nfeatures = 4000,
+  verbose = FALSE,
+  assay = "RNA"))) # changed from std 2000 for nFeatures based on data distribution
+
+top20_cerebral <- head(VariableFeatures(cerebral_seurat_filtered), 20)
+LabelPoints(plot = VariableFeaturePlot(cerebral_seurat_filtered),
+            points = top20_cerebral,
+            repel = TRUE)
+```
+
+
+#### scale data: z-score transformation
+
+```{r}
+kidney_seurat_filtered <- ScaleData(kidney_seurat_filtered,
+                                    vars.to.regress = c("percent_mito", "nFeature_RNA"),
+                                    assay = "RNA")
+```
+
+```{r}
+cerebral_seurat_filtered <- ScaleData(cerebral_seurat_filtered,
+                                      vars.to.regress = c("percent_mito", "nFeature_RNA"),
+                                      assay = "RNA")
+```
+
+#### check dimensions with PCA
+```{r}
+cerebral_seurat_filtered <- RunPCA(cerebral_seurat_filtered, npcs = 50, verbose = FALSE)
+ElbowPlot(cerebral_seurat_filtered, reduction = "pca", ndims = 50)
+kidney_seurat_filtered <- RunPCA(kidney_seurat_filtered, npcs = 50, verbose = FALSE)
+ElbowPlot(kidney_seurat_filtered, reduction = "pca", ndims = 50)
+```
+
+#### visualize PCs:
+plotting the first few
+```{r}
+plot_grid(
+  ncol = 3, DimPlot(cerebral_seurat_filtered,
+    reduction = "pca", group.by = "orig.ident",
+    dims = 1:2
+  ), DimPlot(cerebral_seurat_filtered, reduction = "pca", group.by = "orig.ident", dims = 3:4),
+  DimPlot(cerebral_seurat_filtered, reduction = "pca", group.by = "orig.ident", dims = 29:30)
+)
+plot_grid(
+  ncol = 3, DimPlot(kidney_seurat_filtered,
+    reduction = "pca", group.by = "orig.ident",
+    dims = 1:2
+  ), DimPlot(kidney_seurat_filtered, reduction = "pca", group.by = "orig.ident", dims = 3:4),
+  DimPlot(kidney_seurat_filtered, reduction = "pca", group.by = "orig.ident", dims = 29:30)
+)
+```
+
+#### visualize tSNE:
+```{r}
+cerebral_seurat_filtered <- RunTSNE(cerebral_seurat_filtered, reduction = "pca", dims = 1:30, perplexity = 30, max_iter = 1000, theta = 0.5, eta = 200, num_threads = 0)
+kidney_seurat_filtered <- RunTSNE(kidney_seurat_filtered,
+  reduction = "pca", dims = 1:30, perplexity = 30, max_iter = 1000,
+  theta = 0.5, eta = 200, num_threads = 0
+)
+plot_grid(ncol = 3, DimPlot(cerebral_seurat_filtered, reduction = "tsne", group.by = "orig.ident"))
+plot_grid(ncol = 3, DimPlot(kidney_seurat_filtered, reduction = "tsne", group.by = "orig.ident"))
+```
+
+#### visualize the UMAP:
+```{r}
+kidney_seurat_filtered <- RunUMAP(kidney_seurat_filtered,
+  reduction = "pca", dims = 1:30, n.components = 2, n.neighbors = 30,
+  n.epochs = 200, min.dist = 0.3, learning.rate = 1, spread = 1
+)
+cerebral_seurat_filtered <- RunUMAP(cerebral_seurat_filtered,
+  reduction = "pca", dims = 1:30, n.components = 2, n.neighbors = 30,
+  n.epochs = 200, min.dist = 0.3, learning.rate = 1, spread = 1
+)
+plot_grid(ncol = 3, DimPlot(kidney_seurat_filtered, reduction = "umap", group.by = "orig.ident") +
+  ggplot2::ggtitle(label = "Kidney_UMAP_on_PCA"))
+plot_grid(ncol = 3, DimPlot(cerebral_seurat_filtered, reduction = "umap", group.by = "orig.ident") +
+  ggplot2::ggtitle(label = "CerebralCortex_UMAP_on_PCA"))
+```
+
+
+### Integrate - using harmony
+
+```{r}
+kidney_harmony <- RunHarmony(kidney_seurat_filtered,
+  group.by.vars = "orig.ident", reduction = "pca",
+  dims.use = 1:30, assay.use = "RNA"
+)
+cerebral_harmony <- RunHarmony(cerebral_seurat_filtered,
+  group.by.vars = "orig.ident", reduction = "pca",
+  dims.use = 1:30, assay.use = "RNA"
+)
+```
+
+#### UMAP in harmony:
+Here we use all PCs computed from Harmony for UMAP calculation
+```{r}
+kidney_int <- kidney_seurat_filtered
+cerebral_int <- cerebral_seurat_filtered
+cerebral_int[["harmony"]] <- cerebral_harmony[["harmony"]]
+cerebral_int <- RunUMAP(cerebral_int, dims = 1:30, reduction = "harmony", reduction.name = "umap_harmony")
+kidney_int[["harmony"]] <- kidney_harmony[["harmony"]]
+kidney_int <- RunUMAP(kidney_int, dims = 1:30, reduction = "harmony", reduction.name = "umap_harmony")
+```
+
+
+#### UMAP before and after harmony:
+
+Visualizing the post-harmony integration UMAP compared to raw:
+```{r}
+# cerebral
+p1 <- DimPlot(cerebral_seurat_filtered, reduction = "umap", group.by = "orig.ident") + ggtitle("Cerebral UMAP raw_data")
+p2 <- DimPlot(cerebral_int, reduction = "umap_harmony", group.by = "orig.ident") + ggtitle("Cerebral UMAP Harmony")
+leg <- get_legend(p1)
+gridExtra::grid.arrange(
+  gridExtra::arrangeGrob(p1 + NoLegend() + NoAxes(), p2 + NoLegend() +
+    NoAxes(), nrow = 2),
+  leg,
+  ncol = 2, widths = c(8, 2)
+)
+# kidney
+p3 <- DimPlot(kidney_seurat_filtered, reduction = "umap", group.by = "orig.ident") +
+  ggtitle("Kidney UMAP raw data")
+p4 <- DimPlot(kidney_int, reduction = "umap_harmony", group.by = "orig.ident") +
+  ggtitle("Kidney UMAP Harmony")
+leg <- get_legend(p3)
+gridExtra::grid.arrange(
+  gridExtra::arrangeGrob(p3 + NoLegend() + NoAxes(), p4 + NoLegend() +
+    NoAxes(), nrow = 2),
+  leg,
+  ncol = 2, widths = c(8, 2)
+)
+```
+
+#### save integrated objects, can start from here:
+```{r}
+save(kidney_int, file = here("data/integrated_setbp1_kidney.Rdata"))
+save(cerebral_int, file = here("data/_integrated_setbp1_cerebral.Rdata"))
+```
+
+
+#### highly variable genes:
+
+#split objects by origin identity:
+```{r}
+# kidney
+kidney_list <- SplitObject(kidney_seurat_filtered, split.by = "orig.ident")
+# cerebral
+cerebral_list <- SplitObject(cerebral_seurat_filtered, split.by = "orig.ident")
+```
+
+#identify hvgs for kidney
+```{r}
+for (i in 1:length(kidney_list)) {
+  kidney_list[[i]] <- NormalizeData(kidney_list[[i]], verbose = FALSE)
+  kidney_list[[i]] <- FindVariableFeatures(kidney_list[[i]],
+    selection.method = "vst",
+    nfeatures = 4000, verbose = FALSE
+  )
+}
+kidney_hvgs_per_dataset <- lapply(kidney_list, function(x) {
+  x@assays$RNA@var.features
+})
+# venn::venn(hvgs_per_dataset,opacity = .4,zcolor = scales::hue_pal()(3),cexsn
+# = 1,cexil = 1,lwd=1,col='white',frame=F,borders = NA)
+temp <- unique(unlist(kidney_hvgs_per_dataset))
+overlap <- sapply(kidney_hvgs_per_dataset, function(x) {
+  temp %in% x
+})
+pheatmap::pheatmap(t(overlap * 1), cluster_rows = FALSE, color = c("grey90", "grey20"))
+```
+
+#identify hvgs for cerebral
+```{r}
+for (i in 1:length(cerebral_list)) {
+  cerebral_list[[i]] <- NormalizeData(cerebral_list[[i]], verbose = FALSE)
+  cerebral_list[[i]] <- FindVariableFeatures(cerebral_list[[i]],
+    selection.method = "vst",
+    nfeatures = 4000, verbose = FALSE
+  )
+}
+cerebral_hvgs_per_dataset <- lapply(cerebral_list, function(x) {
+  x@assays$RNA@var.features
+})
+# venn::venn(hvgs_per_dataset,opacity = .4,zcolor = scales::hue_pal()(3),cexsn
+# = 1,cexil = 1,lwd=1,col='white',frame=F,borders = NA)
+temp <- unique(unlist(cerebral_hvgs_per_dataset))
+overlap <- sapply(cerebral_hvgs_per_dataset, function(x) {
+  temp %in% x
+})
+pheatmap::pheatmap(t(overlap * 1), cluster_rows = FALSE, color = c("grey90", "grey20"))
+```
+#save hvgs:
+```{r}
+save(kidney_hvgs_per_dataset, file = here("data/kidney_hvgs.Rdata"))
+save(cerebral_hvgs_per_dataset, file = here("data/cerebral_hvgs.Rdata"))
+```
+
+```{r}
+# run style
+style_file(here("src/seurat_scripts/Setbp1_QC_01.Rmd"))
+# lintr was run as well
+```
+
+
+This analysis is followed by 'Setbp1_Clustering_04.Rmd'

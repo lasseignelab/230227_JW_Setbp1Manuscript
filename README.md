@@ -1,6 +1,6 @@
 README
 ================
-2023-02-27
+2023-03-02
 
 **EDIT THIS DOCUMENT, NOT README.md**
 
@@ -26,9 +26,35 @@ the University of Alabama at Birmingham](https://www.lasseigne.org/)
 your project depends on. Include a “script tree” on how to reproduce
 your results with descriptions for all scripts
 
+### Scripts:
+
+    ## src
+    ## +-- README
+    ## +-- functions
+    ## |   \-- functions.R
+    ## +-- network_scripts
+    ## |   \-- differential_targeting
+    ## |       \-- Setbp1_DiffTargetingCortex_01.Rmd
+    ## \-- seurat_scripts
+    ##     +-- Setbp1_CellTypesCortex_06.Rmd
+    ##     +-- Setbp1_CellTypesKidney_06.Rmd
+    ##     +-- Setbp1_Clustering_04.Rmd
+    ##     +-- Setbp1_Clustering_leiden_04
+    ##     +-- Setbp1_Clustering_leiden_04.R
+    ##     +-- Setbp1_Cortex_subclustering.Rmd
+    ##     +-- Setbp1_DGEcortex_07.Rmd
+    ##     +-- Setbp1_DGEkidney_07.Rmd
+    ##     +-- Setbp1_DoubletFinder_02.Rmd
+    ##     +-- Setbp1_Integration_03.Rmd
+    ##     +-- Setbp1_MarkersCortex_05.Rmd
+    ##     +-- Setbp1_MarkersKidney_05.Rmd
+    ##     +-- Setbp1_PathwayAnalysisCortexKidney_08.Rmd
+    ##     \-- Setbp1_QC_01.Rmd
+
 ## Authors
 
-List co-authors if known here.
+Jordan H. Whitlock, Tabea M. Soelter, Timothy C. Howton, Eliabeth J.
+Wilk, Vishal H. Oza, Brittany N. Lasseigne
 
 ## Lasseigne Lab
 
@@ -38,7 +64,7 @@ List co-authors if known here.
 
 ## Funding
 
-List project funding sources.
+CMDB T32 Lasseigne Lab Start Up Funds
 
 ## Acknowledgements
 

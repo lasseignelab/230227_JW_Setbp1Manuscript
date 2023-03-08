@@ -1,0 +1,585 @@
+---
+title: "Setbp1_QC_01"
+author: "Jordan Whitlock"
+date: '2022-09-06'
+output:     
+  html_document:
+      toc: true
+      toc_depth: 2
+      toc_float: true
+---
+# *Single-nuclei analysis: Quality Control*
+* load in data and create Seurat objects
+* check proprtion of mitochondrial and ribosomal genes
+* visualize data feature distribution
+* filter nFeatureRNA and mt
+* check cell cycle scoring
+* re-visualize data feature distribution
+
+## Code: 
+
+Accompanying dry lab notebook for this analysis is here: https://docs.google.com/document/d/1FO_Je9oxbBFF9S_k-8tVF2t4ba88O4C77sw1v7DIFec/edit?usp=sharing
+
+### Checking libraries and working path settings:
+
+```{r setup}
+getwd()
+.libPaths() # "/usr/local/lib/R/site-library" "/usr/local/lib/R/library" "/home/jbarham3/R/x86_64-pc-linux-gnu-library/4.1"
+```
+
+### loading in all required libraries
+```{r, load-libraries message=FALSE}
+library(devtools)
+library(magrittr)
+library(readr)
+library(dplyr)
+library(Matrix)
+library(Seurat)
+library(cowplot)
+library(ggplot2)
+library(here)
+library(tidyverse)
+library(styler)
+library(lintr)
+```
+
+
+### Load in the Setbp1 data:
+All cellranger outs were moved from the introns_processed_data respective outs directory to a counts directory at:/data/project/lasseigne_lab/JordanWhitlock/jw_setbp1/counts/ to make it easier to loop between and load in all files at once.
+
+Make sure all of your outs are placed into a single head directory called "counts" and within that directory there is a folder for each sample and within each sample specific folder a "barcodes.tsv.gx", "features.tsv.gz" and "matrix.mtx.gz" file.
+```{r}
+counts_list <- list.dirs("/data/project/lasseigne_lab/JordanWhitlock/jw_setbp1/counts", recursive = FALSE)
+```
+False makes sure the "/data/project/lasseigne_lab/JordanWhitlock/jw_setbp1/counts" is not included in the list. This command lists all the sample folders in your counts directory
+#loading in all of the files and creating seurat objects named as "sample.id_seurat_object" using the sample.ids vector above:
+```{r}
+for (i in counts_list) {
+  counts <- Read10X(i)
+  print(i)
+  sample_name <- basename(i)
+  sample_name <- gsub("[[:punct:]]", "", sample_name)
+  seurat_object <- CreateSeuratObject(counts = counts, project = sample_name)
+  assign(paste0(sample_name, "_seurat_object"), seurat_object)
+}
+```
+
+
+### annotating seurat objects for condition with "control" and "heterozygous" metadata tags:
+```{r}
+J1_seurat_object$type <- "heterozygous"
+J2_seurat_object$type <- "control"
+J3_seurat_object$type <- "control"
+J4_seurat_object$type <- "control"
+J13_seurat_object$type <- "heterozygous"
+J15_seurat_object$type <- "heterozygous"
+K1_seurat_object$type <- "control"
+K2_seurat_object$type <- "heterozygous"
+K3_seurat_object$type <- "control"
+K4_seurat_object$type <- "heterozygous"
+K5_seurat_object$type <- "control"
+K6_seurat_object$type <- "heterozygous"
+```
+
+
+### creating kidney and cerebral cortex seurat objects and adding cell.ids:
+```{r}
+# kidney
+kidney_seurat <- merge(K1_seurat_object,
+  c(K2_seurat_object, K3_seurat_object, K4_seurat_object, K5_seurat_object, K6_seurat_object),
+  add.cell.ids = c("K1_ctrl", "K2_het", "K3_ctrl", "K4_het", "K5_ctrl", "K6_het")
+)
+
+# cerebral cortex
+cerebral_seurat <- merge(J1_seurat_object,
+  c(J2_seurat_object, J3_seurat_object, J4_seurat_object, J13_seurat_object, J15_seurat_object),
+  add.cell.ids = c("J1_het", "J2_ctrl", "J3_ctrl", "J4_ctrl", "J13_het", "J15_het")
+)
+
+# checking metadat assignment:
+as.data.frame(kidney_seurat@assays$RNA@counts[1:10, 1:2])
+head(kidney_seurat@meta.data, 10)
+as.data.frame(cerebral_seurat@assays$RNA@counts[1:10, 1:2])
+head(cerebral_seurat@meta.data, 10)
+
+# freeing up global environment to release R memory and have clean working space:
+rm(list = setdiff(ls(), c("cerebral_seurat", "kidney_seurat")))
+
+# running garbage to collect free memory:
+gc()
+```
+
+### perform Quality Control:
+Having the data in a suitable format, we can start calculating some quality metrics. We can for example calculate the percentage of mitochondrial and ribosomal genes per cell and add that to the metadata. This will be helpful to visualize them across different metadata parameters. There are several ways of doing this, and below I manually calculate the proportion of mitochondrial reads and add to the metadata table.
+
+Note from Simple Single Cell workflows (Lun, McCarthy & Marioni, 2017): High proportions are indicative of poor-quality cells (Islam et al. 2014; Ilicic et al. 2016), possibly because of loss of cytoplasmic RNA from perforated cells. The reasoning is that mitochondria are larger than individual transcript molecules and less likely to escape through tears in the cell membrane.
+
+#### remove mitochondrial genes -- clean this up with for loops later
+
+Note: PercentageFeatureSet function has grepping out of Mt prefixes built in. It is an automatic way to remove mt genes instead of manually grepping from rownames. (Source:https://nbisweden.github.io/workshop-scRNAseq/labs/compiled/seurat/seurat_01_qc.html )
+
+In the mm10 reference (version 3.0.0) in the cellranger reference files reveals that for whatever reason, the MT genes are labeled with lowercase mt instead. (source: https://www.michaelchimenti.com/2019/03/calculate-mitochondrial-for-mouse-scrna-seq/)
+```{r}
+cerebral_seurat <- PercentageFeatureSet(cerebral_seurat,
+  "mt-",
+  col.name = "percent_mito"
+)
+kidney_seurat <- PercentageFeatureSet(kidney_seurat,
+  "mt-",
+  col.name = "percent_mito"
+)
+
+# check it ran properly
+head(cerebral_seurat)
+head(kidney_seurat)
+```
+
+
+#### Calculate proportion of gene expression from ribosomal genes:
+```{r}
+cerebral_seurat <- PercentageFeatureSet(cerebral_seurat,
+  "^Rp[sl]",
+  col.name = "percent_ribo"
+)
+kidney_seurat <- PercentageFeatureSet(kidney_seurat,
+  "^Rp[sl]",
+  col.name = "percent_ribo"
+)
+# check it ran properly
+head(cerebral_seurat)
+head(kidney_seurat)
+```
+
+
+### plot Quality Control metrics just calculated
+```{r}
+feats <- c("nFeature_RNA", "nCount_RNA", "percent_mito", "percent_ribo")
+# violin:
+VlnPlot(cerebral_seurat,
+  group.by = "orig.ident",
+  features = feats,
+  pt.size = 0.1,
+  ncol = 3
+)
+VlnPlot(kidney_seurat,
+  group.by = "orig.ident",
+  features = feats,
+  pt.size = 0.1, ncol = 3
+)
+# scatter:
+FeatureScatter(cerebral_seurat,
+  "nCount_RNA",
+  "nFeature_RNA",
+  group.by = "orig.ident",
+  pt.size = 0.5
+)
+FeatureScatter(cerebral_seurat,
+  "percent_mito",
+  "percent_ribo",
+  group.by = "orig.ident",
+  pt.size = 0.5
+)
+FeatureScatter(kidney_seurat,
+  "nCount_RNA",
+  "nFeature_RNA",
+  group.by = "orig.ident",
+  pt.size = 0.5
+)
+FeatureScatter(kidney_seurat,
+  "percent_mito",
+  "percent_ribo",
+  group.by = "orig.ident",
+  pt.size = 0.5
+)
+```
+
+
+##### Visualize the number of cell counts per sample
+```{r}
+# Add number of genes per UMI for each cell to metadata
+kidney_seurat$log10GenesPerUMI <- log10(kidney_seurat$nFeature_RNA) / log10(kidney_seurat$nCount_RNA)
+cerebral_seurat$log10GenesPerUMI <- log10(cerebral_seurat$nFeature_RNA) / log10(cerebral_seurat$nCount_RNA)
+
+kidney_seurat@meta.data %>%
+  ggplot(aes(x = orig.ident, fill = orig.ident)) +
+  geom_bar() +
+  theme_classic() +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
+  theme(plot.title = element_text(hjust = 0.5, face = "bold")) +
+  ggtitle("NCells")
+cerebral_seurat@meta.data %>%
+  ggplot(aes(x = orig.ident, fill = orig.ident)) +
+  geom_bar() +
+  theme_classic() +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
+  theme(plot.title = element_text(hjust = 0.5, face = "bold")) +
+  ggtitle("NCells")
+kidney_seurat@meta.data %>%
+  ggplot(aes(x = orig.ident, fill = type)) +
+  geom_bar() +
+  theme_classic() +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
+  theme(plot.title = element_text(hjust = 0.5, face = "bold")) +
+  ggtitle("NCells")
+cerebral_seurat@meta.data %>%
+  ggplot(aes(x = orig.ident, fill = type)) +
+  geom_bar() +
+  theme_classic() +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
+  theme(plot.title = element_text(hjust = 0.5, face = "bold")) +
+  ggtitle("NCells")
+```
+
+
+#### Visualize the number of UMIs/transcripts per cell:
+nUMI = nCount_RNA
+nGene = nFeature_RNA
+
+500 is the minimum threshold for number of UMI counts per cell.
+```{r}
+kidney_seurat@meta.data %>%
+  ggplot(aes(color = orig.ident, x = nCount_RNA, fill = orig.ident)) +
+  geom_density(alpha = 0.2) +
+  scale_x_log10() +
+  theme_classic() +
+  ylab("Cell density") +
+  geom_vline(xintercept = 500)
+cerebral_seurat@meta.data %>%
+  ggplot(aes(color = orig.ident, x = nCount_RNA, fill = orig.ident)) +
+  geom_density(alpha = 0.2) +
+  scale_x_log10() +
+  theme_classic() +
+  ylab("Cell density") +
+  geom_vline(xintercept = 500)
+kidney_seurat@meta.data %>%
+  ggplot(aes(color = type, x = nCount_RNA, fill = type)) +
+  geom_density(alpha = 0.2) +
+  scale_x_log10() +
+  theme_classic() +
+  ylab("Cell density") +
+  geom_vline(xintercept = 500)
+cerebral_seurat@meta.data %>%
+  ggplot(aes(color = type, x = nCount_RNA, fill = type)) +
+  geom_density(alpha = 0.2) +
+  scale_x_log10() +
+  theme_classic() +
+  ylab("Cell density") +
+  geom_vline(xintercept = 500)
+```
+
+
+##### Visualize the distribution of nFeature_RNA (genes) detected per cell via histogram
+```{r}
+cerebral_seurat@meta.data %>%
+  ggplot(aes(color = orig.ident, x = nFeature_RNA, fill = orig.ident)) +
+  geom_density(alpha = 0.2) +
+  theme_classic() +
+  scale_x_log10() +
+  geom_vline(xintercept = 300)
+kidney_seurat@meta.data %>%
+  ggplot(aes(color = orig.ident, x = nFeature_RNA, fill = orig.ident)) +
+  geom_density(alpha = 0.2) +
+  theme_classic() +
+  scale_x_log10() +
+  geom_vline(xintercept = 300)
+cerebral_seurat@meta.data %>%
+  ggplot(aes(color = type, x = nFeature_RNA, fill = type)) +
+  geom_density(alpha = 0.2) +
+  theme_classic() +
+  scale_x_log10() +
+  geom_vline(xintercept = 300)
+kidney_seurat@meta.data %>%
+  ggplot(aes(color = type, x = nFeature_RNA, fill = type)) +
+  geom_density(alpha = 0.2) +
+  theme_classic() +
+  scale_x_log10() +
+  geom_vline(xintercept = 300)
+```
+
+
+#### Visualize the distribution of genes detected per cell via boxplot
+```{r}
+kidney_seurat@meta.data %>%
+  ggplot(aes(x = orig.ident, y = log10(nFeature_RNA), fill = orig.ident)) +
+  geom_boxplot() +
+  theme_classic() +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
+  theme(plot.title = element_text(hjust = 0.5, face = "bold")) +
+  ggtitle("NCells vs NGenes")
+cerebral_seurat@meta.data %>%
+  ggplot(aes(x = orig.ident, y = log10(nFeature_RNA), fill = orig.ident)) +
+  geom_boxplot() +
+  theme_classic() +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
+  theme(plot.title = element_text(hjust = 0.5, face = "bold")) +
+  ggtitle("NCells vs NGenes")
+```
+
+
+#### Visualize the correlation between nFeature_RNA (genes) and nCount_RNA (nuclei)
+```{r}
+# determine whether strong presence of cells with low numbers of genes/UMIs
+kidney_seurat@meta.data %>%
+  ggplot(aes(x = nCount_RNA, y = nFeature_RNA, color = percent_mito)) +
+  geom_point() +
+  scale_colour_gradient(low = "gray90", high = "black") +
+  stat_smooth(method = lm) +
+  scale_x_log10() +
+  scale_y_log10() +
+  theme_classic() +
+  geom_vline(xintercept = 500) +
+  geom_hline(yintercept = 250) +
+  facet_wrap(~orig.ident)
+cerebral_seurat@meta.data %>%
+  ggplot(aes(x = nCount_RNA, y = nFeature_RNA, color = percent_mito)) +
+  geom_point() +
+  scale_colour_gradient(low = "gray90", high = "black") +
+  stat_smooth(method = lm) +
+  scale_x_log10() +
+  scale_y_log10() +
+  theme_classic() +
+  geom_vline(xintercept = 500) +
+  geom_hline(yintercept = 250) +
+  facet_wrap(~orig.ident)
+```
+
+
+#### filter out nFeature_RNA and mt:
+```{r}
+kidney_seurat_filtered <- subset(kidney_seurat, subset = nFeature_RNA >= 1000 & nFeature_RNA <= 15000 & percent_mito < 5)
+cerebral_seurat_filtered <- subset(cerebral_seurat, subset = nFeature_RNA >= 1000 & nFeature_RNA <= 15000 & percent_mito < 5) # 5.0 here because percent_mito is a percent not  a ratio.
+```
+
+
+#### Plot genes contributing most to reads:
+```{r}
+par(mar = c(4, 8, 2, 1))
+C <- cerebral_seurat_filtered@assays$RNA@counts
+C <- Matrix::t(Matrix::t(C) / Matrix::colSums(C)) * 100
+most_expressed <- order(apply(C, 1, median), decreasing = TRUE)[20:1]
+boxplot(t(as.matrix(C[most_expressed, ])),
+  cex = 0.1,
+  las = 1, xlab = "% total count per cell in cerebral cortex",
+  col = (scales::hue_pal())(20)[20:1], horizontal = TRUE
+)
+
+par(mar = c(4, 8, 2, 1))
+C <- kidney_seurat_filtered@assays$RNA@counts
+C <- Matrix::t(Matrix::t(C) / Matrix::colSums(C)) * 100
+C <- as(C, "dgTMatrix")
+most_expressed <- order(apply(C, 1, median), decreasing = TRUE)[20:1]
+boxplot(t(as.matrix(C[most_expressed, ])),
+  cex = 0.1, las = 1,
+  xlab = "% total count per cell in kidney",
+  col = (scales::hue_pal())(20)[20:1], horizontal = TRUE
+)
+```
+
+
+#### removing Malat1:
+```{r}
+kidney_seurat_filtered <- kidney_seurat_filtered[!grepl("Malat1", rownames(kidney_seurat_filtered)), ]
+cerebral_seurat_filtered <- cerebral_seurat_filtered[!grepl("Malat1", rownames(cerebral_seurat_filtered)), ]
+```
+
+
+#### checking cell cycle scoring
+```{r}
+# Before running CellCycleScoring the data need to be normalized and logtransformed.
+kidney_seurat_filtered <- NormalizeData(kidney_seurat_filtered)
+# now check cell cycle scoring
+kidney_seurat_filtered <- CellCycleScoring(
+  object = kidney_seurat_filtered, g2m.features = cc.genes$g2m.genes,
+  s.features = cc.genes$s.genes
+)
+VlnPlot(kidney_seurat_filtered,
+  features = c("S.Score", "G2M.Score"), group.by = "orig.ident",
+  ncol = 4, pt.size = 0.1
+)
+# Before running CellCycleScoring the data need to be normalized and logtransformed.
+cerebral_seurat_filtered <- NormalizeData(cerebral_seurat_filtered)
+# now check cell cycle scoring
+cerebral_seurat_filtered <- CellCycleScoring(
+  object = cerebral_seurat_filtered, g2m.features = cc.genes$g2m.genes,
+  s.features = cc.genes$s.genes
+)
+VlnPlot(cerebral_seurat_filtered,
+  features = c("S.Score", "G2M.Score"), group.by = "orig.ident",
+  ncol = 4, pt.size = 0.1
+)
+```
+
+
+#### revisualizing QC metrics after data has been filtered:
+
+##### plot Quality Control metrics just calculated
+```{r}
+feats <- c("nFeature_RNA", "nCount_RNA", "percent_mito", "percent_ribo")
+# violin:
+VlnPlot(cerebral_seurat_filtered, group.by = "orig.ident", features = feats, pt.size = 0.1, ncol = 3)
+VlnPlot(kidney_seurat_filtered, group.by = "orig.ident", features = feats, pt.size = 0.1, ncol = 3)
+# scatter:
+FeatureScatter(cerebral_seurat_filtered, "nCount_RNA", "nFeature_RNA", group.by = "orig.ident", pt.size = 0.5)
+FeatureScatter(cerebral_seurat_filtered, "percent_mito", "percent_ribo", group.by = "orig.ident", pt.size = 0.5)
+FeatureScatter(kidney_seurat_filtered, "nCount_RNA", "nFeature_RNA", group.by = "orig.ident", pt.size = 0.5)
+FeatureScatter(kidney_seurat_filtered, "percent_mito", "percent_ribo", group.by = "orig.ident", pt.size = 0.5)
+```
+
+###### Visualize the number of cell counts per sample
+```{r}
+# Add number of genes per UMI for each cell to metadata -- tells the complexity of the data
+kidney_seurat_filtered$log10GenesPerUMI <- log10(kidney_seurat_filtered$nFeature_RNA) / log10(kidney_seurat_filtered$nCount_RNA)
+cerebral_seurat_filtered$log10GenesPerUMI <- log10(cerebral_seurat_filtered$nFeature_RNA) / log10(cerebral_seurat_filtered$nCount_RNA)
+kidney_seurat_filtered@meta.data %>%
+  ggplot(aes(x = orig.ident, fill = orig.ident)) +
+  geom_bar() +
+  theme_classic() +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
+  theme(plot.title = element_text(hjust = 0.5, face = "bold")) +
+  ggtitle("NCells")
+cerebral_seurat_filtered@meta.data %>%
+  ggplot(aes(x = orig.ident, fill = orig.ident)) +
+  geom_bar() +
+  theme_classic() +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
+  theme(plot.title = element_text(hjust = 0.5, face = "bold")) +
+  ggtitle("NCells")
+kidney_seurat_filtered@meta.data %>%
+  ggplot(aes(x = orig.ident, fill = type)) +
+  geom_bar() +
+  theme_classic() +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
+  theme(plot.title = element_text(hjust = 0.5, face = "bold")) +
+  ggtitle("NCells")
+cerebral_seurat_filtered@meta.data %>%
+  ggplot(aes(x = orig.ident, fill = type)) +
+  geom_bar() +
+  theme_classic() +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
+  theme(plot.title = element_text(hjust = 0.5, face = "bold")) +
+  ggtitle("NCells")
+```
+##### Visualize the number of UMIs/transcripts per cell:
+nUMI = nCount_RNA
+nGene = nFeature_RNA
+
+500 is the minimum threshold for number of UMI counts per cell.
+```{r}
+kidney_seurat_filtered@meta.data %>%
+  ggplot(aes(color = orig.ident, x = nCount_RNA, fill = orig.ident)) +
+  geom_density(alpha = 0.2) +
+  scale_x_log10() +
+  theme_classic() +
+  ylab("Cell density") +
+  geom_vline(xintercept = 500)
+cerebral_seurat_filtered@meta.data %>%
+  ggplot(aes(color = orig.ident, x = nCount_RNA, fill = orig.ident)) +
+  geom_density(alpha = 0.2) +
+  scale_x_log10() +
+  theme_classic() +
+  ylab("Cell density") +
+  geom_vline(xintercept = 500)
+kidney_seurat_filtered@meta.data %>%
+  ggplot(aes(color = type, x = nCount_RNA, fill = type)) +
+  geom_density(alpha = 0.2) +
+  scale_x_log10() +
+  theme_classic() +
+  ylab("Cell density") +
+  geom_vline(xintercept = 500)
+cerebral_seurat_filtered@meta.data %>%
+  ggplot(aes(color = type, x = nCount_RNA, fill = type)) +
+  geom_density(alpha = 0.2) +
+  scale_x_log10() +
+  theme_classic() +
+  ylab("Cell density") +
+  geom_vline(xintercept = 500)
+```
+
+###### Visualize the distribution of nFeature_RNA (genes) detected per cell via histogram
+```{r}
+cerebral_seurat_filtered@meta.data %>%
+  ggplot(aes(color = orig.ident, x = nFeature_RNA, fill = orig.ident)) +
+  geom_density(alpha = 0.2) +
+  theme_classic() +
+  scale_x_log10() +
+  geom_vline(xintercept = 300)
+kidney_seurat_filtered@meta.data %>%
+  ggplot(aes(color = orig.ident, x = nFeature_RNA, fill = orig.ident)) +
+  geom_density(alpha = 0.2) +
+  theme_classic() +
+  scale_x_log10() +
+  geom_vline(xintercept = 300)
+cerebral_seurat_filtered@meta.data %>%
+  ggplot(aes(color = type, x = nFeature_RNA, fill = type)) +
+  geom_density(alpha = 0.2) +
+  theme_classic() +
+  scale_x_log10() +
+  geom_vline(xintercept = 300)
+kidney_seurat_filtered@meta.data %>%
+  ggplot(aes(color = type, x = nFeature_RNA, fill = type)) +
+  geom_density(alpha = 0.2) +
+  theme_classic() +
+  scale_x_log10() +
+  geom_vline(xintercept = 300)
+```
+
+##### Visualize the distribution of genes detected per cell via boxplot
+```{r}
+kidney_seurat_filtered@meta.data %>%
+  ggplot(aes(x = orig.ident, y = log10(nFeature_RNA), fill = orig.ident)) +
+  geom_boxplot() +
+  theme_classic() +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
+  theme(plot.title = element_text(hjust = 0.5, face = "bold")) +
+  ggtitle("NCells vs NGenes")
+cerebral_seurat_filtered@meta.data %>%
+  ggplot(aes(x = orig.ident, y = log10(nFeature_RNA), fill = orig.ident)) +
+  geom_boxplot() +
+  theme_classic() +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
+  theme(plot.title = element_text(hjust = 0.5, face = "bold")) +
+  ggtitle("NCells vs NGenes")
+```
+
+##### Visualize the correlation between nFeature_RNA (genes) and nCount_RNA (nuclei)
+```{r}
+# determine whether strong presence of cells with low numbers of genes/UMIs
+kidney_seurat_filtered@meta.data %>%
+  ggplot(aes(x = nCount_RNA, y = nFeature_RNA, color = percent_mito)) +
+  geom_point() +
+  scale_colour_gradient(low = "gray90", high = "black") +
+  stat_smooth(method = lm) +
+  scale_x_log10() +
+  scale_y_log10() +
+  theme_classic() +
+  geom_vline(xintercept = 500) +
+  geom_hline(yintercept = 250) +
+  facet_wrap(~orig.ident)
+cerebral_seurat_filtered@meta.data %>%
+  ggplot(aes(x = nCount_RNA, y = nFeature_RNA, color = percent_mito)) +
+  geom_point() +
+  scale_colour_gradient(low = "gray90", high = "black") +
+  stat_smooth(method = lm) +
+  scale_x_log10() +
+  scale_y_log10() +
+  theme_classic() +
+  geom_vline(xintercept = 500) +
+  geom_hline(yintercept = 250) +
+  facet_wrap(~orig.ident)
+```
+
+#### saving filtered data as new object:
+Note: this object is just filtered for nCount_RNA, mitochondria, and Malat1. It was normalized and logtransformed for cell cycle scoring.
+```{r}
+save(kidney_seurat_filtered, file = here("data/filtered_setbp1_kidney_seurat.Rdata"))
+save(cerebral_seurat_filtered, file = here("data/filtered_setbp1_cerebral_seurat.Rdata"))
+```
+
+```{r}
+# run style
+style_file(here("src/seurat_scripts/Setbp1_QC_01.Rmd"))
+# lintr was run as well
+```
+
+
+Next script: Setbp1_DoubletFinder_02
