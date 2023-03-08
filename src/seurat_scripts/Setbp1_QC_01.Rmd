@@ -10,7 +10,7 @@ output:
 ---
 # *Single-nuclei analysis: Quality Control*
 * load in data and create Seurat objects
-* check proprtion of mitochondrial and ribosomal genes
+* check proportion of mitochondrial and ribosomal genes
 * visualize data feature distribution
 * filter nFeatureRNA and mt
 * check cell cycle scoring
@@ -27,7 +27,7 @@ getwd()
 .libPaths() # "/usr/local/lib/R/site-library" "/usr/local/lib/R/library" "/home/jbarham3/R/x86_64-pc-linux-gnu-library/4.1"
 ```
 
-### loading in all required libraries
+### Loading in all required libraries
 ```{r, load-libraries message=FALSE}
 library(devtools)
 library(magrittr)
@@ -45,14 +45,14 @@ library(lintr)
 
 
 ### Load in the Setbp1 data:
-All cellranger outs were moved from the introns_processed_data respective outs directory to a counts directory at:/data/project/lasseigne_lab/JordanWhitlock/jw_setbp1/counts/ to make it easier to loop between and load in all files at once.
+All Cell Ranger outs were moved from the introns_processed_data respective outs directory to a counts directory at:/data/project/lasseigne_lab/JordanWhitlock/jw_setbp1/counts/ to make it easier to loop between and load in all files at once.
 
 Make sure all of your outs are placed into a single head directory called "counts" and within that directory there is a folder for each sample and within each sample specific folder a "barcodes.tsv.gx", "features.tsv.gz" and "matrix.mtx.gz" file.
 ```{r}
 counts_list <- list.dirs("/data/project/lasseigne_lab/JordanWhitlock/jw_setbp1/counts", recursive = FALSE)
 ```
 False makes sure the "/data/project/lasseigne_lab/JordanWhitlock/jw_setbp1/counts" is not included in the list. This command lists all the sample folders in your counts directory
-#loading in all of the files and creating seurat objects named as "sample.id_seurat_object" using the sample.ids vector above:
+# Loading in all of the files and creating seurat objects named as "sample.id_seurat_object" using the sample.ids vector above:
 ```{r}
 for (i in counts_list) {
   counts <- Read10X(i)
@@ -65,7 +65,7 @@ for (i in counts_list) {
 ```
 
 
-### annotating seurat objects for condition with "control" and "heterozygous" metadata tags:
+### Annotating seurat objects for condition with "control" and "heterozygous" metadata tags:
 ```{r}
 J1_seurat_object$type <- "heterozygous"
 J2_seurat_object$type <- "control"
@@ -82,7 +82,7 @@ K6_seurat_object$type <- "heterozygous"
 ```
 
 
-### creating kidney and cerebral cortex seurat objects and adding cell.ids:
+### Creating kidney and cerebral cortex seurat objects and adding cell.ids:
 ```{r}
 # kidney
 kidney_seurat <- merge(K1_seurat_object,
@@ -96,7 +96,7 @@ cerebral_seurat <- merge(J1_seurat_object,
   add.cell.ids = c("J1_het", "J2_ctrl", "J3_ctrl", "J4_ctrl", "J13_het", "J15_het")
 )
 
-# checking metadat assignment:
+# checking metadata assignment:
 as.data.frame(kidney_seurat@assays$RNA@counts[1:10, 1:2])
 head(kidney_seurat@meta.data, 10)
 as.data.frame(cerebral_seurat@assays$RNA@counts[1:10, 1:2])
@@ -109,16 +109,16 @@ rm(list = setdiff(ls(), c("cerebral_seurat", "kidney_seurat")))
 gc()
 ```
 
-### perform Quality Control:
+### Perform Quality Control:
 Having the data in a suitable format, we can start calculating some quality metrics. We can for example calculate the percentage of mitochondrial and ribosomal genes per cell and add that to the metadata. This will be helpful to visualize them across different metadata parameters. There are several ways of doing this, and below I manually calculate the proportion of mitochondrial reads and add to the metadata table.
 
 Note from Simple Single Cell workflows (Lun, McCarthy & Marioni, 2017): High proportions are indicative of poor-quality cells (Islam et al. 2014; Ilicic et al. 2016), possibly because of loss of cytoplasmic RNA from perforated cells. The reasoning is that mitochondria are larger than individual transcript molecules and less likely to escape through tears in the cell membrane.
 
-#### remove mitochondrial genes -- clean this up with for loops later
+#### Remove mitochondrial genes
 
-Note: PercentageFeatureSet function has grepping out of Mt prefixes built in. It is an automatic way to remove mt genes instead of manually grepping from rownames. (Source:https://nbisweden.github.io/workshop-scRNAseq/labs/compiled/seurat/seurat_01_qc.html )
+Note: PercentageFeatureSet function has grepping out of Mt prefixes built in. It is an automatic way to remove mt genes instead of manually grepping from rownames. (Source: https://nbisweden.github.io/workshop-scRNAseq/labs/compiled/seurat/seurat_01_qc.html )
 
-In the mm10 reference (version 3.0.0) in the cellranger reference files reveals that for whatever reason, the MT genes are labeled with lowercase mt instead. (source: https://www.michaelchimenti.com/2019/03/calculate-mitochondrial-for-mouse-scrna-seq/)
+In the mm10 reference (version 3.0.0) in the Cell Ranger reference files reveals that for whatever reason, the MT genes are labeled with lowercase mt instead. (source: https://www.michaelchimenti.com/2019/03/calculate-mitochondrial-for-mouse-scrna-seq/)
 ```{r}
 cerebral_seurat <- PercentageFeatureSet(cerebral_seurat,
   "mt-",
@@ -151,7 +151,7 @@ head(kidney_seurat)
 ```
 
 
-### plot Quality Control metrics just calculated
+### Plot Quality Control metrics just calculated
 ```{r}
 feats <- c("nFeature_RNA", "nCount_RNA", "percent_mito", "percent_ribo")
 # violin:
@@ -268,7 +268,7 @@ cerebral_seurat@meta.data %>%
 ```
 
 
-##### Visualize the distribution of nFeature_RNA (genes) detected per cell via histogram
+##### Visualize the distribution of nFeature_RNA (genes) detected per cell via density plot
 ```{r}
 cerebral_seurat@meta.data %>%
   ggplot(aes(color = orig.ident, x = nFeature_RNA, fill = orig.ident)) +
@@ -344,10 +344,10 @@ cerebral_seurat@meta.data %>%
 ```
 
 
-#### filter out nFeature_RNA and mt:
+#### Filter out nFeature_RNA and mt:
 ```{r}
 kidney_seurat_filtered <- subset(kidney_seurat, subset = nFeature_RNA >= 1000 & nFeature_RNA <= 15000 & percent_mito < 5)
-cerebral_seurat_filtered <- subset(cerebral_seurat, subset = nFeature_RNA >= 1000 & nFeature_RNA <= 15000 & percent_mito < 5) # 5.0 here because percent_mito is a percent not  a ratio.
+cerebral_seurat_filtered <- subset(cerebral_seurat, subset = nFeature_RNA >= 1000 & nFeature_RNA <= 15000 & percent_mito < 5) # 5.0 here because percent_mito is a percent not a ratio.
 ```
 
 
@@ -376,16 +376,16 @@ boxplot(t(as.matrix(C[most_expressed, ])),
 ```
 
 
-#### removing Malat1:
+#### Removing Malat1:
 ```{r}
 kidney_seurat_filtered <- kidney_seurat_filtered[!grepl("Malat1", rownames(kidney_seurat_filtered)), ]
 cerebral_seurat_filtered <- cerebral_seurat_filtered[!grepl("Malat1", rownames(cerebral_seurat_filtered)), ]
 ```
 
 
-#### checking cell cycle scoring
+#### Checking cell cycle scoring
 ```{r}
-# Before running CellCycleScoring the data need to be normalized and logtransformed.
+# Before running CellCycleScoring the data need to be normalized and log transformed.
 kidney_seurat_filtered <- NormalizeData(kidney_seurat_filtered)
 # now check cell cycle scoring
 kidney_seurat_filtered <- CellCycleScoring(
@@ -396,7 +396,7 @@ VlnPlot(kidney_seurat_filtered,
   features = c("S.Score", "G2M.Score"), group.by = "orig.ident",
   ncol = 4, pt.size = 0.1
 )
-# Before running CellCycleScoring the data need to be normalized and logtransformed.
+# Before running CellCycleScoring the data need to be normalized and log transformed.
 cerebral_seurat_filtered <- NormalizeData(cerebral_seurat_filtered)
 # now check cell cycle scoring
 cerebral_seurat_filtered <- CellCycleScoring(
@@ -410,9 +410,9 @@ VlnPlot(cerebral_seurat_filtered,
 ```
 
 
-#### revisualizing QC metrics after data has been filtered:
+#### Revisualizing QC metrics after data has been filtered:
 
-##### plot Quality Control metrics just calculated
+##### Plot Quality Control metrics just calculated
 ```{r}
 feats <- c("nFeature_RNA", "nCount_RNA", "percent_mito", "percent_ribo")
 # violin:
@@ -495,7 +495,7 @@ cerebral_seurat_filtered@meta.data %>%
   geom_vline(xintercept = 500)
 ```
 
-###### Visualize the distribution of nFeature_RNA (genes) detected per cell via histogram
+###### Visualize the distribution of nFeature_RNA (genes) detected per cell via density plot
 ```{r}
 cerebral_seurat_filtered@meta.data %>%
   ggplot(aes(color = orig.ident, x = nFeature_RNA, fill = orig.ident)) +
@@ -568,8 +568,8 @@ cerebral_seurat_filtered@meta.data %>%
   facet_wrap(~orig.ident)
 ```
 
-#### saving filtered data as new object:
-Note: this object is just filtered for nCount_RNA, mitochondria, and Malat1. It was normalized and logtransformed for cell cycle scoring.
+#### Saving filtered data as new object:
+Note: this object is just filtered for nCount_RNA, mitochondria, and Malat1. It was normalized and log transformed for cell cycle scoring.
 ```{r}
 save(kidney_seurat_filtered, file = here("data/filtered_setbp1_kidney_seurat.Rdata"))
 save(cerebral_seurat_filtered, file = here("data/filtered_setbp1_cerebral_seurat.Rdata"))
