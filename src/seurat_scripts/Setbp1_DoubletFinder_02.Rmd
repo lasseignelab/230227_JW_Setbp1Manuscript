@@ -81,7 +81,7 @@ For the kidney, doublets were estimated as follows:
 * K6 - 12760 nuclei recovered; ~9.7% doublets
 
 DoubletFinder takes the following arguments:
-* seu ~ This is a fully-processed Seurat object (i.e., after NormalizeData, FindVariableGenes, ScaleData, RunPCA, and RunTSNE have all been run).
+* seu ~ This is a fully-processed Seurat object (i.e., after NormalizeData, FindVariableGenes, ScaleData, RunPCA, and RunUMAP have all been run).
 
 * PCs ~ The number of statistically-significant principal components, specified as a range (e.g., PCs = 1:10)
 
@@ -194,8 +194,8 @@ DoubletFinder takes the following arguments:
     sweep_stats_kidney <- summarizeSweep(sweep_res_list_kidney, GT = FALSE)
     bcmvn_kidney <- find.pK(sweep_stats_kidney)
 
-    pK <- as.numeric(as.character(bcmvn_cerebral$pK))
-    BCmetric <- bcmvn_cerebral$BCmetric
+    pK <- as.numeric(as.character(bcmvn_kidney$pK))
+    BCmetric <- bcmvn_kidney$BCmetric
     pK_choose <- pK[which(BCmetric %in% max(BCmetric))]
 
     par(mar = c(5, 4, 4, 8) + 1, cex.main = 1.2, font.main = 2)
@@ -227,8 +227,8 @@ DoubletFinder takes the following arguments:
     sweep_stats_kidney <- summarizeSweep(sweep_res_list_kidney, GT = FALSE)
     bcmvn_kidney <- find.pK(sweep_stats_kidney)
 
-    pK <- as.numeric(as.character(bcmvn_cerebral$pK))
-    BCmetric <- bcmvn_cerebral$BCmetric
+    pK <- as.numeric(as.character(bcmvn_kidney$pK))
+    BCmetric <- bcmvn_kidney$BCmetric
     pK_choose <- pK[which(BCmetric %in% max(BCmetric))]
 
     par(mar = c(5, 4, 4, 8) + 1, cex.main = 1.2, font.main = 2)
@@ -260,8 +260,8 @@ DoubletFinder takes the following arguments:
     sweep_stats_kidney <- summarizeSweep(sweep_res_list_kidney, GT = FALSE)
     bcmvn_kidney <- find.pK(sweep_stats_kidney)
 
-    pK <- as.numeric(as.character(bcmvn_cerebral$pK))
-    BCmetric <- bcmvn_cerebral$BCmetric
+    pK <- as.numeric(as.character(bcmvn_kidney$pK))
+    BCmetric <- bcmvn_kidney$BCmetric
     pK_choose <- pK[which(BCmetric %in% max(BCmetric))]
 
     par(mar = c(5, 4, 4, 8) + 1, cex.main = 1.2, font.main = 2)
