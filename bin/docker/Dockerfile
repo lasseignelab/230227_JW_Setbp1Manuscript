@@ -14,7 +14,7 @@ RUN R -e 'install.packages(c("tidyverse", "remotes",  "BiocManager", "devtools",
 
 #### Project Specific CRAN Packages ####
 
-RUN R -e 'install.packages(c("NMF", "SoupX", "fgsea", "gprofiler2", "circlize", "msigdbr", "enrichR", "lattice", "grr", "rafalib", "markdown", "reticulate", "harmony", "fields", "KernSmooth", "ROCR", "paralell", "pheatmap", "Seurat", "ggplot2", "Matrix.utils", "readr", "dplyr", "clustree", "sctransform", "igraph", "reshape2", "visNetwork", "RColorBrewer", "plotly", "data.table", "cowplot", "magrittr", "Matrix", "purrr", "tibble", "png", "hdf5r"))'
+RUN R -e 'install.packages(c("dendextend","NMF", "SoupX", "fgsea", "gprofiler2", "circlize", "msigdbr", "enrichR", "lattice", "grr", "rafalib", "markdown", "reticulate", "harmony", "fields", "KernSmooth", "ROCR", "paralell", "pheatmap", "Seurat", "ggplot2", "Matrix.utils", "readr", "dplyr", "clustree", "sctransform", "igraph", "reshape2", "visNetwork", "RColorBrewer", "plotly", "data.table", "cowplot", "magrittr", "Matrix", "purrr", "tibble", "png", "hdf5r"))'
 
 #### Project Specific GitHub Packages ####
 
@@ -24,6 +24,7 @@ RUN R -e 'devtools::install_github("saezlab/liana")'
 RUN R -e 'remotes::install_github( repo = "chris-mcginnis-ucsf/DoubletFinder", ref = "master")'
 RUN R -e 'remotes::install_github(repo = "theislab/kBET", ref = "master")'
 RUN R -e 'remotes::install_github(repo = "netZoo/netZooR", ref = "master")'
+RUN R -e 'remotes::install_github("llrs/topGO")'
 
 #### Project Specific Bioconductor Packages ####
 
