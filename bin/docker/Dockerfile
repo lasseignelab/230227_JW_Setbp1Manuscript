@@ -28,7 +28,7 @@ RUN R -e 'remotes::install_github("llrs/topGO")'
 
 #### Project Specific Bioconductor Packages ####
 
-# RUN R -e 'BiocManager::install(c("GEOquery", "rrvgo", "AnnotationHub", "org.Mm.eg.db", "SingleCellExperiment", "ComplexHeatmap", "scran", "limma", "Biobase", "scater", "edgeR", "S4vectors", "apeglm", "DESeq2"))'
+RUN R -e 'BiocManager::install(c("GEOquery", "rrvgo", "AnnotationHub", "org.Mm.eg.db", "SingleCellExperiment", "ComplexHeatmap", "scran", "limma", "Biobase", "scater", "edgeR", "S4vectors", "apeglm", "DESeq2"))'
 
 ##----------------------------------------------------------------------------##
 ## SYSTEM PACKAGES
