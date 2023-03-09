@@ -32,6 +32,7 @@ library(here)
 library(styler)
 library(lintr)
 source(here("src/functions/functions.R"))
+set.seed(2178)
 ```
 
 #### Load in object:

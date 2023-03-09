@@ -26,6 +26,7 @@ library(Seurat)
 library(ggplot2)
 library(styler)
 library(lintr)
+set.seed(2178)
 ```
 
 ####load in markers:

@@ -68,6 +68,12 @@ for (i in 1:length(split_sample)) {
 }
 ```
 
+```{r save-intermediary-object}
+save(split_sample, file = here("data/split_sample_kidney.Rdata"))
+load(here("data/split_sample_kidney.Rdata"))
+```
+
+
 Then detect doublets:  
 
 In order to detect doublets, one must know the predicted number of doublets expected based on the number of nuclei that were recovered. In order to calculate the predicted number of multiplets for your data, see the table here: https://nbisweden.github.io/workshop-scRNAseq/labs/compiled/seurat/seurat_01_qc.html#Predict_doublets
@@ -148,6 +154,11 @@ for (i in 1:length(split_sample)) {
     split_sample[[i]] <- RunPCA(split_sample[[i]], verbose = FALSE, npcs = 30)
     split_sample[[i]] <- RunUMAP(split_sample[[i]], verbose = FALSE, dims = 1:30)
 }
+```
+
+```{r save-intermediary-object}
+save(split_sample, file = here("data/split_sample_cortex.Rdata"))
+load(here("data/split_sample_cortex.Rdata"))
 ```
 
 Then detect doublets: 

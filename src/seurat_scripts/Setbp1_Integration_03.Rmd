@@ -32,6 +32,7 @@ library(edgeR)
 library(here)
 library(styler)
 library(lintr)
+set.seed(2178)
 ```
 
 

@@ -31,6 +31,7 @@ library(here)
 library(lintr)
 library(styler)
 source(here("src/functions/functions.R"))
+set.seed(2178)
 ```
 
 #### loading outputs at log2FC of 0.1 from previous script:

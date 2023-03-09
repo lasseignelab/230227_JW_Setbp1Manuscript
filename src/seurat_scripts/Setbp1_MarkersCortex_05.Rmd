@@ -27,6 +27,7 @@ library(Seurat)
 library(here)
 library(styler)
 library(lintr)
+set.seed(2178)
 
 # loading in the objects
 load(here("data/cerebral_leiden.Rdata"))

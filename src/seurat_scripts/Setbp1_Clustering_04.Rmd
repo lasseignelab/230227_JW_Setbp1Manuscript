@@ -44,6 +44,7 @@ library(clustree)
 library(here)
 library(styler)
 library(lintr)
+set.seed(2178)
 ```
 
 ### Clustering on the Harmony integrated data
