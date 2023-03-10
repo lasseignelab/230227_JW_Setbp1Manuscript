@@ -504,14 +504,14 @@ ggplot(data = fibroblasts_het, aes(x = avg_log2FC, y = -log10(p_val), col = diff
 
 #### saving all DEG in heterozygous as .csv for supplementary methods:
 ```{r}
-write.csv(astrocytes_het, here("/results/seurat/DEG_astrocytes.csv"), row.names = FALSE)
-write.csv(excitatory.neurons_het, here("/results/seurat/DEG_excitatory.neurons.csv"), row.names = FALSE)
-write.csv(inhibitory.neurons_het, here("/results/seurat/DEG_inhibitory.neurons.csv"), row.names = FALSE)
-write.csv(microglia_het, here("/results/seurat/DEG_microglia.csv"), row.names = FALSE)
-write.csv(mural.cells_het, here("/results/seurat/DEG_mural.cells.csv"), row.names = FALSE)
-write.csv(oligodendrocytes_het, here("/results/seurat/DEG_oligodendrocytes.csv"), row.names = FALSE)
-write.csv(opcs_het, here("/results/seurat/DEG_opcs.csv"), row.names = FALSE)
-write.csv(fibroblasts_het, here("/results/seurat/DEG_fibroblasts.csv"), row.names = FALSE)
+write.csv(astrocytes_het, here("results/seurat/DEG_astrocytes.csv"), row.names = FALSE)
+write.csv(excitatory.neurons_het, here("results/seurat/DEG_excitatory.neurons.csv"), row.names = FALSE)
+write.csv(inhibitory.neurons_het, here("results/seurat/DEG_inhibitory.neurons.csv"), row.names = FALSE)
+write.csv(microglia_het, here("results/seurat/DEG_microglia.csv"), row.names = FALSE)
+write.csv(mural.cells_het, here("results/seurat/DEG_mural.cells.csv"), row.names = FALSE)
+write.csv(oligodendrocytes_het, here("results/seurat/DEG_oligodendrocytes.csv"), row.names = FALSE)
+write.csv(opcs_het, here("results/seurat/DEG_opcs.csv"), row.names = FALSE)
+write.csv(fibroblasts_het, here("results/seurat/DEG_fibroblasts.csv"), row.names = FALSE)
 ```
 
 Outputs at log2FC of 0.1, for downstream analysis 
@@ -522,8 +522,8 @@ save(inhibitory.neurons_het, file = here("results/DEG/inhibitory_het_DEG01.Rdata
 save(oligodendrocytes_het, file = here("results/DEG/oligo_het_DEG01.Rdata"))
 save(opcs_het, file = here("results/DEG/opcs_het_DEG01.Rdata"))
 save(mural.cells_het, file = here("results/DEG/mural_het_DEG01.Rdata"))
-save(microglia_het, file = here("resullts/DEG/micro_het_DEG01.Rdata"))
-save(fibroblasts_het, file = here("resullts/DEG/fibro_het_DEG01.Rdata"))
+save(microglia_het, file = here("results/DEG/micro_het_DEG01.Rdata"))
+save(fibroblasts_het, file = here("results/DEG/fibro_het_DEG01.Rdata"))
 ```
 
 
@@ -1023,6 +1023,7 @@ for (i in celltypes) {
   DEGs_cerebralcells <- rbind(DEGs_cerebralcells, DEGs)
 }
 
+write.csv(DEGs_cerebralcells, file = here("results/seurat/DEGs_cerebralcells.csv")) #written out once then commented out
 
 DEGs_cerebralcells <- read.csv(here("results/seurat/DEGs_cerebralcells.csv"))
 ```
@@ -1032,65 +1033,16 @@ DEGs_cerebralcells <- read.csv(here("results/seurat/DEGs_cerebralcells.csv"))
 
 Setbp1 target gene list was constructed in 'Setbp1_target_list_construction.Rmd' found in /data/user/jbarham3/jw_cellspecific/jw_cellspecific/setbp1_clean/inputs/processed/setbp1_targets/
 ```{r}
-setbp1_genes <- read.csv(here("/data/processed/setbp1_targets.csv"))
+setbp1_genes <- read.csv(here("data/processed/setbp1_targets.csv"))
 setbp1_genes <- setbp1_genes[, -1]
 setbp1_genes <- append(setbp1_genes, "Setbp1")
 ```
 
 
-#generating seurat input for complex heatmap from normalized expression data
+#generating seurat input for complex heatmap from DGE data
 resource: 
 * NormalizeData, ScaleData  was not used because of https://www.embopress.org/doi/full/10.15252/msb.20188746
 
-```{r}
-DefaultAssay(cerebral_int_celltypes) # RNA
-
-# filter for just setbp1 targets
-cerebral_subset <- subset(cerebral_int_celltypes, features = setbp1_genes)
-
-# grab meta data for plot:
-meta.data <- cerebral_subset@meta.data
-meta.data <- select(meta.data, c("type", "cell_type"))
-
-# define order of annotations and colors:
-ordered.meta.data <- meta.data[order(meta.data$cell_type), ] # order by cell type
-
-annotation_colors <- list("type" = c("control" = "#F8766D", "heterozygous" = "#00BFC4"))
-
-# set heatmap annotations:
-heat.anno <- HeatmapAnnotation(df = ordered.meta.data, show_annotation_name = TRUE, col = annotation_colors)
-
-# filter for just the genes of interest, to obtain matrix for input:
-mat <- GetAssayData(cerebral_subset, assay = "RNA", slot = "data")
-
-
-# ensure the column order of the expression data matches row order of annotation table
-genes_mat <- mat[, rownames(ordered.meta.data)] # rearrange order
-genes_mat <- as.matrix(genes_mat)
-unique(rownames(genes_mat))
-
-# plot heatmap
-# Heatmap
-col_fun <- colorRamp2(c(-2, 0, 2), c("purple", "black", "yellow"))
-Heatmap(
-  genes_mat,
-  col = col_fun,
-  cluster_rows = FALSE,
-  cluster_columns = TRUE,
-  column_order = NULL,
-  show_row_dend = FALSE,
-  show_column_dend = FALSE,
-  show_row_names = TRUE,
-  show_column_names = FALSE,
-  use_raster = TRUE,
-  raster_device = c("png"),
-  bottom_annotation = NULL,
-  top_annotation = heat.anno
-)
-```
-
-
-#generating seurat input for complex heatmap from DGE data
 ```{r}
 # filter DEG list for just setbp1 targets
 cerebral_subset <- DEGs_cerebralcells[DEGs_cerebralcells$gene %in% setbp1_genes, ]
