@@ -67,7 +67,7 @@ cerebral_int@active.assay # RNA
 
 NOTE: Use LEIDEN (algorithm = 4) NOT LOUVAIN (algorithm = 1)
 
-#find neighbors
+# find neighbors
 ```{r}
 kidney_int <- FindNeighbors(kidney_int, dims = 1:30, reduction = "harmony")
 cerebral_int <- FindNeighbors(cerebral_int, dims = 1:30, reduction = "harmony")
