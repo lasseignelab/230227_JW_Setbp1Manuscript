@@ -94,7 +94,7 @@ for (res in c(0.7, 0.8, 0.9, 1, 1.5)) {
   cerebral_int <- FindClusters(cerebral_int, graph.name = "RNA_snn", resolution = res, algorithm = 4, method = "igraph")
 }
 
-jpeg(file = here("/results/kidneyint_clustree.jpeg"))
+jpeg(file = here("results/cerebralint_clustree.jpeg"))
 clustree(cerebral_int@meta.data, prefix = "RNA_snn_res.")
 dev.off()
 
