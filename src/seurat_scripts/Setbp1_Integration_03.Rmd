@@ -11,6 +11,7 @@ output:
 
 This analysis follows 'Setbp1_DoubletFinder_02.Rmd'. 
 
+### Loading in all required libraries
 ```{r}
 library(devtools)
 library(magrittr)
@@ -50,6 +51,7 @@ kidney_seurat_filtered <- NormalizeData(kidney_seurat_filtered)
 cerebral_seurat_filtered <- NormalizeData(cerebral_seurat_filtered)
 ```
 
+
 #### feature selection:
 kidney
 ```{r}
@@ -87,7 +89,7 @@ LabelPoints(
 
 
 #### scale data: z-score transformation
-
+kidney
 ```{r}
 kidney_seurat_filtered <- ScaleData(kidney_seurat_filtered,
   vars.to.regress = c("percent_mito", "nFeature_RNA"),
@@ -95,6 +97,7 @@ kidney_seurat_filtered <- ScaleData(kidney_seurat_filtered,
 )
 ```
 
+cerebral
 ```{r}
 cerebral_seurat_filtered <- ScaleData(cerebral_seurat_filtered,
   vars.to.regress = c("percent_mito", "nFeature_RNA"),
@@ -131,10 +134,23 @@ plot_grid(
 
 #### visualize tSNE:
 ```{r}
-cerebral_seurat_filtered <- RunTSNE(cerebral_seurat_filtered, reduction = "pca", dims = 1:30, perplexity = 30, max_iter = 1000, theta = 0.5, eta = 200, num_threads = 0)
+cerebral_seurat_filtered <- RunTSNE(cerebral_seurat_filtered,
+  reduction = "pca",
+  dims = 1:30,
+  perplexity = 30,
+  max_iter = 1000,
+  theta = 0.5,
+  eta = 200,
+  num_threads = 0
+)
 kidney_seurat_filtered <- RunTSNE(kidney_seurat_filtered,
-  reduction = "pca", dims = 1:30, perplexity = 30, max_iter = 1000,
-  theta = 0.5, eta = 200, num_threads = 0
+  reduction = "pca",
+  dims = 1:30,
+  perplexity = 30,
+  max_iter = 1000,
+  theta = 0.5,
+  eta = 200,
+  num_threads = 0
 )
 plot_grid(ncol = 3, DimPlot(cerebral_seurat_filtered, reduction = "tsne", group.by = "orig.ident"))
 plot_grid(ncol = 3, DimPlot(kidney_seurat_filtered, reduction = "tsne", group.by = "orig.ident"))
@@ -218,8 +234,9 @@ save(cerebral_int, file = here("data/integrated_setbp1_cerebral.Rdata"))
 
 
 #### highly variable genes:
+We find highly variable genes on the object not integrated with harmony.
 
-#split objects by origin identity:
+# Split objects by origin identity:
 ```{r}
 # kidney
 kidney_list <- SplitObject(kidney_seurat_filtered, split.by = "orig.ident")
@@ -227,7 +244,7 @@ kidney_list <- SplitObject(kidney_seurat_filtered, split.by = "orig.ident")
 cerebral_list <- SplitObject(cerebral_seurat_filtered, split.by = "orig.ident")
 ```
 
-#identify hvgs for kidney
+# Identify hvgs for kidney
 ```{r}
 for (i in 1:length(kidney_list)) {
   kidney_list[[i]] <- NormalizeData(kidney_list[[i]], verbose = FALSE)
@@ -248,7 +265,7 @@ overlap <- sapply(kidney_hvgs_per_dataset, function(x) {
 pheatmap::pheatmap(t(overlap * 1), cluster_rows = FALSE, color = c("grey90", "grey20"))
 ```
 
-#identify hvgs for cerebral
+# Identify hvgs for cerebral
 ```{r}
 for (i in 1:length(cerebral_list)) {
   cerebral_list[[i]] <- NormalizeData(cerebral_list[[i]], verbose = FALSE)
@@ -268,7 +285,7 @@ overlap <- sapply(cerebral_hvgs_per_dataset, function(x) {
 })
 pheatmap::pheatmap(t(overlap * 1), cluster_rows = FALSE, color = c("grey90", "grey20"))
 ```
-#save hvgs:
+# Save hvgs:
 ```{r}
 save(kidney_hvgs_per_dataset, file = here("data/kidney_hvgs.Rdata"))
 save(cerebral_hvgs_per_dataset, file = here("data/cerebral_hvgs.Rdata"))
@@ -276,7 +293,7 @@ save(cerebral_hvgs_per_dataset, file = here("data/cerebral_hvgs.Rdata"))
 
 ```{r}
 # run style
-style_file(here("src/seurat_scripts/Setbp1_QC_01.Rmd"))
+style_file(here("src/seurat_scripts/Setbp1_Integration_03.Rmd"))
 # lintr was run as well
 ```
 
