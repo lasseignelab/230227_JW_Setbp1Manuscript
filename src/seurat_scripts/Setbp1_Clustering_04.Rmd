@@ -99,7 +99,7 @@ clustree(cerebral_int@meta.data, prefix = "RNA_snn_res.")
 dev.off()
 
 
-save(cerebral_int, file = here("/data/cerebral_leiden.Rdata"))
+save(cerebral_int, file = here("data/cerebral_leiden.Rdata"))
 ```
 
 
@@ -111,10 +111,6 @@ load(here("data/kidney_leiden.Rdata")) # kidney_int
 
 ```{r}
 # harmony
-DimPlot(kidney_int, reduction = "umap_harmony", group.by = "RNA_snn_res.0.1") +
-  ggtitle("leiden_0.1")
-DimPlot(kidney_int, reduction = "umap_harmony", group.by = "RNA_snn_res.0.25") +
-  ggtitle("leiden_0.25")
 DimPlot(kidney_int, reduction = "umap_harmony", group.by = "RNA_snn_res.0.5") +
   ggtitle("leiden_0.5")
 DimPlot(kidney_int, reduction = "umap_harmony", group.by = "RNA_snn_res.0.6") +
@@ -127,10 +123,17 @@ DimPlot(kidney_int, reduction = "umap_harmony", group.by = "RNA_snn_res.0.9") +
   ggtitle("leiden_0.9")
 DimPlot(kidney_int, reduction = "umap_harmony", group.by = "RNA_snn_res.1") +
   ggtitle("leiden_1")
-DimPlot(kidney_int, reduction = "umap_harmony", group.by = "RNA_snn_res.1.5") +
+
+DimPlot(cerebral_int, reduction = "umap_harmony", group.by = "RNA_snn_res.0.7") +
+  ggtitle("leiden_0.7")
+DimPlot(cerebral_int, reduction = "umap_harmony", group.by = "RNA_snn_res.0.8") +
+  ggtitle("leiden_0.8")
+DimPlot(cerebral_int, reduction = "umap_harmony", group.by = "RNA_snn_res.0.9") +
+  ggtitle("leiden_0.9")
+DimPlot(cerebral_int, reduction = "umap_harmony", group.by = "RNA_snn_res.1") +
+  ggtitle("leiden_1")
+DimPlot(cerebral_int, reduction = "umap_harmony", group.by = "RNA_snn_res.1.5") +
   ggtitle("leiden_1.5")
-DimPlot(kidney_int, reduction = "umap_harmony", group.by = "RNA_snn_res.2") +
-  ggtitle("leiden_2")
 ```
 
 #### rechecking bimodality from early QC to see if a particular cluster is driving it:
