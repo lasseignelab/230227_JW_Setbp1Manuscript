@@ -37,8 +37,8 @@ set.seed(2178)
 
 # Load in the object after doublets are removed
 ```{r}
-load(here("data/nodoublet_setbp1_cerebral_seurat.Rdata")) #cerebral_seurat_filtered
-load(here("data/nodoublet_setbp1_kidney_seurat.Rdata")) #kidney_seurat_filtered
+load(here("data/nodoublet_setbp1_cerebral_seurat.Rdata")) # cerebral_seurat_filtered
+load(here("data/nodoublet_setbp1_kidney_seurat.Rdata")) # kidney_seurat_filtered
 ```
 
 ### Normalize FindVariableFeatures and Integrate -- Harmony
@@ -57,12 +57,15 @@ suppressWarnings(suppressMessages(kidney_seurat_filtered <- FindVariableFeatures
   selection.method = "vst",
   nfeatures = 4000,
   verbose = FALSE,
-  assay = "RNA"))) # changed from std 2000 for nFeatures based on data distribution
+  assay = "RNA"
+))) # changed from std 2000 for nFeatures based on data distribution
 
 top20_kidney <- head(VariableFeatures(kidney_seurat_filtered), 20)
-LabelPoints(plot = VariableFeaturePlot(kidney_seurat_filtered),
-            points = top20_kidney,
-            repel = TRUE)
+LabelPoints(
+  plot = VariableFeaturePlot(kidney_seurat_filtered),
+  points = top20_kidney,
+  repel = TRUE
+)
 ```
 
 cerebral
@@ -71,12 +74,15 @@ suppressWarnings(suppressMessages(cerebral_seurat_filtered <- FindVariableFeatur
   selection.method = "vst",
   nfeatures = 4000,
   verbose = FALSE,
-  assay = "RNA"))) # changed from std 2000 for nFeatures based on data distribution
+  assay = "RNA"
+))) # changed from std 2000 for nFeatures based on data distribution
 
 top20_cerebral <- head(VariableFeatures(cerebral_seurat_filtered), 20)
-LabelPoints(plot = VariableFeaturePlot(cerebral_seurat_filtered),
-            points = top20_cerebral,
-            repel = TRUE)
+LabelPoints(
+  plot = VariableFeaturePlot(cerebral_seurat_filtered),
+  points = top20_cerebral,
+  repel = TRUE
+)
 ```
 
 
@@ -84,14 +90,16 @@ LabelPoints(plot = VariableFeaturePlot(cerebral_seurat_filtered),
 
 ```{r}
 kidney_seurat_filtered <- ScaleData(kidney_seurat_filtered,
-                                    vars.to.regress = c("percent_mito", "nFeature_RNA"),
-                                    assay = "RNA")
+  vars.to.regress = c("percent_mito", "nFeature_RNA"),
+  assay = "RNA"
+)
 ```
 
 ```{r}
 cerebral_seurat_filtered <- ScaleData(cerebral_seurat_filtered,
-                                      vars.to.regress = c("percent_mito", "nFeature_RNA"),
-                                      assay = "RNA")
+  vars.to.regress = c("percent_mito", "nFeature_RNA"),
+  assay = "RNA"
+)
 ```
 
 #### check dimensions with PCA
