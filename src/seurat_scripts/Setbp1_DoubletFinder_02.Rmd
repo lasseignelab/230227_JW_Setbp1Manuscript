@@ -35,7 +35,7 @@ set.seed(2178)
 source(here("src/functions/functions.R"))
 ```
 
-can pick up analysis from here. Note this data is just filtered for nCount_RNA, mitochondria, and Malat1. No normalization or scaling has taken place. 
+Can pick up analysis from here. Note this data is just filtered for nCount_RNA, mitochondria, and Malat1. No normalization or scaling has taken place. 
 ```{r}
 load(here("data/filtered_setbp1_kidney_seurat.Rdata"))
 load(here("data/filtered_setbp1_cerebral_seurat.Rdata"))
@@ -130,7 +130,7 @@ doublet_removal(sample = split_sample$K6, expected = 0.097, pK = 0.005) #pK obta
 split_sample$K6 <- no_doublets
 ```
 
-#merge seurat object that has no doublets now:
+# Merge seurat object that has no doublets now:
 ```{r}
 kidney_seurat_filtered <- merge(x = split_sample$K1, y = c(split_sample$K2, split_sample$K3, split_sample$K4, split_sample$K5, split_sample$K6))
 
@@ -147,11 +147,19 @@ Before doing doublet detection we need to run scaling, variable gene selection a
 ```{r}
 for (i in 1:length(split_sample)) {
     split_sample[[i]] <- NormalizeData(split_sample[[i]], verbose = FALSE)
-    split_sample[[i]] <- FindVariableFeatures(split_sample[[i]], selection.method = "vst",
-        nfeatures = 4000, verbose = FALSE)
-    split_sample[[i]] <- ScaleData(split_sample[[i]], vars.to.regress = c("percent_mito", "nFeature_RNA"), assay = "RNA")
-    split_sample[[i]] <- RunPCA(split_sample[[i]], verbose = FALSE, npcs = 30)
-    split_sample[[i]] <- RunUMAP(split_sample[[i]], verbose = FALSE, dims = 1:30)
+    split_sample[[i]] <- FindVariableFeatures(split_sample[[i]], 
+                                              selection.method = "vst",
+                                              nfeatures = 4000, 
+                                              verbose = FALSE)
+    split_sample[[i]] <- ScaleData(split_sample[[i]], 
+                                   vars.to.regress = c("percent_mito", "nFeature_RNA"), 
+                                   assay = "RNA")
+    split_sample[[i]] <- RunPCA(split_sample[[i]], 
+                                verbose = FALSE, 
+                                npcs = 30)
+    split_sample[[i]] <- RunUMAP(split_sample[[i]], 
+                                 verbose = FALSE, 
+                                 dims = 1:30)
 }
 ```
 
@@ -200,7 +208,7 @@ doublet_removal(sample = split_sample$J15, expected = 0.067, pK = 0.23) #pK obta
 split_sample$J15 <- no_doublets
 ```
 
-#merge seurat object that has no doublets now:
+# Merge seurat object that has no doublets now:
 ```{r}
 cerebral_seurat_filtered <- merge(x = split_sample$J1, y = c(split_sample$J2, split_sample$J3, split_sample$J4, split_sample$J13, split_sample$J15))
 
