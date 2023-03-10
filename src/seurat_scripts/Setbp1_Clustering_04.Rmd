@@ -151,7 +151,7 @@ kidney_int@meta.data %>%
   theme_classic() +
   ylab("Cell density") +
   geom_vline(xintercept = 500) +
-  ggtitle("Kidney @ res 0.0")
+  ggtitle("Kidney @ res 0.9")
 cerebral_int@meta.data %>%
   ggplot(aes(color = RNA_snn_res.0.9, x = nCount_RNA, fill = RNA_snn_res.0.8)) +
   geom_density(alpha = 0.2) +
@@ -159,7 +159,7 @@ cerebral_int@meta.data %>%
   theme_classic() +
   ylab("Cell density") +
   geom_vline(xintercept = 500) +
-  ggtitle("Cerebral cortex @ res 0.9")
+  ggtitle("Cerebral cortex @ res 0.8")
 kidney_int@meta.data %>%
   ggplot(aes(color = RNA_snn_res.0.9, x = nFeature_RNA, fill = RNA_snn_res.0.9)) +
   geom_density(alpha = 0.2) +
@@ -175,7 +175,7 @@ cerebral_int@meta.data %>%
   theme_classic() +
   ylab("Cell density") +
   geom_vline(xintercept = 500) +
-  ggtitle("Cerebral cortex @ res 0.9")
+  ggtitle("Cerebral cortex @ res 0.8")
 ```
 
 #### set the identity as Leiden with resolution 0.9 for kidney and 0.9 for cerbral cortex:
