@@ -1,0 +1,269 @@
+---
+title: "Setbp1_PANDA_ppi"
+author: "Jordan Whitlock"
+date: '2022-09-06'
+output: html_document
+---
+
+* Generating PPI Input for Mus Musculus (Mouse):
+  * STRING:
+    * The NetZoo package has a nice wrapper function here: https://netzoo.github.io/netZooR/reference/source.PPI.html, however, one cannot change the filtering threshold using this package. Instead I used the stringDB package to pull in the latest version
+    * All that is needed is for the user to specify the input query TFs that an individual would like to search for in the string database. 
+    * Then the species.index must be specified, here I use the mouse NCBI taxon-id (10090; https://string-db.org/cgi/organisms).
+  *Input TFs were obtained from the TF Motif input constructed in Setbp1_PANDA_TFmotif.Rmd called 'mus_motif_all.txt'
+
+## Code: 
+
+Accompanying dry lab notebook for this analysis is here: https://docs.google.com/document/d/1FO_Je9oxbBFF9S_k-8tVF2t4ba88O4C77sw1v7DIFec/edit?usp=sharing
+
+## loading in libraries
+```{r}
+library(STRINGdb)
+library(stringr)
+library(here)
+library(styler)
+library(lintr)
+set.seed(2178)
+```
+
+## loading in the TF-motif input data (needed as input to construct PPI):
+```{r}
+mus_motif_all <- read.table(here("data/processed/motif_inputs/mus_motif_all.txt"), sep = "\t")
+```
+
+
+## score threshold at 700
+Threshold scores go from 0 - 1000 and represent the confidence in the interactions present based on literature and experimental data. The lower, the less stringent. 
+```{r}
+# create a new STRINGdb class with specified version, species and score threshold
+string_db <- STRINGdb$new(version = "11.5", species = as.numeric(10090), score_threshold = 700) # version was 11.5 as of 221027, 10090 species index is for mus musculus
+# create a TF data frame with one column
+TF <- data.frame(mus_motif_all[, 1]) # grabs the TF column from this data
+# change the colname to "TF"
+colnames(TF) <- "TF"
+TF <- unique(TF)
+# map the TF to STRINGdb dataset
+TF_mapped <- string_db$map(TF, "TF", removeUnmappedRows = TRUE) # Warning:  we couldn't map to STRING 1% of your identifiers. Setting removeUnmappedRows to TRUE or FALSE doesn't make a difference.
+# collect the interactions between the TF of interest
+ppi_tmp <- string_db$get_interactions(TF_mapped$STRING_id)[, c(1, 2, 3)] # contains duplicate data
+ppi_tmp <- unique(ppi_tmp) # removing duplicates
+# store the PPI by using original identifier.
+mm10_ppi <- data.frame(from = TF_mapped[match(ppi_tmp$from, TF_mapped$STRING_id), 1], to = TF_mapped[match(ppi_tmp$to, TF_mapped$STRING_id), 1], score = ppi_tmp$combined_score)
+nrow(mm10_ppi) # 2346
+
+head(mm10_ppi) # creates a dataframe with a "from" and a "to" column for PPI
+
+# All protein names returned are in all capital, even though they are mouse (as specified by 10090 above). R is case sensitive, so need to convert these to be lowercase with first letter capital
+from <- str_to_title(mm10_ppi$from)
+to <- str_to_title(mm10_ppi$to)
+score <- str_to_title(mm10_ppi$score)
+
+mm10_ppi_700 <- data.frame(from, to, score)
+```
+
+## saving the final PPI input 
+```{r}
+write.table(mm10_ppi_700, file = here("data/processed/ppi_inputs/mm10_ppi_700.txt"), sep = "\t") # save final input data to Cheaha for use in network construction
+```
+
+CIRCLING BACK TO LOOK AT ADDITIONAL PPI INPUT THRESHOLDS BECAUSE SETBP1 IS ONLY CAPTURED AS A GENE AND NOT A TF IN PANDA NETWORKS 
+
+## score threshold at 500
+Threshold scores go from 0 - 1000 and represent the confidence in the interactions present based on literature and experimental data. The lower, the less stringent. 
+```{r}
+# create a new STRINGdb class with specified version, species and score threshold
+string_db <- STRINGdb$new(version = "11.5", species = as.numeric(10090), score_threshold = 500) # version was 11.5 as of 221027, 10090 species index is for mus musculus
+# create a TF data frame with one column
+TF <- data.frame(mus_motif_all[, 1]) # grabs the TF column from this data
+# change the colname to "TF"
+colnames(TF) <- "TF"
+TF <- unique(TF)
+# map the TF to STRINGdb dataset
+TF_mapped <- string_db$map(TF, "TF", removeUnmappedRows = TRUE) # Warning:  we couldn't map to STRING 1% of your identifiers. Setting removeUnmappedRows to TRUE or FALSE doesn't make a difference.
+# collect the interactions between the TF of interest
+ppi_tmp <- string_db$get_interactions(TF_mapped$STRING_id)[, c(1, 2, 3)] # contains duplicate data
+ppi_tmp <- unique(ppi_tmp) # removing duplicates
+# store the PPI by using original identifier.
+mm10_ppi <- data.frame(from = TF_mapped[match(ppi_tmp$from, TF_mapped$STRING_id), 1], to = TF_mapped[match(ppi_tmp$to, TF_mapped$STRING_id), 1], score = ppi_tmp$combined_score)
+nrow(mm10_ppi) # 2346
+
+head(mm10_ppi) # creates a dataframe with a "from" and a "to" column for PPI
+
+# All protein names returned are in all capital, even though they are mouse (as specified by 10090 above). R is case sensitive, so need to convert these to be lowercase with first letter capital
+from <- str_to_title(mm10_ppi$from)
+to <- str_to_title(mm10_ppi$to)
+score <- str_to_title(mm10_ppi$score)
+
+mm10_ppi_500 <- data.frame(from, to, score)
+
+
+write.table(mm10_ppi_500, file = here("data/processed/ppi_inputs/mm10_ppi_500.txt"), sep = "\t") # save final input data to Cheaha for use in network construction
+```
+
+## score threshold at 400
+Threshold scores go from 0 - 1000 and represent the confidence in the interactions present based on literature and experimental data. The lower, the less stringent. 
+```{r}
+# create a new STRINGdb class with specified version, species and score threshold
+string_db <- STRINGdb$new(version = "11.5", species = as.numeric(10090), score_threshold = 400) # version was 11.5 as of 221027, 10090 species index is for mus musculus
+# create a TF data frame with one column
+TF <- data.frame(mus_motif_all[, 1]) # grabs the TF column from this data
+# change the colname to "TF"
+colnames(TF) <- "TF"
+TF <- unique(TF)
+# map the TF to STRINGdb dataset
+TF_mapped <- string_db$map(TF, "TF", removeUnmappedRows = TRUE) # Warning:  we couldn't map to STRING 1% of your identifiers. Setting removeUnmappedRows to TRUE or FALSE doesn't make a difference.
+# collect the interactions between the TF of interest
+ppi_tmp <- string_db$get_interactions(TF_mapped$STRING_id)[, c(1, 2, 3)] # contains duplicate data
+ppi_tmp <- unique(ppi_tmp) # removing duplicates
+# store the PPI by using original identifier.
+mm10_ppi <- data.frame(from = TF_mapped[match(ppi_tmp$from, TF_mapped$STRING_id), 1], to = TF_mapped[match(ppi_tmp$to, TF_mapped$STRING_id), 1], score = ppi_tmp$combined_score)
+nrow(mm10_ppi) # 2346
+
+head(mm10_ppi) # creates a dataframe with a "from" and a "to" column for PPI
+
+# All protein names returned are in all capital, even though they are mouse (as specified by 10090 above). R is case sensitive, so need to convert these to be lowercase with first letter capital
+from <- str_to_title(mm10_ppi$from)
+to <- str_to_title(mm10_ppi$to)
+score <- str_to_title(mm10_ppi$score)
+
+mm10_ppi_400 <- data.frame(from, to, score)
+
+write.table(mm10_ppi_400, file = here("data/processed/ppi_inputs/mm10_ppi_400.txt"), sep = "\t") # save final input data to Cheaha for use in network construction
+```
+
+## score threshold at 300
+Threshold scores go from 0 - 1000 and represent the confidence in the interactions present based on literature and experimental data. The lower, the less stringent. 
+```{r}
+# create a new STRINGdb class with specified version, species and score threshold
+string_db <- STRINGdb$new(version = "11.5", species = as.numeric(10090), score_threshold = 300) # version was 11.5 as of 221027, 10090 species index is for mus musculus
+# create a TF data frame with one column
+TF <- data.frame(mus_motif_all[, 1]) # grabs the TF column from this data
+# change the colname to "TF"
+colnames(TF) <- "TF"
+TF <- unique(TF)
+# map the TF to STRINGdb dataset
+TF_mapped <- string_db$map(TF, "TF", removeUnmappedRows = TRUE) # Warning:  we couldn't map to STRING 1% of your identifiers. Setting removeUnmappedRows to TRUE or FALSE doesn't make a difference.
+# collect the interactions between the TF of interest
+ppi_tmp <- string_db$get_interactions(TF_mapped$STRING_id)[, c(1, 2, 3)] # contains duplicate data
+ppi_tmp <- unique(ppi_tmp) # removing duplicates
+# store the PPI by using original identifier.
+mm10_ppi <- data.frame(from = TF_mapped[match(ppi_tmp$from, TF_mapped$STRING_id), 1], to = TF_mapped[match(ppi_tmp$to, TF_mapped$STRING_id), 1], score = ppi_tmp$combined_score)
+nrow(mm10_ppi) # 2346
+
+head(mm10_ppi) # creates a dataframe with a "from" and a "to" column for PPI
+
+# All protein names returned are in all capital, even though they are mouse (as specified by 10090 above). R is case sensitive, so need to convert these to be lowercase with first letter capital
+from <- str_to_title(mm10_ppi$from)
+to <- str_to_title(mm10_ppi$to)
+score <- str_to_title(mm10_ppi$score)
+
+mm10_ppi_300 <- data.frame(from, to, score)
+
+write.table(mm10_ppi_300, file = here("data/processed/ppi_inputs/mm10_ppi_300.txt"), sep = "\t") # save final input data to Cheaha for use in network construction
+```
+
+## score threshold at 200
+Threshold scores go from 0 - 1000 and represent the confidence in the interactions present based on literature and experimental data. The lower, the less stringent. 
+```{r}
+# create a new STRINGdb class with specified version, species and score threshold
+string_db <- STRINGdb$new(version = "11.5", species = as.numeric(10090), score_threshold = 200) # version was 11.5 as of 221027, 10090 species index is for mus musculus
+# create a TF data frame with one column
+TF <- data.frame(mus_motif_all[, 1]) # grabs the TF column from this data
+# change the colname to "TF"
+colnames(TF) <- "TF"
+TF <- unique(TF)
+# map the TF to STRINGdb dataset
+TF_mapped <- string_db$map(TF, "TF", removeUnmappedRows = TRUE) # Warning:  we couldn't map to STRING 1% of your identifiers. Setting removeUnmappedRows to TRUE or FALSE doesn't make a difference.
+# collect the interactions between the TF of interest
+ppi_tmp <- string_db$get_interactions(TF_mapped$STRING_id)[, c(1, 2, 3)] # contains duplicate data
+ppi_tmp <- unique(ppi_tmp) # removing duplicates
+# store the PPI by using original identifier.
+mm10_ppi <- data.frame(from = TF_mapped[match(ppi_tmp$from, TF_mapped$STRING_id), 1], to = TF_mapped[match(ppi_tmp$to, TF_mapped$STRING_id), 1], score = ppi_tmp$combined_score)
+nrow(mm10_ppi) # 2346
+
+head(mm10_ppi) # creates a dataframe with a "from" and a "to" column for PPI
+
+# All protein names returned are in all capital, even though they are mouse (as specified by 10090 above). R is case sensitive, so need to convert these to be lowercase with first letter capital
+from <- str_to_title(mm10_ppi$from)
+to <- str_to_title(mm10_ppi$to)
+score <- str_to_title(mm10_ppi$score)
+
+mm10_ppi_200 <- data.frame(from, to, score)
+
+write.table(mm10_ppi_200, file = here("data/processed/ppi_inputs/mm10_ppi_200.txt"), sep = "\t") # save final input data to Cheaha for use in network construction
+```
+
+## score threshold at 100
+Threshold scores go from 0 - 1000 and represent the confidence in the interactions present based on literature and experimental data. The lower, the less stringent. 
+```{r}
+# create a new STRINGdb class with specified version, species and score threshold
+string_db <- STRINGdb$new(version = "11.5", species = as.numeric(10090), score_threshold = 100) # version was 11.5 as of 221027, 10090 species index is for mus musculus
+# create a TF data frame with one column
+TF <- data.frame(mus_motif_all[, 1]) # grabs the TF column from this data
+# change the colname to "TF"
+colnames(TF) <- "TF"
+TF <- unique(TF)
+# map the TF to STRINGdb dataset
+TF_mapped <- string_db$map(TF, "TF", removeUnmappedRows = TRUE) # Warning:  we couldn't map to STRING 1% of your identifiers. Setting removeUnmappedRows to TRUE or FALSE doesn't make a difference.
+# collect the interactions between the TF of interest
+ppi_tmp <- string_db$get_interactions(TF_mapped$STRING_id)[, c(1, 2, 3)] # contains duplicate data
+ppi_tmp <- unique(ppi_tmp) # removing duplicates
+# store the PPI by using original identifier.
+mm10_ppi <- data.frame(from = TF_mapped[match(ppi_tmp$from, TF_mapped$STRING_id), 1], to = TF_mapped[match(ppi_tmp$to, TF_mapped$STRING_id), 1], score = ppi_tmp$combined_score)
+nrow(mm10_ppi) # 2346
+
+head(mm10_ppi) # creates a dataframe with a "from" and a "to" column for PPI
+
+# All protein names returned are in all capital, even though they are mouse (as specified by 10090 above). R is case sensitive, so need to convert these to be lowercase with first letter capital
+from <- str_to_title(mm10_ppi$from)
+to <- str_to_title(mm10_ppi$to)
+score <- str_to_title(mm10_ppi$score)
+
+mm10_ppi_100 <- data.frame(from, to, score)
+
+write.table(mm10_ppi_100, file = here("data/processed/ppi_inputs/mm10_ppi_100.txt"), sep = "\t") # save final input data to Cheaha for use in network construction
+```
+
+## score threshold at 0
+Threshold scores go from 0 - 1000 and represent the confidence in the interactions present based on literature and experimental data. The lower, the less stringent. 
+```{r}
+# create a new STRINGdb class with specified version, species and score threshold
+string_db <- STRINGdb$new(version = "11.5", species = as.numeric(10090), score_threshold = 0) # version was 11.5 as of 221027, 10090 species index is for mus musculus
+# create a TF data frame with one column
+TF <- data.frame(mus_motif_all[, 1]) # grabs the TF column from this data
+# change the colname to "TF"
+colnames(TF) <- "TF"
+TF <- unique(TF)
+# map the TF to STRINGdb dataset
+TF_mapped <- string_db$map(TF, "TF", removeUnmappedRows = TRUE) # Warning:  we couldn't map to STRING 1% of your identifiers. Setting removeUnmappedRows to TRUE or FALSE doesn't make a difference.
+# collect the interactions between the TF of interest
+ppi_tmp <- string_db$get_interactions(TF_mapped$STRING_id)[, c(1, 2, 3)] # contains duplicate data
+ppi_tmp <- unique(ppi_tmp) # removing duplicates
+# store the PPI by using original identifier.
+mm10_ppi <- data.frame(from = TF_mapped[match(ppi_tmp$from, TF_mapped$STRING_id), 1], to = TF_mapped[match(ppi_tmp$to, TF_mapped$STRING_id), 1], score = ppi_tmp$combined_score)
+nrow(mm10_ppi) # 2346
+
+head(mm10_ppi) # creates a dataframe with a "from" and a "to" column for PPI
+
+# All protein names returned are in all capital, even though they are mouse (as specified by 10090 above). R is case sensitive, so need to convert these to be lowercase with first letter capital
+from <- str_to_title(mm10_ppi$from)
+to <- str_to_title(mm10_ppi$to)
+score <- str_to_title(mm10_ppi$score)
+
+mm10_ppi <- data.frame(from, to, score)
+
+write.table(mm10_ppi, file = here("data/processed/ppi_inputs/mm10_ppi.txt"), sep = "\t") # save final input data to Cheaha for use in network construction
+```
+
+Conclusion: After looking at networks generated from multiple different score thresholds for the STRINGdb PPI data (see 'Checking_Setbp1_Inputs.Rmd' in "/data/user/jbarham3/jw_cellspecific/jw_cellspecific/setbp1_clean/network_scripts/"), I will be using an un-thresholded PPI input (mm10_ppi) for the network (score = 0), to maximize the number of interactions with Setbp1 and other proteins captured. 
+
+```{r}
+# run style
+style_file(here("src/seurat_scripts/Setbp1_PANDA_ppi.Rmd"))
+# lintr was run as well
+```
+
+```{r}
+sessionInfo()
+```
+

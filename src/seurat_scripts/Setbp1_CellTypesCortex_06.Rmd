@@ -35,6 +35,7 @@ library(tidyverse)
 library(here)
 library(styler)
 library(lintr)
+set.seed(2178)
 ```
 
 
@@ -59,102 +60,27 @@ cerebral_top25 <- cerebral_markers_genes %>%
 cerebral_top25
 ```
 
-
-
-#### investigate top markers and assign for cerebral:
-
 ```{r}
-pyramidal_features <- c("Tbr1", "Neurog2", "Gm11549", "Pcp4", "Synpr", "Nr4a2")
-VlnPlot(cerebral_int, pyramidal_features, stack = TRUE, sort = FALSE, flip = TRUE) +
-  theme(legend.position = "none") + ggtitle("Cerebral Cortex Pyramidal Cell-type Identity Markers")
-
-oligo_features <- c("Hapln2", "Itpr2", "Prom1", "Gpr17", "Tcf7l2", "9630013A20Rik", "Idh1", "Cnksr3", "Rnf122", "Rhob", "Omg", "Klk6", "Ptprd")
-VlnPlot(cerebral_int, oligo_features, stack = TRUE, sort = FALSE, flip = TRUE) +
-  theme(legend.position = "none") + ggtitle("Cerebral Cortex Oligodendrocyte Cell-type Identity Markers")
-
-mural_features <- c("Acta2", "Casq2", "Vtn", "Tagln", "Myl9")
-VlnPlot(cerebral_int, mural_features, stack = TRUE, sort = FALSE, flip = TRUE) +
-  theme(legend.position = "none") + ggtitle("Cerebral Cortex Mural (pericyte and vascular smooth muscle) Cell-type Identity Markers")
-
-endothelial_features <- c("Ly6c1", "Cldn5", "Slc16a1", "Thsd7a")
-VlnPlot(cerebral_int, endothelial_features, stack = TRUE, sort = FALSE, flip = TRUE) +
-  theme(legend.position = "none") + ggtitle("Cerebral Cortex Endothelial Cell-type Identity Markers")
-
-interneurons_features <- c("Pnoc", "Dlx1", "Dlx2", "Dlx5", "Arx", "Nrxn3")
-VlnPlot(cerebral_int, interneurons_features, stack = TRUE, sort = FALSE, flip = TRUE) +
-  theme(legend.position = "none") + ggtitle("Cerebral Cortex Interneurons Cell-type Identity Markers")
-
-astro_features <- c("Gfap", "Mfge8", "Aqp4", "Gja1", "Fabp7", "Serpinf1", "Id3", "Cpe", "Ndrg2", "Htra1", "Igfbp7", "Slc1a3", "Fgfr3", "Mt1f", "Dio2", "Slc14a1")
-VlnPlot(cerebral_int, astro_features, stack = TRUE, sort = FALSE, flip = TRUE) +
-  theme(legend.position = "none") + ggtitle("Cerebral Cortex Astrocytes Cell-type Identity Markers")
-
-microglia_features <- c("Aif1", "Cx3cr1", "Nav3", "Tyrobp", "C3", "Csf1r", "Sfmbt2", "Mef2c", "Dock8")
-VlnPlot(cerebral_int, microglia_features, stack = TRUE, sort = FALSE, flip = TRUE) +
-  theme(legend.position = "none") + ggtitle("Cerebral Cortex Microglia Cell-type Identity Markers")
-
-macro_features <- c("Aif1", "Mrc1", "Lyve1", "Lyl1", "Spic")
-VlnPlot(cerebral_int, macro_features, stack = TRUE, sort = FALSE, flip = TRUE) +
-  theme(legend.position = "none") + ggtitle("Cerebral Cortex Macrophage Cell-type Identity Markers")
-
-ependymal_features <- c("Foxj1", "Myb", "Rfx2", "Zmynd10")
-VlnPlot(cerebral_int, ependymal_features, stack = TRUE, sort = FALSE, flip = TRUE) +
-  theme(legend.position = "none") + ggtitle("Cerebral Cortex Ependymal Cell-type Identity Markers")
-
-inhibitory_features <- c("Cck", "Gad1", "Pvalb", "Sst", "Vip", "Reln", "Lhx6", "Npy")
-VlnPlot(cerebral_int, inhibitory_features, stack = TRUE, sort = FALSE, flip = TRUE) +
-  theme(legend.position = "none") + ggtitle("Cerebral Cortex Inhibitory Cell-type Identity Markers")
-
-excitatory_features <- c("Slc17a7", "Tbr1", "Rasgrf2", "Pvrl3", "Cux2", "Rorb", "Thsd7a", "Kcnk2", "Foxp2", "Synpr", "Znf804b", "Il1rapl2", "Znf385d", "Tshz2")
-VlnPlot(cerebral_int, excitatory_features, stack = TRUE, sort = FALSE, flip = TRUE) +
-  theme(legend.position = "none") + ggtitle("Cerebral Cortex Excitatory Cell-type Identity Markers")
-
-opcs_features <- c("Pdgfra", "Col20a1", "Olig2", "Prrx1", "Pcdh15", "Lhfpl3", "Enc1")
-VlnPlot(cerebral_int, opcs_features, stack = TRUE, sort = FALSE, flip = TRUE) +
-  theme(legend.position = "none") + ggtitle("Cerebral Cortex Opcs Cell-type Identity Markers")
-```
-Based off the above marker expression: 
-
-1:excitatory; Tbr1, Slc17a7, Rasgrf2, Cux2
-2:excitatory; Tbr1, Pcp4, Slc17a7, Kcnk2, Foxp2
-3:excitatory; Slc17a7, Tbr1, Rasgrf2, Cux2, Rorb
-4:excitatory; Slc17a7, Tbr1
-5:oligos; Hapln2
-6:inhibitory; Gad1, Pvalb, Lhx6, Arx, Dlx1
-7:excitatory; Slc17a7, Tshz2, Cux2, Rasgrf2, Tbr1
-8:excitatory; Slc17a7, Il1rapl2, Kckn2, Rorb, Tbr1 
-9:excitatory; Slc17a7, Rorb, Kckn2, Cux2, Rasgrf2, Ilrapl2, Tbr1, Pcp4, Gm11549
-10:opcs; Olig2
-11:inhibitory; Gad1, Sst, Reln, Lhx6, Dlx1, Arx 
-12:astrocytes; Mfge8, Aqp4, Gja1, Id3, Ndrg2, Htra1, Slc1a3, Fgfr3, Dio2
-13:opcs; Pdgfra, Olig2
-14:astrocytes; Mfge8, Aqp4, Gja1, Id3, Ndrg2, Htra1, Slc1a3, Fgfr3
-15:microglia; Cx3cr1, Tyrobp, Csf1r, Dock8
-16:astrocytes; Mfge8, Aqp4, Gja1, Id3, Ndrg2, Htra1, Slc1a3, Fgfr3, Dio2
-17:excitatory; Slc17a7, Pcp4
-18:excitatory; Pcp4, Slc17a7, Kcnk2, Foxp2, Tshz2
-19:inhibitory; Gad1, Vlp
-20:excitatory; Slc17a7, Pcp4
-21:excitatory; Slc17a7, Tshz2, Tbr1, Kcnk2, Foxp2 
-22:inhibitory; Pnoc, Dlx1, Gad1, Reln, Npy
-23:mural(pericytes and vascular smooth muscle); Vtn 
-24:excitatory; Slc17a7, Tbr1, Kcnk2, Foxp2, Pcp4, Nr4a2
-25:excitatory; Tbr1, Synpr, Nr4a2, Slc17a7, Cux2, Rasgrf2
-26:excitatory; Pcp4, Kcnk2, Foxp2
-27:excitatory; Slc17a7, Kcnk2, Tshz2
-
-
-#### replotting clean marker plot for cerebral cell types
-```{r}
-cerebral_features <- c("Tbr1", "Slc17a7", "Rasgrf2", "Cux2", "Pcp4", "Kcnk2", "Foxp2", "Rorb", "Tshz2", "Il1rapl2", "Gm11549", "Nr4a2", "Synpr", "Gad1", "Pvalb", "Lhx6", "Arx", "Dlx1", "Sst", "Reln", "Pnoc", "Npy", "Hapln2", "Olig2", "Pdgfra", "Mfge8", "Aqp4", "Gja1", "Id3", "Ndrg2", "Htra1", "Slc1a3", "Fgfr3", "Dio2", "Cx3cr1", "Tyrobp", "Csf1r", "Dock8", "Vtn")
-pdf(here("data/cerebal_celltype_allfeatureVlnPlot.pdf"))
-VlnPlot(cerebral_int, cerebral_features, stack = TRUE, sort = FALSE, flip = TRUE) +
+final_cerebral_features <- c("Slc17a7", "Pcp4", "Synpr", "Gad1", "Hapln2", "Olig2", "Pdgfra", "Aqp4", "Gja1", "Slc1a3", "Cx3cr1", "Csf1r", "Dock8", "Vtn", "Nr4a2", "Ptgds", "Ryr3")
+pdf(here("results/seurat/cerebal_celltype_featureVlnPlot.pdf"))
+VlnPlot(cerebral_int, final_cerebral_features, stack = TRUE, sort = FALSE, flip = TRUE) +
   theme(legend.position = "none") + ggtitle("Cerebral Cortex Cell-type Identity Markers")
 dev.off()
 
 pdf(here("data/cerebal_celltype_allfeatureDotPlot.pdf"))
-DotPlot(cerebral_int, features = cerebral_features) + coord_flip() + RotatedAxis()
+DotPlot(cerebral_int, features = final_cerebral_features) + coord_flip() + RotatedAxis()
 dev.off()
 ```
+Breakdown of cell type markers used for assignment:
+*Neurons: Ryr3
+*Excitatory: Slc17a7, Pcp4
+*Inhibitory: Gad1, Synpr
+*Oligos: Hapln2, Ptgds
+*Opcs: Pdgfra, Olig2
+*Astrocytes: Slc1a3, Gja1, Aqp4
+*Microglia: Cx3cr1, Csf1r, Dock8
+*Mural: Vtn
+*Fibroblasts: Nr4a2
 
 #### assigning cell types to cerebral cortex clusters:
 ```{r}
@@ -166,59 +92,47 @@ cerebral_int_celltypes <- RenameIdents(cerebral_int,
   "2" = "excitatory.neurons",
   "3" = "excitatory.neurons",
   "4" = "excitatory.neurons",
-  "5" = "excitatory.neurons",
-  "6" = "oligodendrocytes",
-  "7" = "astrocytes",
-  "8" = "excitatory.neurons",
-  "9" = "inhibitory.neurons",
-  "10" = "astrocytes",
+  "5" = "astrocytes",
+  "6" = "excitatory.neurons",
+  "7" = "excitatory.neurons",
+  "8" = "oligodendrocytes",
+  "9" = "excitatory.neurons",
+  "10" = "inhibitory.neurons",
   "11" = "excitatory.neurons",
   "12" = "microglia",
   "13" = "inhibitory.neurons",
   "14" = "excitatory.neurons",
-  "15" = "excitatory.neurons",
+  "15" = "inhibitory.neurons",
   "16" = "inhibitory.neurons",
-  "17" = "inhibitory.neurons",
+  "17" = "oligodendrocyte.precursor.cells",
   "18" = "excitatory.neurons",
-  "19" = "oligodendrocyte.precursor.cells",
+  "19" = "excitatory.neurons",
   "20" = "excitatory.neurons",
   "21" = "inhibitory.neurons",
-  "22" = "excitatory.neurons",
+  "22" = "fibroblasts",
   "23" = "oligodendrocyte.precursor.cells",
-  "24" = "astrocytes",
-  "25" = "excitatory.neurons",
+  "24" = "oligodendrocytes",
+  "25" = "astrocytes",
   "26" = "excitatory.neurons",
   "27" = "excitatory.neurons",
   "28" = "excitatory.neurons",
   "29" = "excitatory.neurons",
-  "30" = "mural.cells",
-  "31" = "microglia",
-  "32" = "astrocytes"
+  "30" = "excitatory.neurons",
+  "31" = "mural.cells",
+  "32" = "excitatory.neurons",
+  "33" = "astrocytes",
+  "34" = "astrocytes",
+  "35" = "microglia"
 )
 cerebral_int_celltypes <- AddMetaData(object = cerebral_int_celltypes, as.vector(cerebral_int_celltypes@active.ident), col.name = "cell_type")
 save(cerebral_int_celltypes, file = here("data/setbp1_cerebralintcelltypes.Rdata"))
 ```
 
-```{r}
-load(here("data/setbp1_cerebralintcelltypes.Rdata"))
-select_resolution <- "RNA_snn_res.0.9"
-```
-
-#### clean up markers
-```{r}
-final_cerebral_features <- c("Slc17a7", "Pcp4", "Synpr", "Gad1", "Hapln2", "Olig2", "Pdgfra", "Aqp4", "Gja1", "Slc1a3", "Cx3cr1", "Csf1r", "Dock8", "Vtn")
-pdf(here("results/seurat/cerebal_celltype_featureVlnPlot.pdf"))
-VlnPlot(cerebral_int_celltypes, final_cerebral_features, stack = TRUE, sort = FALSE, flip = TRUE) +
-  theme(legend.position = "none") + ggtitle("Cerebral Cortex Cell-type Identity Markers")
-dev.off()
-```
-
-
 #### visualizing new UMAP and data with cell types assigned:
 ```{r}
 p1 <- DimPlot(cerebral_int_celltypes, reduction = "umap_harmony", group.by = "type", cols = c("control" = "#644DD4", "heterozygous" = "#5F9EFD"))
 p2 <- DimPlot(cerebral_int_celltypes, reduction = "umap_harmony", group.by = "orig.ident")
-p3 <- DimPlot(cerebral_int_celltypes, reduction = "umap_harmony", group.by = "cell_type", cols = c("excitatory.neurons" = "#DC71FA", "inhibitory.neurons" = "#00BBDB", "oligodendrocytes" = "#7997FF", "astrocytes" = "#6968B4", "microglia" = "#C216B7", "oligodendrocyte.precursor.cells" = "#00C1AA", "mural.cells" = "#027461"), shuffle = TRUE)
+p3 <- DimPlot(cerebral_int_celltypes, reduction = "umap_harmony", group.by = "cell_type", cols = c("excitatory.neurons" = "#DC71FA", "inhibitory.neurons" = "#00BBDB", "oligodendrocytes" = "#7997FF", "astrocytes" = "#6968B4", "microglia" = "#C216B7", "oligodendrocyte.precursor.cells" = "#00C1AA", "mural.cells" = "#027461", "fibroblasts" = "#0a2f6f"), shuffle = TRUE)
 png(
   filename = here("results/figures/cortex_setbp1_UMAP.png"),
   width = 1500,
@@ -285,7 +199,7 @@ colnames(pt) <- c("ident", "Condition", "Freq")
 pdf(file = here("results/figures/CortexFig2A.pdf"), width = 20, height = 30)
 
 # generate plot
-yy <- VlnPlot(cerebral_int_celltypes, final_cerebral_features, stack = TRUE, sort = FALSE, flip = TRUE, assay = "RNA", group.by = "cell_type", fill.by = "ident", cols = c("excitatory.neurons" = "#DC71FA", "inhibitory.neurons" = "#00BBDB", "oligodendrocytes" = "#7997FF", "astrocytes" = "#6968B4", "microglia" = "#BF80FF", "oligodendrocyte.precursor.cells" = "#00C1AA", "mural.cells" = "#027461")) + labs(fill = "Cell Type") + theme_bw() + theme(legend.position = "left") + theme(axis.text.x = element_blank()) + theme(axis.title.x = element_blank()) + theme(panel.grid = element_blank()) + theme(strip.text.y.right = element_text(angle = 0))
+yy <- VlnPlot(cerebral_int_celltypes, final_cerebral_features, stack = TRUE, sort = FALSE, flip = TRUE, assay = "RNA", group.by = "cell_type", fill.by = "ident", cols = c("excitatory.neurons" = "#DC71FA", "inhibitory.neurons" = "#00BBDB", "oligodendrocytes" = "#7997FF", "astrocytes" = "#6968B4", "microglia" = "#BF80FF", "oligodendrocyte.precursor.cells" = "#00C1AA", "mural.cells" = "#027461", "fibroblasts" = "#0a2f6f")) + labs(fill = "Cell Type") + theme_bw() + theme(legend.position = "left") + theme(axis.text.x = element_blank()) + theme(axis.title.x = element_blank()) + theme(panel.grid = element_blank()) + theme(strip.text.y.right = element_text(angle = 0))
 
 
 xx <- ggplot(pt, aes(x = ident, y = Freq, fill = Condition)) +
@@ -387,6 +301,6 @@ cerebral_int_celltypes@meta.data %>%
 
 ```{r}
 # run style
-style_file(here("src/seurat_scripts/Setbp1_CellTypesKidney_06.Rmd"))
+style_file(here("src/seurat_scripts/Setbp1_CellTypesCortex_06.Rmd"))
 # lintr was run as well
 ```

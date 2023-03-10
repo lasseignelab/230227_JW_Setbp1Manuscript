@@ -1,0 +1,135 @@
+---
+title: "TF_motif_reconstruction"
+output: html_document
+date: '2023-01-23'
+output:     
+  html_document:
+      toc: true
+      toc_depth: 2
+      toc_float: true
+---
+
+Goal: Reconstruct TF-motif input to include additional resources and be more comprehensive. 
+*See detailed overview here: https://docs.google.com/document/d/1se-hztBXdYIbF0T0E9zNQFXX6Cib3F_KvdzrOId0NI4/edit?usp=sharing
+
+# Setup
+```{r loading-libraries, results='hide'}
+library(readr)
+library(dplyr)
+library(here)
+library(styler)
+library(lintr)
+```
+
+# Create Human (Homo Sapiens) Input:
+Note: The previous TF_motif input was generated in the 'Setbp1_PANDA_TFmotif.Rmd'
+```{r load-previous-TF-motif}
+hu_motif <- read.table(file = here("data/processed/motif_inputs/hg38_TFmotifs.txt"), sep = "\t") # load in motif data
+```
+
+```{r load-human-SIGNOR}
+signor_hu <- read_tsv(file = here("data/unprocessed/SIGNOR_all_human_data_23_01_23.tsv"), col_names = TRUE) # load in motif data
+
+# filter for only "trasncriptional regulation" and score >= 0.4, and proteins:
+signor_hu <- signor_hu[signor_hu$MECHANISM == "transcriptional regulation", ] %>%
+  filter(., rowSums(is.na(.)) != ncol(.)) %>%
+  filter(., TYPEA == "protein") %>%
+  filter(., TYPEB == "protein") %>%
+  filter(., SCORE >= 0.4, )
+
+# grab ENTITYA, ENTITYB, and SCORE columns (correspond to TF, Motif, and Score)
+signor_hu <- signor_hu[, c(1, 5, 27)]
+colnames(signor_hu) <- c("TF_Info", "Motif", "interaction")
+signor_hu$interaction <- 1
+```
+
+```{r load-human-TRRUST}
+trrust_hu <- read_tsv(file = here("/dataunprocessed/trrust_rawdata.human.tsv"), col_names = "X") # load in motif data
+
+colnames(trrust_hu) <- c("TF_Info", "Motif", "mechanism", "PMID")
+trrust_hu <- trrust_hu[, c(1:2)]
+trrust_hu$interaction <- 1
+```
+
+```{r merge-all}
+hu_motif_all <- unique(rbind(hu_motif, signor_hu) %>% rbind(., trrust_hu))
+```
+
+# Create Mouse (Musc Musculus) Input:
+Note: The previous TF_motif input was generated in the 'Setbp1_PANDA_TFmotif.Rmd'
+```{r load-previous-TF-motif}
+mus_motif <- read.table(file = here("data/processed/motif_inputs/mm10_TFmotifs.txt"), sep = "\t") # load in motif data
+```
+
+```{r load-mouse-SIGNOR}
+signor_mus <- read_tsv(file = here("data/unprocessed/SIGNOR_all_data_M_musculus_23_01_23.tsv"), col_names = TRUE) # load in motif data
+
+# filter for only "trasncriptional regulation" and score >= 0.4, and proteins:
+signor_mus <- signor_mus[signor_mus$MECHANISM == "transcriptional regulation", ] %>%
+  filter(., rowSums(is.na(.)) != ncol(.)) %>%
+  filter(., TYPEA == "protein") %>%
+  filter(., TYPEB == "protein") %>%
+  filter(., SCORE >= 0.4, )
+
+# grab ENTITYA, ENTITYB, and SCORE columns (correspond to TF, Motif, and Score)
+signor_mus <- signor_mus[, c(1, 5, 27)]
+colnames(signor_mus) <- c("TF_Info", "Motif", "interaction")
+signor_mus$interaction <- 1
+```
+
+```{r load-mouse-TRRUST}
+trrust_mus <- read_tsv(file = here("data/unprocessed/trrust_rawdata.mouse.tsv"), col_names = "X") # load in motif data
+
+colnames(trrust_mus) <- c("TF_Info", "Motif", "mechanism", "PMID")
+trrust_mus <- trrust_mus[, c(1:2)]
+trrust_mus$interaction <- 1
+```
+
+```{r merge-all}
+mus_motif_all <- unique(rbind(mus_motif, signor_mus) %>% rbind(., trrust_mus))
+```
+
+```{r manually-add-SETBP1-chipseq}
+# load in Setbp1 data from MSIGDB:
+SETBP1geneset_syngo <- read_csv(here("data/processed/msigdb/SETBP1genset_syngo.csv"))
+msig <- matrix(NA, nrow = 188, ncol = 3)
+msig <- data.frame(msig)
+colnames(msig) <- c("TF_Info", "Motif", "interaction")
+msig$Motif <- SETBP1geneset_syngo$query # add in geneset data
+msig$TF_Info <- "SETBP1"
+msig$interaction <- 1
+
+# merge
+hu_motif_all <- unique(rbind(hu_motif_all, msig))
+```
+
+```{r manually-add-Setbp1-chipseq}
+# load in Setbp1 data from MSIGDB:
+SETBP1geneset_syngo <- read_csv(here("data/processed/msigdb/SETBP1genset_syngo.csv"))
+mus_msig <- matrix(NA, nrow = 157, ncol = 3)
+mus_msig <- data.frame(mus_msig)
+colnames(mus_msig) <- c("TF_Info", "Motif", "interaction")
+genes <- SETBP1geneset_syngo[!(is.na(SETBP1geneset_syngo$symbol)), 4]
+mus_msig$Motif <- genes$symbol # add in geneset data
+mus_msig$TF_Info <- "Setbp1"
+mus_msig$interaction <- 1
+
+# merge
+mus_motif_all <- unique(rbind(mus_motif_all, mus_msig))
+```
+
+# Save Outputs once:
+```{r save-human}
+write.table(hu_motif_all, file = here("data/processed/motif_inputs/hu_motif_all.txt"), sep = "\t")
+```
+
+```{r save-mouse}
+write.table(mus_motif_all, file = here("data/processed/motif_inputs/mus_motif_all.txt"), sep = "\t")
+```
+
+```{r}
+# run style
+style_file(here("src/network_scripts/input_construction/HumanMouse_TF_motif_reconstructed.Rmd"))
+# lintr was run as well
+```
+

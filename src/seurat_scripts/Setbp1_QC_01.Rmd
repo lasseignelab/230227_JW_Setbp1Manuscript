@@ -25,6 +25,7 @@ Accompanying dry lab notebook for this analysis is here: https://docs.google.com
 ```{r setup}
 getwd()
 .libPaths() # "/usr/local/lib/R/site-library" "/usr/local/lib/R/library" "/home/jbarham3/R/x86_64-pc-linux-gnu-library/4.1"
+set.seed(333)
 ```
 
 ### Loading in all required libraries

@@ -18,7 +18,6 @@ library(SingleCellExperiment)
 library(readr)
 library(dplyr)
 library(Matrix)
-library(Matrix.utils)
 library(Seurat)
 library(cowplot)
 library(ggplot2)
@@ -32,6 +31,7 @@ library(edgeR)
 library(here)
 library(styler)
 library(lintr)
+set.seed(2178)
 ```
 
 
@@ -205,7 +205,7 @@ gridExtra::grid.arrange(
 #### save integrated objects, can start from here:
 ```{r}
 save(kidney_int, file = here("data/integrated_setbp1_kidney.Rdata"))
-save(cerebral_int, file = here("data/_integrated_setbp1_cerebral.Rdata"))
+save(cerebral_int, file = here("data/integrated_setbp1_cerebral.Rdata"))
 ```
 
 

@@ -44,6 +44,7 @@ library(clustree)
 library(here)
 library(styler)
 library(lintr)
+set.seed(2178)
 ```
 
 ### Clustering on the Harmony integrated data
@@ -93,12 +94,12 @@ for (res in c(0.7, 0.8, 0.9, 1, 1.5)) {
   cerebral_int <- FindClusters(cerebral_int, graph.name = "RNA_snn", resolution = res, algorithm = 4, method = "igraph")
 }
 
-jpeg(file = here("/results/kidneyint_clustree.jpeg"))
+jpeg(file = here("results/cerebralint_clustree.jpeg"))
 clustree(cerebral_int@meta.data, prefix = "RNA_snn_res.")
 dev.off()
 
 
-save(cerebral_int, file = here("/data/cerebral_leiden.Rdata"))
+save(cerebral_int, file = here("data/cerebral_leiden.Rdata"))
 ```
 
 
@@ -110,10 +111,6 @@ load(here("data/kidney_leiden.Rdata")) # kidney_int
 
 ```{r}
 # harmony
-DimPlot(kidney_int, reduction = "umap_harmony", group.by = "RNA_snn_res.0.1") +
-  ggtitle("leiden_0.1")
-DimPlot(kidney_int, reduction = "umap_harmony", group.by = "RNA_snn_res.0.25") +
-  ggtitle("leiden_0.25")
 DimPlot(kidney_int, reduction = "umap_harmony", group.by = "RNA_snn_res.0.5") +
   ggtitle("leiden_0.5")
 DimPlot(kidney_int, reduction = "umap_harmony", group.by = "RNA_snn_res.0.6") +
@@ -126,10 +123,17 @@ DimPlot(kidney_int, reduction = "umap_harmony", group.by = "RNA_snn_res.0.9") +
   ggtitle("leiden_0.9")
 DimPlot(kidney_int, reduction = "umap_harmony", group.by = "RNA_snn_res.1") +
   ggtitle("leiden_1")
-DimPlot(kidney_int, reduction = "umap_harmony", group.by = "RNA_snn_res.1.5") +
+
+DimPlot(cerebral_int, reduction = "umap_harmony", group.by = "RNA_snn_res.0.7") +
+  ggtitle("leiden_0.7")
+DimPlot(cerebral_int, reduction = "umap_harmony", group.by = "RNA_snn_res.0.8") +
+  ggtitle("leiden_0.8")
+DimPlot(cerebral_int, reduction = "umap_harmony", group.by = "RNA_snn_res.0.9") +
+  ggtitle("leiden_0.9")
+DimPlot(cerebral_int, reduction = "umap_harmony", group.by = "RNA_snn_res.1") +
+  ggtitle("leiden_1")
+DimPlot(cerebral_int, reduction = "umap_harmony", group.by = "RNA_snn_res.1.5") +
   ggtitle("leiden_1.5")
-DimPlot(kidney_int, reduction = "umap_harmony", group.by = "RNA_snn_res.2") +
-  ggtitle("leiden_2")
 ```
 
 #### rechecking bimodality from early QC to see if a particular cluster is driving it:
@@ -147,7 +151,7 @@ kidney_int@meta.data %>%
   theme_classic() +
   ylab("Cell density") +
   geom_vline(xintercept = 500) +
-  ggtitle("Kidney @ res 0.0")
+  ggtitle("Kidney @ res 0.9")
 cerebral_int@meta.data %>%
   ggplot(aes(color = RNA_snn_res.0.9, x = nCount_RNA, fill = RNA_snn_res.0.8)) +
   geom_density(alpha = 0.2) +
@@ -155,7 +159,7 @@ cerebral_int@meta.data %>%
   theme_classic() +
   ylab("Cell density") +
   geom_vline(xintercept = 500) +
-  ggtitle("Cerebral cortex @ res 0.9")
+  ggtitle("Cerebral cortex @ res 0.8")
 kidney_int@meta.data %>%
   ggplot(aes(color = RNA_snn_res.0.9, x = nFeature_RNA, fill = RNA_snn_res.0.9)) +
   geom_density(alpha = 0.2) +
@@ -171,7 +175,7 @@ cerebral_int@meta.data %>%
   theme_classic() +
   ylab("Cell density") +
   geom_vline(xintercept = 500) +
-  ggtitle("Cerebral cortex @ res 0.9")
+  ggtitle("Cerebral cortex @ res 0.8")
 ```
 
 #### set the identity as Leiden with resolution 0.9 for kidney and 0.9 for cerbral cortex:

@@ -1,3 +1,126 @@
+# Function-define-pK
+define_pK <- function(sample){
+  sweep_res_list <- paramSweep_v3(sample, PCs = 1:30, sct = FALSE)
+  sweep_stats <- summarizeSweep(sweep_res_list, GT = FALSE)
+  bcmvn <- find.pK(sweep_stats)
+  pK <- as.numeric(as.character(bcmvn$pK))
+  BCmetric <- bcmvn$BCmetric
+  pK_choose <- pK[which(BCmetric %in% max(BCmetric))]
+  
+  par(mar = c(5, 4, 4, 8) + 1, cex.main = 1.2, font.main = 2)
+  plot(x = pK, y = BCmetric, pch = 16, type = "b",
+       col = "blue", lty = 1)
+  abline(v = pK_choose, lwd = 2, col = "red", lty = 2)
+  title("The BCmvn distributions")
+  text(pK_choose, max(BCmetric), as.character(pK_choose), pos = 4, col = "red")
+}
+
+# Function-remove-doublets
+doublet_removal <- function(sample, expected, pK){
+  # define the expected number of doublets in nuclei.
+  nExp <- round(ncol(sample) * expected)  # expect 10.2% doublets
+  sample <- doubletFinder_v3(sample, pN = 0.25, pK = pK, nExp = nExp, PCs = 1:30)
+  
+  # name of the DF prediction can change, so extract the correct column name.
+  DF.name <- colnames(sample@meta.data)[grepl("DF.classification", colnames(sample@meta.data))]
+  plot1 <- cowplot::plot_grid(ncol = 2, DimPlot(sample, group.by = "orig.ident") + NoAxes(),
+                              DimPlot(sample, group.by = DF.name) + NoAxes())
+  plot(plot1)
+  VlnPlot(sample, features = "nFeature_RNA", group.by = DF.name, pt.size = 0.1)
+  #REMOVE DOUBLETS:
+  sample <- sample[, sample@meta.data[, DF.name] == "Singlet"]
+  assign("no_doublets", sample, envir = globalenv())
+  #revisualize:
+  plot2 <- cowplot::plot_grid(ncol = 2, DimPlot(sample, group.by = "orig.ident") + NoAxes(),
+                              DimPlot(sample, group.by = DF.name) + NoAxes())
+  plot(plot2)
+}
+
+# aggregate matrix function
+##Matrix.utils function not loading into Docker, so grabbed source code (https://rdrr.io/cran/Matrix.utils/src/R/Matrix.utils.R)
+aggregate.Matrix<-function(x,groupings=NULL,form=NULL,fun='sum',...)
+{
+  if(!is(x,'Matrix'))
+    x<-Matrix(as.matrix(x),sparse=TRUE)
+  if(fun=='count')
+    x<-x!=0
+  groupings2<-groupings
+  if(!is(groupings2,'data.frame'))
+    groupings2<-as(groupings2,'data.frame')
+  groupings2<-data.frame(lapply(groupings2,as.factor))
+  groupings2<-data.frame(interaction(groupings2,sep = '_'))
+  colnames(groupings2)<-'A'
+  if(is.null(form))
+    form<-as.formula('~0+.')
+  form<-as.formula(form)
+  mapping<-dMcast(groupings2,form)
+  colnames(mapping)<-substring(colnames(mapping),2)
+  result<-t(mapping) %*% x
+  if(fun=='mean')
+    result@x<-result@x/(aggregate.Matrix(x,groupings2,fun='count'))@x
+  attr(result,'crosswalk')<-grr::extract(groupings,match(rownames(result),groupings2$A))
+  return(result)
+}
+
+# dmCast function
+dMcast<-function(data,formula,fun.aggregate='sum',value.var=NULL,as.factors=FALSE,factor.nas=TRUE,drop.unused.levels=TRUE)
+{
+  values<-1
+  if(!is.null(value.var))
+    values<-data[,value.var]
+  alltms<-terms(formula,data=data)
+  response<-rownames(attr(alltms,'factors'))[attr(alltms,'response')]
+  tm<-attr(alltms,"term.labels")
+  interactionsIndex<-grep(':',tm)
+  interactions<-tm[interactionsIndex]
+  simple<-setdiff(tm,interactions)
+  i2<-strsplit(interactions,':')
+  newterms<-unlist(lapply(i2,function (x) paste("paste(",paste(x,collapse=','),",","sep='_'",")")))
+  newterms<-c(simple,newterms)
+  newformula<-as.formula(paste('~0+',paste(newterms,collapse='+')))
+  allvars<-all.vars(alltms)
+  data<-data[,c(allvars),drop=FALSE]
+  if(as.factors)
+    data<-data.frame(lapply(data,as.factor))
+  characters<-unlist(lapply(data,is.character))
+  data[,characters]<-lapply(data[,characters,drop=FALSE],as.factor)
+  factors<-unlist(lapply(data,is.factor))
+  #Prevents errors with 1 or fewer distinct levels
+  data[,factors]<-lapply(data[,factors,drop=FALSE],function (x) 
+  {
+    if(factor.nas)
+      if(any(is.na(x)))
+      {
+        levels(x)<-c(levels(x),'NA')
+        x[is.na(x)]<-'NA'
+      }
+    if(drop.unused.levels)
+      if(nlevels(x)!=length(na.omit(unique(x))))
+        x<-factor(as.character(x))
+    y<-contrasts(x,contrasts=FALSE,sparse=TRUE)
+    attr(x,'contrasts')<-y
+    return(x)
+  })
+  #Allows NAs to pass
+  attr(data,'na.action')<-na.pass
+  result<-sparse.model.matrix(newformula,data,drop.unused.levels = FALSE,row.names=FALSE)
+  brokenNames<-grep('paste(',colnames(result),fixed = TRUE)
+  colnames(result)[brokenNames]<-lapply(colnames(result)[brokenNames],function (x) {
+    x<-gsub('paste(',replacement='',x=x,fixed = TRUE) 
+    x<-gsub(pattern=', ',replacement='_',x=x,fixed=TRUE) 
+    x<-gsub(pattern='_sep = \"_\")',replacement='',x=x,fixed=TRUE)
+    return(x)
+  })
+  
+  result<-result*values
+  if(isTRUE(response>0))
+  {
+    responses=all.vars(terms(as.formula(paste(response,'~0'))))
+    result<-aggregate.Matrix(result,data[,responses,drop=FALSE],fun=fun.aggregate)
+  }
+  return(result)
+}
+
 # Functions for PANDA network job for loop
 #make function for loading .Rdata to reassign to variable in loop 
 loadRData <- function(fileName){

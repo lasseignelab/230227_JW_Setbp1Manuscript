@@ -32,11 +32,12 @@ library(here)
 library(styler)
 library(lintr)
 source(here("src/functions/functions.R"))
+set.seed(2178)
 ```
 
 #### Load in object:
 ```{r}
-load(here("data/results/setbp1_cerebralintcelltypes.Rdata"))
+load(here("data/setbp1_cerebralintcelltypes.Rdata"))
 ```
 
 #### checking to see if Setbp1 is even in the seurat object:
@@ -444,6 +445,63 @@ ggplot(data = oligodendrocytes_het, aes(x = avg_log2FC, y = -log10(p_val), col =
   geom_point() +
   theme_minimal()
 ```
+
+---fibroblasts---
+```{r}
+# subset seurat object for each cell type
+fibro <- subset(x = cerebral_int_celltypes, idents = "fibroblasts")
+Idents(fibro) <- fibro@meta.data$type
+fibroblasts_data <- FindAllMarkers(fibro, logfc.threshold = 0.1, test.use = "wilcox", only.pos = FALSE, assay = "RNA")
+head(fibroblasts_data, n = 5)
+```
+
+
+
+```{r}
+fibroblasts_het <- fibroblasts_data[fibroblasts_data$p_val < 0.5 & fibroblasts_data$avg_log2FC > 0.1 | fibroblasts_data$avg_log2FC < -0.1, ]
+fibroblasts_het <- fibroblasts_het[fibroblasts_het$cluster == "heterozygous", ]
+
+p <- ggplot(data = fibroblasts_het, aes(x = avg_log2FC, y = -log10(p_val))) +
+  geom_point() +
+  theme_minimal()
+p2 <- p + geom_vline(xintercept = c(-0.1, 0.1), col = "red") + geom_hline(yintercept = -log10(0.05), col = "red")
+p2
+# add column to data to indicate if DE or not:
+fibroblasts_het$diffexpressed <- "NO"
+# if log2Foldchange > 0.1 and pvalue < 0.05, set as "UP"
+fibroblasts_het$diffexpressed[fibroblasts_het$avg_log2FC > 0.1 & fibroblasts_het$p_val < 0.05] <- "UP"
+# if log2Foldchange < -0.1 and pvalue < 0.05, set as "DOWN"
+fibroblasts_het$diffexpressed[fibroblasts_het$avg_log2FC < -0.1 & fibroblasts_het$p_val < 0.05] <- "DOWN"
+# Re-plot but this time color the points with "diffexpressed"
+p <- ggplot(data = fibroblasts_het, aes(x = avg_log2FC, y = -log10(p_val), col = diffexpressed)) +
+  geom_point() +
+  theme_minimal()
+# Add lines as before...
+p2 <- p + geom_vline(xintercept = c(-0.1, 0.1), col = "red") +
+  geom_hline(yintercept = -log10(0.05), col = "red")
+p2
+x <- subset(fibroblasts_het, gene == "Setbp1")
+p4 <- p + geom_point(data = x, colour = "black")
+p4
+## Change point color
+# 1. by default, it is assigned to the categories in an alphabetical order):
+p3 <- p2 + scale_color_manual(values = c("blue", "black", "red"))
+# 2. to automate a bit: ceate a named vector: the values are the colors to be used, the names are the categories they will be assigned to:
+mycolors <- c("blue", "red", "black")
+names(mycolors) <- c("DOWN", "UP", "NO")
+p3 <- p2 + scale_colour_manual(values = mycolors)
+p3
+# label poitns:
+fibroblasts_het$delabel <- NA
+fibroblasts_het$delabel[fibroblasts_het$diffexpressed != "NO"] <- fibroblasts_het$gene[fibroblasts_het$diffexpressed != "NO"]
+ggplot(data = fibroblasts_het, aes(x = avg_log2FC, y = -log10(p_val), col = diffexpressed, label = delabel)) +
+  geom_point() +
+  geom_point() +
+  theme_minimal()
+```
+
+
+
 #### saving all DEG in heterozygous as .csv for supplementary methods:
 ```{r}
 write.csv(astrocytes_het, here("/results/seurat/DEG_astrocytes.csv"), row.names = FALSE)
@@ -453,6 +511,7 @@ write.csv(microglia_het, here("/results/seurat/DEG_microglia.csv"), row.names = 
 write.csv(mural.cells_het, here("/results/seurat/DEG_mural.cells.csv"), row.names = FALSE)
 write.csv(oligodendrocytes_het, here("/results/seurat/DEG_oligodendrocytes.csv"), row.names = FALSE)
 write.csv(opcs_het, here("/results/seurat/DEG_opcs.csv"), row.names = FALSE)
+write.csv(fibroblasts_het, here("/results/seurat/DEG_fibroblasts.csv"), row.names = FALSE)
 ```
 
 Outputs at log2FC of 0.1, for downstream analysis 
@@ -464,6 +523,7 @@ save(oligodendrocytes_het, file = here("results/DEG/oligo_het_DEG01.Rdata"))
 save(opcs_het, file = here("results/DEG/opcs_het_DEG01.Rdata"))
 save(mural.cells_het, file = here("results/DEG/mural_het_DEG01.Rdata"))
 save(microglia_het, file = here("resullts/DEG/micro_het_DEG01.Rdata"))
+save(fibroblasts_het, file = here("resullts/DEG/fibro_het_DEG01.Rdata"))
 ```
 
 
@@ -490,16 +550,11 @@ ggplot(opcs_het, aes(x = avg_log2FC)) +
   ggtitle("Heterozygous -0.1 < Log2FC > 0.1 Distribution in Opcs, p-value < 0.05  ")
 ggplot(oligodendrocytes_het, aes(x = avg_log2FC)) +
   geom_histogram() +
-  ggtitle("Heterozygous -0.1 < Log2FC > 0.1 Distribution in Opcs, p-value < 0.05  ")
-```
-
-```{r}
-ggplot(oligodendrocytes_data, aes(x = avg_log2FC)) +
+  ggtitle("Heterozygous -0.1 < Log2FC > 0.1 Distribution in Oligodendrocytes, p-value < 0.05  ")
+ggplot(fibroblasts_het, aes(x = avg_log2FC)) +
   geom_histogram() +
-  ggtitle("Heterozygous -0.1 < Log2FC > 0.1 Distribution in Oligo, p-value < 0.05  ")
+  ggtitle("Heterozygous -0.1 < Log2FC > 0.1 Distribution in Fibroblasts, p-value < 0.05  ")
 ```
-
-
 
 #### checking to see if Setbp1 is even in the seurat object:
 
@@ -887,6 +942,60 @@ ggplot(data = oligodendrocytes_het, aes(x = avg_log2FC, y = -log10(p_val), col =
   theme_minimal()
 ```
 
+---fibroblasts---
+```{r}
+# subset seurat object for each cell type
+fibroblasts <- subset(x = cerebral_int_celltypes, idents = "fibroblasts")
+Idents(fibroblasts) <- fibroblasts@meta.data$type
+excitatory.neurons_data <- FindAllMarkers(fibroblasts, logfc.threshold = 0.20, test.use = "wilcox", only.pos = FALSE, assay = "RNA")
+head(fibroblasts_data, n = 5)
+```
+
+```{r}
+# plotting just the DEG from Het:
+fibroblasts_het <- fibroblasts_data[fibroblasts_data$p_val < 0.5 & fibroblasts_data$avg_log2FC > 0.20 | fibroblasts_data$avg_log2FC < -0.20, ]
+fibroblasts_het <- fibroblasts_het[fibroblasts_het$cluster == "heterozygous", ]
+
+p <- ggplot(data = fibroblasts_het, aes(x = avg_log2FC, y = -log10(p_val))) +
+  geom_point() +
+  theme_minimal()
+p2 <- p + geom_vline(xintercept = c(-0.20, 0.20), col = "red") + geom_hline(yintercept = -log10(0.05), col = "red")
+p2
+# add column to data to indicate if DE or not:
+fibroblasts_het$diffexpressed <- "NO"
+# if log2Foldchange > 0.20 and pvalue < 0.05, set as "UP"
+fibroblasts_het$diffexpressed[fibroblasts_het$avg_log2FC > 0.20 & fibroblasts_het$p_val < 0.05] <- "UP"
+# if log2Foldchange < -0.20 and pvalue < 0.05, set as "DOWN"
+fibroblasts_het$diffexpressed[fibroblasts_het$avg_log2FC < -0.20 & fibroblasts_het$p_val < 0.05] <- "DOWN"
+# Re-plot but this time color the points with "diffexpressed"
+p <- ggplot(data = fibroblasts_het, aes(x = avg_log2FC, y = -log10(p_val), col = diffexpressed)) +
+  geom_point() +
+  theme_minimal()
+# Add lines as before...
+p2 <- p + geom_vline(xintercept = c(-0.20, 0.20), col = "red") +
+  geom_hline(yintercept = -log10(0.05), col = "red")
+p2
+x <- subset(fibroblasts_het, gene == "Setbp1")
+p4 <- p + geom_point(data = x, colour = "black")
+p4
+## Change point color
+# 1. by default, it is assigned to the categories in an alphabetical order):
+p3 <- p2 + scale_color_manual(values = c("blue", "black", "red"))
+# 2. to automate a bit: ceate a named vector: the values are the colors to be used, the names are the categories they will be assigned to:
+mycolors <- c("blue", "red", "black")
+names(mycolors) <- c("DOWN", "UP", "NO")
+p3 <- p2 + scale_colour_manual(values = mycolors)
+p3
+# label poitns:
+fibroblasts_het$delabel <- NA
+fibroblasts_het$delabel[fibroblasts_het$diffexpressed != "NO"] <- fibroblasts_het$gene[fibroblasts_het$diffexpressed != "NO"]
+ggplot(data = fibroblasts_het, aes(x = avg_log2FC, y = -log10(p_val), col = diffexpressed, label = delabel)) +
+  geom_point() +
+  geom_point() +
+  theme_minimal()
+```
+
+
 ### For loop to generate DEG output at log2FC threshold of 0.1 (replaces all code above, except plotting, need to add that to loop later):
 ```{r}
 # specify the cell types in the data to loop through
@@ -1005,7 +1114,7 @@ colnames(meta.data) <- c("cell_type", "condition")
 ordered.meta.data <- meta.data[order(rownames(meta.data)), ] # order by cell type
 
 
-annotation_colors <- list("condition" = c("control" = "#644DD4", "heterozygous" = "#5F9EFD"), "cell_type" = c("excitatory.neurons" = "#DC71FA", "inhibitory.neurons" = "#00BBDB", "oligodendrocytes" = "#7997FF", "astrocytes" = "#6968B4", "microglia" = "#C216B7", "oligodendrocyte.precursor.cells" = "#00C1AA", "mural.cells" = "#027461"))
+annotation_colors <- list("condition" = c("control" = "#644DD4", "heterozygous" = "#5F9EFD"), "cell_type" = c("excitatory.neurons" = "#DC71FA", "inhibitory.neurons" = "#00BBDB", "oligodendrocytes" = "#7997FF", "astrocytes" = "#6968B4", "microglia" = "#C216B7", "oligodendrocyte.precursor.cells" = "#00C1AA", "mural.cells" = "#027461", "fibroblasts" = "#0a2f6f"))
 
 # set heatmap annotations:
 heat.anno <- HeatmapAnnotation(df = ordered.meta.data, show_annotation_name = TRUE, col = annotation_colors)

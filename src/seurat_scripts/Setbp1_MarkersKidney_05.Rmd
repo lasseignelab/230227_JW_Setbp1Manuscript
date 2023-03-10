@@ -25,20 +25,21 @@ Accompanying dry lab notebook for this analysis is here: https://docs.google.com
 # loading packages
 library(Seurat)
 library(here)
+set.seed(2178)
 
 # loading in the objects
-load(here("data/ukidney_leiden.Rdata"))
+load(here("data/kidney_leiden.Rdata"))
 ```
 
 ```{r}
 # setting selected resolution
 select_resolution <- "RNA_snn_res.0.9"
-kidney.int <- SetIdent(kidney.int, value = select_resolution)
+kidney_int <- SetIdent(kidney_int, value = select_resolution)
 ```
 
 ```{r}
 # compute highly differential gene expression for kidney
-kidney_markers_genes <- FindAllMarkers(kidney.int,
+kidney_markers_genes <- FindAllMarkers(kidney_int,
   log2FC.threshold = 0.2, test.use = "wilcox",
   min.pct = 0.1, min.diff.pct = 0.2, only.pos = TRUE, max.cells.per.ident = 50,
   assay = "RNA"
