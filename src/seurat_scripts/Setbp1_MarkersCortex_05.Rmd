@@ -36,12 +36,12 @@ load(here("data/cerebral_leiden.Rdata"))
 ```{r}
 # setting selected resolution
 select_resolution <- "RNA_snn_res.0.9"
-cerebral.int <- SetIdent(cerebral.int, value = select_resolution)
+cerebral_int <- SetIdent(cerebral_int, value = select_resolution)
 ```
 
 ```{r}
 # compute highly differential expression for brain
-cerebral_markers_genes <- FindAllMarkers(cerebral.int,
+cerebral_markers_genes <- FindAllMarkers(cerebral_int,
   log2FC.threshold = 0.2, test.use = "wilcox",
   min.pct = 0.1, min.diff.pct = 0.2, only.pos = TRUE, max.cells.per.ident = 50,
   assay = "RNA"
