@@ -14,7 +14,7 @@ This analysis comes after 'Setbp1_Integration_03.Rmd' and precedes 'Setbp1_Marke
 # *Single-nuclei analysis: Clustering*
 * Finding Neighbors
 * Clustering with Leiden algorithm
-* Idnetify stable resolution with clustree
+* Identify stable resolution with clustree
 * Re-visualize bimodality
 * Set identity as new resolution
 
@@ -57,7 +57,7 @@ load(here("data/integrated_setbp1_cerebral.Rdata"))
 
 
 #### check the active assay
-It should be RNA, but need to make check the reduction used for everything downstream is set to "harmony"
+It should be RNA, but need to make sure the reduction used for everything downstream is set to "harmony"
 ```{r}
 kidney_int@active.assay # RNA
 cerebral_int@active.assay # RNA
@@ -136,7 +136,7 @@ DimPlot(cerebral_int, reduction = "umap_harmony", group.by = "RNA_snn_res.1.5") 
   ggtitle("leiden_1.5")
 ```
 
-#### rechecking bimodality from early QC to see if a particular cluster is driving it:
+#### Rechecking bimodality from early QC to see if a particular cluster is driving it:
 ##### Visualize the number of UMIs/transcripts per cell:
 nUMI = nCount_RNA
 nGene = nFeature_RNA
