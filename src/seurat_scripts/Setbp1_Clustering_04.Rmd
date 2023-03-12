@@ -9,7 +9,7 @@ output:
       toc_float: true
 ---
 
-This analysis comes after 'Setbp1_Integration_03.Rmd' and precedes 'Setbp1_MarkersCortex_05.Rmd' & 'Setbp1_MarkersKidney_05.Rmd'. Leiden clustering was run on supercomputer using 'Setbp1_Clustering_leiden_06.R' and 'Setbp1_Clustering_leiden_06' bash script
+This analysis comes after 'Setbp1_Integration_03.Rmd' and precedes 'Setbp1_MarkersCortex_05.Rmd' & 'Setbp1_MarkersKidney_05.Rmd'.
 
 # *Single-nuclei analysis: Clustering*
 * Finding Neighbors
