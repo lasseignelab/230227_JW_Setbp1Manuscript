@@ -83,7 +83,7 @@ for (res in c(0.5, 0.6, 0.7, 0.8, 0.9, 1)) {
   kidney_int <- FindClusters(kidney_int, graph.name = "RNA_snn", resolution = res, algorithm = 4, method = "igraph")
 }
 
-jpeg(file = here("results/seurat/kidneyint_clustree.jpeg"))
+jpeg(file = here("results/ts_results/seurat/kidneyint_clustree.jpeg"))
 clustree(kidney_int@meta.data, prefix = "RNA_snn_res.")
 dev.off()
 
@@ -94,7 +94,7 @@ for (res in c(0.7, 0.8, 0.9, 1, 1.5)) {
   cerebral_int <- FindClusters(cerebral_int, graph.name = "RNA_snn", resolution = res, algorithm = 4, method = "igraph")
 }
 
-jpeg(file = here("results/cerebralint_clustree.jpeg"))
+jpeg(file = here("results/ts_results/cerebralint_clustree.jpeg"))
 clustree(cerebral_int@meta.data, prefix = "RNA_snn_res.")
 dev.off()
 
@@ -153,13 +153,13 @@ kidney_int@meta.data %>%
   geom_vline(xintercept = 500) +
   ggtitle("Kidney @ res 0.9")
 cerebral_int@meta.data %>%
-  ggplot(aes(color = RNA_snn_res.0.9, x = nCount_RNA, fill = RNA_snn_res.0.8)) +
+  ggplot(aes(color = RNA_snn_res.0.9, x = nCount_RNA, fill = RNA_snn_res.0.9)) +
   geom_density(alpha = 0.2) +
   scale_x_log10() +
   theme_classic() +
   ylab("Cell density") +
   geom_vline(xintercept = 500) +
-  ggtitle("Cerebral cortex @ res 0.8")
+  ggtitle("Cerebral cortex @ res 0.9")
 kidney_int@meta.data %>%
   ggplot(aes(color = RNA_snn_res.0.9, x = nFeature_RNA, fill = RNA_snn_res.0.9)) +
   geom_density(alpha = 0.2) +
@@ -169,13 +169,13 @@ kidney_int@meta.data %>%
   geom_vline(xintercept = 500) +
   ggtitle("Kidney @ res 0.9")
 cerebral_int@meta.data %>%
-  ggplot(aes(color = RNA_snn_res.0.9, x = nFeature_RNA, fill = RNA_snn_res.0.8)) +
+  ggplot(aes(color = RNA_snn_res.0.9, x = nFeature_RNA, fill = RNA_snn_res.0.9)) +
   geom_density(alpha = 0.2) +
   scale_x_log10() +
   theme_classic() +
   ylab("Cell density") +
   geom_vline(xintercept = 500) +
-  ggtitle("Cerebral cortex @ res 0.8")
+  ggtitle("Cerebral cortex @ res 0.9")
 ```
 
 #### set the identity as Leiden with resolution 0.9 for kidney and 0.9 for cerbral cortex:
