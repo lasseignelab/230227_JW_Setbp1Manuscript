@@ -1,0 +1,469 @@
+---
+title: "Setbp1_Communities_02"
+author: "Jordan Whitlock"
+date: '2023-03-07'
+output: html_document
+---
+
+```{r loading-libraries}
+library(netZooR)
+library(topGO)
+library(org.Mm.eg.db)
+library(lintr)
+library(styler)
+library(here)
+source(here("src/functions/functions.R"))
+set.seed(333)
+```
+
+Here each item returned by the for loop represents a PANDA object for a given cell type that contains the regNet, coopNet, and coregNet for that cell type.
+```{r loading-object, results='hide'}
+files <- list.files("/data/user/jbarham3/jw_cellspecific/jw_cellspecific/setbp1_clean/outputs/PANDA/Setbp1_cortex_reconstructed", full.names = TRUE)
+files <- files[c(25, 26, 29, 30, 33, 34, 37, 38, 39, 40, 41, 42, 43, 44)]#grabbing only cortex
+for (i in files){
+ load(i)
+  regNet <- pandaResults
+  regNet <- regNet@regNet
+  name <- sub("/data/user/jbarham3/jw_cellspecific/jw_cellspecific/setbp1_clean/outputs/PANDA/Setbp1_cortex_reconstructed/", "", i)
+  name <- sub("expression_PANDA.Rdata*", "", name)
+  assign(paste0(name, "_regNet" ), regNet)
+  rm(pandaResults)
+  rm(regNet)
+}
+```
+
+
+```{r extracting-pos-regNet-pivoting}
+#astrocytes ----------
+astro_het <- as.data.frame(astrocytes.heterozygous_regNet) %>% mutate(TF = rownames(astrocytes.heterozygous_regNet)) %>% pivot_longer(names_to = "gene", values_to = "het_weight", cols = c(1:22033))
+astro_het$het_weight <- ifelse(astro_het$het_weight < 0, 0, astro_het$het_weight)
+
+astro_ctrl <- as.data.frame(astrocytes.control_regNet) %>% mutate(TF = rownames(astrocytes.control_regNet)) %>% pivot_longer(names_to = "gene", values_to = "ctrl_weight", cols = c(1:22033))
+astro_ctrl$ctrl_weight <- ifelse(astro_ctrl$ctrl_weight < 0, 0, astro_ctrl$ctrl_weight)
+
+astro_all <- merge(astro_ctrl, astro_het, by = c("TF", "gene"))
+
+#microglia ----------
+micro_het <- as.data.frame(microglia.heterozygous_regNet) %>% mutate(TF = rownames(microglia.heterozygous_regNet)) %>% pivot_longer(names_to = "gene", values_to = "het_weight", cols = c(1:22033))
+micro_het$het_weight <- ifelse(micro_het$het_weight < 0, 0, micro_het$het_weight)
+
+micro_ctrl <- as.data.frame(microglia.control_regNet) %>% mutate(TF = rownames(microglia.control_regNet)) %>% pivot_longer(names_to = "gene", values_to = "ctrl_weight", cols = c(1:22033))
+micro_ctrl$ctrl_weight <- ifelse(micro_ctrl$ctrl_weight < 0, 0, micro_ctrl$ctrl_weight)
+
+micro_all <- merge(micro_ctrl, micro_het, by = c("TF", "gene"))
+
+#inhibitory.neurons ----------
+inhibitory_het <- as.data.frame(inhibitory.neurons.heterozygous_regNet) %>% mutate(TF = rownames(inhibitory.neurons.heterozygous_regNet)) %>% pivot_longer(names_to = "gene", values_to = "het_weight", cols = c(1:22033))
+inhibitory_het$het_weight <- ifelse(inhibitory_het$het_weight < 0, 0, inhibitory_het$het_weight)
+
+inhibitory_ctrl <- as.data.frame(inhibitory.neurons.control_regNet) %>% mutate(TF = rownames(inhibitory.neurons.control_regNet)) %>% pivot_longer(names_to = "gene", values_to = "ctrl_weight", cols = c(1:22033))
+inhibitory_ctrl$ctrl_weight <- ifelse(inhibitory_ctrl$ctrl_weight < 0, 0, inhibitory_ctrl$ctrl_weight)
+
+inhibitory_all <- merge(inhibitory_ctrl, inhibitory_het, by = c("TF", "gene"))
+
+#excitatory.neurons ----------
+excitatory_het <- as.data.frame(excitatory.neurons.heterozygous_regNet) %>% mutate(TF = rownames(excitatory.neurons.heterozygous_regNet)) %>% pivot_longer(names_to = "gene", values_to = "het_weight", cols = c(1:22033))
+excitatory_het$het_weight <- ifelse(excitatory_het$het_weight < 0, 0, excitatory_het$het_weight)
+
+excitatory_ctrl <- as.data.frame(excitatory.neurons.control_regNet) %>% mutate(TF = rownames(excitatory.neurons.control_regNet)) %>% pivot_longer(names_to = "gene", values_to = "ctrl_weight", cols = c(1:22033))
+excitatory_ctrl$ctrl_weight <- ifelse(excitatory_ctrl$ctrl_weight < 0, 0, excitatory_ctrl$ctrl_weight)
+
+excitatory_all <- merge(excitatory_ctrl, excitatory_het, by = c("TF", "gene"))
+
+#oligodendrocytes ----------
+oligodendrocyte_het <- as.data.frame(oligodendrocytes.heterozygous_regNet) %>% mutate(TF = rownames(oligodendrocytes.heterozygous_regNet)) %>% pivot_longer(names_to = "gene", values_to = "het_weight", cols = c(1:22033))
+oligodendrocyte_het$het_weight <- ifelse(oligodendrocyte_het$het_weight < 0, 0, oligodendrocyte_het$het_weight)
+
+oligodendrocyte_ctrl <- as.data.frame(oligodendrocytes.control_regNet) %>% mutate(TF = rownames(oligodendrocytes.control_regNet)) %>% pivot_longer(names_to = "gene", values_to = "ctrl_weight", cols = c(1:22033))
+oligodendrocyte_ctrl$ctrl_weight <- ifelse(oligodendrocyte_ctrl$ctrl_weight < 0, 0, oligodendrocyte_ctrl$ctrl_weight)
+
+oligodendrocyte_all <- merge(oligodendrocyte_ctrl, oligodendrocyte_het, by = c("TF", "gene"))
+
+#opcs ----------
+opcs_het <- as.data.frame(opcs.heterozygous_regNet) %>% mutate(TF = rownames(opcs.heterozygous_regNet)) %>% pivot_longer(names_to = "gene", values_to = "het_weight", cols = c(1:22033))
+opcs_het$het_weight <- ifelse(opcs_het$het_weight < 0, 0, opcs_het$het_weight)
+
+opcs_ctrl <- as.data.frame(opcs.control_regNet) %>% mutate(TF = rownames(opcs.control_regNet)) %>% pivot_longer(names_to = "gene", values_to = "ctrl_weight", cols = c(1:22033))
+opcs_ctrl$ctrl_weight <- ifelse(opcs_ctrl$ctrl_weight < 0, 0, opcs_ctrl$ctrl_weight)
+
+opcs_all <- merge(opcs_ctrl, opcs_het, by = c("TF", "gene"))
+
+#mural ----------
+mural_het <- as.data.frame(mural.heterozygous_regNet) %>% mutate(TF = rownames(mural.heterozygous_regNet)) %>% pivot_longer(names_to = "gene", values_to = "het_weight", cols = c(1:22033))
+mural_het$het_weight <- ifelse(mural_het$het_weight < 0, 0, mural_het$het_weight)
+
+mural_ctrl <- as.data.frame(mural.control_regNet) %>% mutate(TF = rownames(mural.control_regNet)) %>% pivot_longer(names_to = "gene", values_to = "ctrl_weight", cols = c(1:22033))
+mural_ctrl$ctrl_weight <- ifelse(mural_ctrl$ctrl_weight < 0, 0, mural_ctrl$ctrl_weight)
+
+mural_all <- merge(mural_ctrl, mural_het, by = c("TF", "gene"))
+
+save(astro_all, file = here("data/processed/network_analysis/astro_regNet_pos.Rdata"))
+save(micro_all, file = here("data/processed/network_analysis/micro_regNet_pos.Rdata"))
+save(excitatory_all, file = here("data/processed/network_analysis/ex_regNet_pos.Rdata"))
+save(inhibitory_all, file = here("data/processed/network_analysis/in_regNet_pos.Rdata"))
+save(oligodendrocyte_all, file = here("data/processed/network_analysis/oligo_regNet_pos.Rdata"))
+save(opcs_all, file = here("data/processed/network_analysis/opcs_regNet_pos.Rdata"))
+save(mural_all, file = here("data/processed/network_analysis/mural_regNet_pos.Rdata"))
+
+load(here("data/processed/network_analysis/astro_regNet_pos.Rdata"))
+load(here("data/processed/network_analysis/micro_regNet_pos.Rdata"))
+load(here("data/processed/network_analysis/ex_regNet_pos.Rdata"))
+load(here("data/processed/network_analysis/in_regNet_pos.Rdata"))
+load(here("data/processed/network_analysis/oligo_regNet_pos.Rdata"))
+load(here("data/processed/network_analysis/opcs_regNet_pos.Rdata"))
+load(here("data/processed/network_analysis/mural_regNet_pos.Rdata"))
+```
+
+ALPACA input: A table of edges, with the first column representing the TFs ("from" nodes) and the second column representing the targets ("to" nodes). The third column contains the edge weights corresponding to the control or healthy network, and the fourth column contains the edge weights for the disease network or network of interest. Note that the below `alpaca` function runs CONDOR within it. Communities are first detected then differential communities are identified. "_A" indicates a TF, "_B" indicates a gene.
+
+The result list contains 2 slots. The first one is a community assignement for each node and the second one is a modularity score for each node, which indicates the contribution of each node to the modularity of the community that it belongs to. In the first slot, the node are not labeled, therefore, we need to label them as follows:
+```{r astro-alpaca}
+astro_alpaca <- alpaca(astro_all, file.stem = here("results/alpaca/astro"), verbose = TRUE)
+#save(astro_alpaca, file = here("data/processed/network_analysis/astro_alpaca.Rdata"))
+
+load(here("data/processed/network_analysis/astro_alpaca.Rdata"))
+astro_alpaca_mat <- astro_alpaca[[1]] 
+astro_alpaca_memberships <- as.vector(astro_alpaca_mat)
+names(astro_alpaca_memberships) <- names(astro_alpaca_mat)
+astro_alpaca_memberships
+```
+
+```{r ex-alpaca}
+ex_alpaca <- alpaca(excitatory_all, file.stem = here("results/alpaca/ex"), verbose = TRUE)
+#save(ex_alpaca, file = here("data/processed/network_analysis/ex_alpaca.Rdata"))
+
+load(here("data/processed/network_analysis/ex_alpaca.Rdata"))
+
+ex_alpaca_mat <- ex_alpaca[[1]] 
+ex_alpaca_memberships <- as.vector(ex_alpaca_mat)
+names(ex_alpaca_memberships) <- names(ex_alpaca_mat)
+ex_alpaca_memberships
+```
+
+```{r in-alpaca}
+in_alpaca <- alpaca(inhibitory_all, file.stem = here("results/alpaca/in"), verbose = TRUE)
+in_alpaca_mat <- in_alpaca[[1]] 
+in_alpaca_memberships <- as.vector(in_alpaca_mat)
+names(in_alpaca_memberships) <- names(in_alpaca_mat)
+in_alpaca_memberships
+```
+
+```{r micro-alpaca}
+micro_alpaca <- alpaca(micro_all, file.stem = here("results/alpaca/micro"), verbose = TRUE)
+micro_alpaca_mat <- micro_alpaca[[1]] 
+micro_alpaca_memberships <- as.vector(micro_alpaca_mat)
+names(micro_alpaca_memberships) <- names(micro_alpaca_mat)
+micro_alpaca_memberships
+```
+
+```{r mural-alpaca}
+mural_alpaca <- alpaca(mural_all, file.stem = here("results/alpaca/mural"), verbose = TRUE)
+mural_alpaca_mat <- mural_alpaca[[1]] 
+mural_alpaca_memberships <- as.vector(mural_alpaca_mat)
+names(mural_alpaca_memberships) <- names(mural_alpaca_mat)
+mural_alpaca_memberships
+```
+
+```{r oligo-alpaca}
+oligo_alpaca <- alpaca(oligodendrocyte_all, file.stem = here("results/alpaca/oligo"), verbose = TRUE)
+oligo_alpaca_mat <- oligo_alpaca[[1]] 
+oligo_alpaca_memberships <- as.vector(oligo_alpaca_mat)
+names(oligo_alpaca_memberships) <- names(oligo_alpaca_mat)
+oligo_alpaca_memberships
+```
+
+```{r opcs-alpaca}
+opcs_alpaca <- alpaca(opcs_all, file.stem = here("results/alpaca/opcs"), verbose = TRUE)
+opcs_alpaca_mat <- opcs_alpaca[[1]] 
+opcs_alpaca_memberships <- as.vector(opcs_alpaca_mat)
+names(opcs_alpaca_memberships) <- names(opcs_alpaca_mat)
+opcs_alpaca_memberships
+```
+
+
+```{r GO-gene-enrichment-differenital-alpaca-modules}
+toevaluate <- c("astro", "ex") #comment in rest later: , "in", "micro", "mural", "oligo", "opcs")
+
+for(t in 1:length(toevaluate)){
+
+        # Load ALPACA scores and final communities
+        readscores <- paste(here("results/alpaca/"), toevaluate[t], "_ALPACA_scores.txt", sep="")
+        readcomms <- paste(here("results/alpaca/"), toevaluate[t], "_ALPACA_final_memb.txt", sep="")
+        scores <- read.delim(readscores, header=F)
+        comms <- read.delim(readcomms, header=F)
+        tosel <- intersect(scores[,1], comms[,1])
+        scores <- scores[which(scores[,1] %in% tosel),]
+        comms <- comms[which(comms[,1] %in% tosel),]
+        scores <- scores[order(scores[,1]),]
+        comms <- comms[order(comms[,1]),]
+        scores[,1] <- as.character(scores[,1])
+        comms[,1] <- as.character(comms[,1])
+        all(scores[,1]==comms[,1])
+        scores <- cbind(scores, comms[,2])
+        row.names(scores) <- scores[,1]
+        scores <- scores[,-1]
+        colnames(scores) <- c("score", "com")
+
+        # Extract ALPACA scores for each of the target genes
+        alpaca_nodes <- row.names(scores)
+        table(substr(alpaca_nodes, nchar(alpaca_nodes), nchar(alpaca_nodes))) # 647 A (tf) 10698 B (gene)
+        idx <- which(substr(alpaca_nodes, nchar(alpaca_nodes), nchar(alpaca_nodes))=="B")
+        alpaca_genes <- scores[idx,]
+        alpaca_genes <- alpaca_genes[order(alpaca_genes[,2],decreasing=T),]
+        alpaca_genes <- alpaca_genes[,c(2,1)]
+
+        # Extract the top 100 genes in each community
+        for(n in 1:max(alpaca_genes$com)){
+            junk <- alpaca_genes[which(alpaca_genes$com==n),]
+            junk <- junk[order(junk$score,decreasing=T),]
+            if(nrow(junk)>100){
+                junk <- junk[1:100,]
+                if(n==1){
+                    newfile <- junk
+                } else {
+                    newfile <- rbind(newfile, junk)
+                }
+            }
+        }
+
+        # Prepare the background geneset for topGO
+        gene_lst<-substr(row.names(newfile), 1, nchar(row.names(newfile))-2)
+        newfile <- cbind(newfile, gene_lst)
+        alpaca_genes <- cbind(alpaca_genes, substr(row.names(alpaca_genes), 1, nchar(row.names(alpaca_genes))-2))
+        colnames(alpaca_genes)[3] <- "genes"
+        
+        # GO term enrichment analysis for each community
+        GO2Symbol.bp <- annFUN.org(whichOnto = "BP", mapping = "org.Mm.eg.db", ID = "symbol")
+        symbol2GO.bp <- inverseList(GO2Symbol.bp)
+        enrichRes_comm <- c()
+        for(comm_num in as.numeric(names(table(newfile$com)))){
+            # select interesting genes and background
+            genesel <- as.character(newfile[newfile$com %in% comm_num,]$gene_lst)
+            interesting <- factor(as.integer(alpaca_genes$genes %in% genesel))
+            names(interesting) <- alpaca_genes$genes
+            # topGO results
+            tgd2<- new("topGOdata", ontology = "BP", allGenes = interesting, nodeSize = 1 , annot = annFUN.gene2GO, gene2GO = symbol2GO.bp)
+            resultFisher = runTest(tgd2, algorithm="classic", statistic="fisher")
+            enrichRes.bp <- GenTable(tgd2, classic = resultFisher, orderBy = "classic", ranksOf = "classic", topNodes = length(score(resultFisher)))
+            # Keep GO terms with 10-100 genes, output top 10 terms per community
+            enrichRes.bp<-(subset(enrichRes.bp, enrichRes.bp$Annotated<100))
+            enrichRes.bp<-(subset(enrichRes.bp, enrichRes.bp$Annotated>10))
+            adjP_Fisher <- p.adjust(enrichRes.bp[,6],"BH")
+            commID<- rep(comm_num, rep(length(enrichRes.bp[,6])))
+            enrichRes.bp <- cbind(enrichRes.bp, adjP_Fisher, commID)
+            enrichRes_comm<-rbind(enrichRes_comm,enrichRes.bp[1:10,])
+            print(comm_num)
+        }
+
+        # Store significant results
+        govar <- paste("enrichRes_gene_", toevaluate[t], sep="")
+        assign(govar, enrichRes_comm)
+
+        cat("Done running ALPACA on:", toevaluate[t], "\n\n")
+} #end loop over t
+```
+
+```{r visualize-gene-enrichment-function}
+prepare_go_per_datatype <- function(x, dataset="D1"){
+	colnames(x)[ncol(x)] <- "Community"	
+	x$Community <- paste(dataset, x$Community, sep="_")
+	x <- x[which(x$Annotated<50),] #note, took out portion inside which for "x$adjP_Fisher<0.25 & "
+	signexp <- x$Significant/x$Expected
+	x <- cbind(x, signexp)
+	return(x)
+}
+
+prepare_go_vis <- function(x, y){
+	# combine both datasets
+	dat <- rbind(x,y)
+	dat <- dat[order(dat$signexp, decreasing=T),]
+	dat <- dat[rev(1:nrow(dat)),]
+	dat$Term <- factor(dat$Term, levels = unique(dat$Term))
+	# add annotation on which of the discovery datasets the community belongs to
+	dataset <- substr(dat$Community,1,2)
+	dat <- cbind(dat, dataset)
+	dat[which(dat$dataset=="D1"),]$signexp <- -dat[which(dat$dataset=="D1"),]$signexp
+	dat <- cbind(dat, -log(dat$adjP_Fisher,10))
+	colnames(dat)[ncol(dat)] <- "-logFDR"
+    statistic <- dat$"-logFDR"*dat$signexp
+	dat <- cbind(dat, statistic)
+	dat$signexp[dat$signexp<(-40)] <- -40 # use a maximum threshold for color scale
+	dat$signexp[dat$signexp>(40)] <- 40 # use a maximum threshold for color scale
+	return(dat)
+}
+```
+
+```{r visualize-gene-enrichment}
+#prep data input
+res_astro <- prepare_go_per_datatype(enrichRes_gene_astro, dataset="D1")
+res_ex <- prepare_go_per_datatype(enrichRes_gene_ex, dataset="D2")
+
+toplot <- suppressWarnings(prepare_go_vis(res_astro, res_ex))
+toplot
+
+#rename communities 
+comname <- toplot$Community
+comname[which(comname=="D1_1")] <- "Astro_C1"
+comname[which(comname=="D1_2")] <- "Astro_C2"
+comname[which(comname=="D1_3")] <- "Astro_C3"
+comname[which(comname=="D1_4")] <- "Astro_C4"
+comname[which(comname=="D1_5")] <- "Astro_C5"
+comname[which(comname=="D1_6")] <- "Astro_C6"
+comname[which(comname=="D1_7")] <- "Astro_C7"
+comname[which(comname=="D1_8")] <- "Astro_C8"
+comname[which(comname=="D2_1")] <- "Ex_C1"
+comname[which(comname=="D2_2")] <- "Ex_C2"
+comname[which(comname=="D2_3")] <- "Ex_C3"
+comname[which(comname=="D2_4")] <- "Ex_C4"
+comname[which(comname=="D2_5")] <- "Ex_C5"
+comname[which(comname=="D2_6")] <- "Ex_C6"
+toplot$Community <- comname
+
+#sort and plot
+newlevelorder <- toplot[,c(2,8,9)]
+newlevelorder$signexp <- abs(newlevelorder$signexp)
+newlevelorder <- newlevelorder[order(newlevelorder$signexp, decreasing=T),]
+newlevelorder <- newlevelorder[order(newlevelorder$Community),]
+newlevelorder <- as.character(unique(newlevelorder$Term))
+newlevelorder <- rev(newlevelorder)
+
+#plot with ggplot
+png(file = here("results/alpaca/astro_vs_ex_diffmodules.png"), width = 1000, height = 1000)
+ggplot(toplot, aes(Community, factor(Term, level=newlevelorder), fill=signexp))+
+    scale_fill_gradient2(low="purple", high="darkgreen", limits=c(-40,40))+
+    theme_bw()+
+    labs(x="Differential Modules", y="")+
+    geom_tile()
+dev.off()
+```
+
+```{r}
+
+```
+
+
+
+```{r GO-TF-enrichment-differenital-alpaca-modules}
+toevaluate <- c("astro") #comment in rest later: , "ex", "in", "micro", "mural", "oligo", "opcs")
+
+for(t in 1:length(toevaluate)){
+
+        # Load ALPACA scores and final communities
+        readscores <- paste(here("results/alpaca/"), toevaluate[t], "_ALPACA_scores.txt", sep="")
+        readcomms <- paste(here("results/alpaca/"), toevaluate[t], "_ALPACA_final_memb.txt", sep="")
+        scores <- read.delim(readscores, header=F)
+        comms <- read.delim(readcomms, header=F)
+        tosel <- intersect(scores[,1], comms[,1])
+        scores <- scores[which(scores[,1] %in% tosel),]
+        comms <- comms[which(comms[,1] %in% tosel),]
+        scores <- scores[order(scores[,1]),]
+        comms <- comms[order(comms[,1]),]
+        scores[,1] <- as.character(scores[,1])
+        comms[,1] <- as.character(comms[,1])
+        all(scores[,1]==comms[,1])
+        scores <- cbind(scores, comms[,2])
+        row.names(scores) <- scores[,1]
+        scores <- scores[,-1]
+        colnames(scores) <- c("score", "com")
+
+        # Extract ALPACA scores for each of the target TFs
+        alpaca_nodes <- row.names(scores)
+        table(substr(alpaca_nodes, nchar(alpaca_nodes), nchar(alpaca_nodes))) # A (tf) B (gene)
+        idx <- which(substr(alpaca_nodes, nchar(alpaca_nodes), nchar(alpaca_nodes))=="A")
+        alpaca_TFs <- scores[idx,]
+        alpaca_TFs <- alpaca_TFs[order(alpaca_TFs[,2],decreasing=T),]
+        alpaca_TFs <- alpaca_TFs[,c(2,1)]
+
+        # Extract the top 100 TFs in each community
+        for(n in 1:max(alpaca_TFs$com)){
+            junk <- alpaca_TFs[which(alpaca_TFs$com==n),]
+            junk <- junk[order(junk$score,decreasing=T),]
+            if(nrow(junk)>100){
+                junk <- junk[1:100,]
+                if(n==1){
+                    newfile <- junk
+                } else {
+                    newfile <- rbind(newfile, junk)
+                }
+            }
+        }
+
+        # Prepare the background geneset for topGO
+        TF_lst<-substr(row.names(newfile), 1, nchar(row.names(newfile))-2)
+        newfile <- cbind(newfile, TF_lst)
+        alpaca_TFs <- cbind(alpaca_TFs, substr(row.names(alpaca_TFs), 1, nchar(row.names(alpaca_TFs))-2))
+        colnames(alpaca_TFs)[3] <- "TFs"
+        
+        # GO term enrichment analysis for each community
+        GO2Symbol.bp <- annFUN.org(whichOnto = "BP", mapping = "org.Mm.eg.db", ID = "symbol")
+        symbol2GO.bp <- inverseList(GO2Symbol.bp)
+        enrichRes_comm <- c()
+        for(comm_num in as.numeric(names(table(newfile$com)))){
+            # select interesting TFs and background
+            TFsel <- as.character(newfile[newfile$com %in% comm_num,]$TF_lst)
+            interesting <- factor(as.integer(alpaca_TFs$TFs %in% TFsel))
+            names(interesting) <- alpaca_TFs$TFs
+            # topGO results
+            tgd2<- new("topGOdata", ontology = "BP", allGenes = interesting, nodeSize = 1 , annot = annFUN.gene2GO, gene2GO = symbol2GO.bp)
+            resultFisher = runTest(tgd2, algorithm="classic", statistic="fisher")
+            enrichRes.bp <- GenTable(tgd2, classic = resultFisher, orderBy = "classic", ranksOf = "classic", topNodes = length(score(resultFisher)))
+            # Keep GO terms with 1-100 TFs, output top 10 terms per community
+            enrichRes.bp<-(subset(enrichRes.bp, enrichRes.bp$Annotated<100))
+            enrichRes.bp<-(subset(enrichRes.bp, enrichRes.bp$Annotated>1))
+            adjP_Fisher <- p.adjust(enrichRes.bp[,6],"BH")
+            commID<- rep(comm_num, rep(length(enrichRes.bp[,6])))
+            enrichRes.bp <- cbind(enrichRes.bp, adjP_Fisher, commID)
+            enrichRes_comm<-rbind(enrichRes_comm,enrichRes.bp[1:10,])
+            print(comm_num)
+        }
+
+        # Store significant results
+        govar <- paste("enrichRes_TF_", toevaluate[t], sep="")
+        assign(govar, enrichRes_comm)
+
+        cat("Done running ALPACA on:", toevaluate[t], "\n\n")
+} #end loop over t
+```
+
+```{r function-visualize-top-TF-genes-ALPACA}
+toreadscores <- function(x){
+        readscores <- paste(here("results/alpaca/"), x, "_ALPACA_scores.txt", sep="")
+        readcomms <- paste(here("results/alpaca/"), x, "_ALPACA_final_memb.txt", sep="")
+	scores <- read.delim(readscores, header=F)
+	comms <- read.delim(readcomms, header=F)
+	tosel <- intersect(scores[,1], comms[,1])
+	scores <- scores[which(scores[,1] %in% tosel),]
+	comms <- comms[which(comms[,1] %in% tosel),]
+	scores <- scores[order(scores[,1]),]
+	comms <- comms[order(comms[,1]),]
+	scores[,1] <- as.character(scores[,1])
+	comms[,1] <- as.character(comms[,1])
+	all(scores[,1]==comms[,1])
+	scores <- cbind(scores, comms[,2])
+	row.names(scores) <- scores[,1]
+	scores <- scores[,-1]
+	colnames(scores) <- c("score", "com")
+	return(scores)
+}
+```
+
+```{r}
+scores_astro <- toreadscores("astro")
+```
+
+
+
+#####
+
+```{r}
+astro_alpaca_top <- alpacaExtractTopGenes(astro_all, set.lengths = 20)
+```
+
+
+http://netbooks.networkmedicine.org/user/jordanwhitlock/notebooks/netZooR/CONDOR.ipynb
+```{r CONDOR-community-detection}
+pandaToCondorObject(astro_het)
+```
+
+
+
