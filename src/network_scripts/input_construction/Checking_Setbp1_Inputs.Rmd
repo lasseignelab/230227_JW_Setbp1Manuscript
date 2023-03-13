@@ -1,0 +1,195 @@
+---
+title: "CheckingSetbp1"
+output: html_document
+date: '2022-11-10'
+---
+#loading in libraries
+```{r}
+library(reshape)
+library(dplyr)
+library(ggplot2)
+library(here)
+library(styler)
+library(lintr)
+set.seed(2178)
+```
+
+
+# looking at motif and ppi input data (at 100, 200, 300, 400, 500, and 700 score thresholds) for presence of Setbp1 as a TF. 
+
+```{r}
+motif <- read.table(file = here("data/processed/motif_inputs/mus_motif_all.txt"), sep = "\t") #load in motif data
+
+ppi <- read.table(file = here("data/processed/ppi_inputs.mm10_ppi.txt"), sep = "\t") #load in ppi data
+
+ppi_700 <- read.table(file = here("data/processed/ppi_inputs/mm10_ppi_700.txt"), sep = "\t") #load in ppi data
+
+ppi_500 <- read.table(file = here("data/processed/ppi_inputs/mm10_ppi_500.txt"), sep = "\t") #load in ppi data
+
+ppi_400 <- read.table(file = here("data/processed/ppi_inputs/mm10_ppi_400.txt"), sep = "\t") #load in ppi data
+
+ppi_300 <- read.table(file = here("data/processed/ppi_inputs/mm10_ppi_300.txt"), sep = "\t") #load in ppi data
+
+ppi_200 <- read.table(file = here("data/processed/ppi_inputs/mm10_ppi_200.txt"), sep = "\t") #load in ppi data
+
+ppi_100 <- read.table(file = here("data/processed/ppi_inputs/mm10_ppi_100.txt"), sep = "\t") #load in ppi data
+
+#checking ppi data at 700
+ppi[ppi$from == "Setbp1",] #0
+ppi[ppi$to == "Setbp1",] #1, from Mecom to Setbp1 
+
+#checking ppi data at 500
+ppi_500[ppi_500$from == "Setbp1",] #0
+ppi_500[ppi_500$to == "Setbp1",] #4, from Mecom to Setbp1, Trp53 to Setbp1, Etv6 to Setbp1, Hoxa9 to Setbp1
+
+#checking ppi data at 400
+ppi_400[ppi_400$from == "Setbp1",] #0
+ppi_400[ppi_400$to == "Setbp1",] #1, from Mecom to Setbp1 
+
+#checking motif data
+nrow(motif[motif$TF_Info == "Setbp1",]) #487 different motifs targeted by the Setbp1 TF
+nrow(motif[motif$Motif == "Setbp1",]) #130 different TFs targeting the Setbp1 motif
+```
+
+# regenerated PANDA networks at each of the score thresholds to determine if changing PPI input threshold will incorporate Setbp1 as a TF in addition to a gene in the network:
+
+Used astrocytes as a test, since Setbp1 was missing from all cell-type networks in all conditions
+
+```{r}
+#loading in astrocyte PANDA networks at different PPI score thresholds:
+
+# 100 -----
+load("/data/user/jbarham3/jw_cellspecific/jw_cellspecific/setbp1_clean/outputs/PANDA/test/Astro_ctrl100.Rdata")
+regNet_100 <- Astro_ctrlPANDA100@regNet
+
+Astro_Ctrl100 <- melt(regNet_100, varnames = c("TF", "gene"))#melting dataframe
+Setbp1regNet_100 <- Astro_Ctrl100 %>% filter_all(any_vars(.=="Setbp1")) #filtering for any row with Setbp1 in it
+Setbp1regNet_100_pos <- Setbp1regNet_100[Setbp1regNet_100$value > 0,] #filter for everything above zero aka positive only
+
+## counting occurence of Setbp1 
+TF_100 <- length(which(Setbp1regNet_100$TF=="Setbp1"))
+gene_100 <- length(which(Setbp1regNet_100$gene=="Setbp1"))
+
+TF_100_pos <- length(which(Setbp1regNet_100_pos$TF=="Setbp1"))
+gene_100_pos <- length(which(Setbp1regNet_100_pos$gene=="Setbp1"))
+
+# 200 -----
+load("/data/user/jbarham3/jw_cellspecific/jw_cellspecific/setbp1_clean/outputs/PANDA/test/Astro_ctrl200.Rdata")
+regNet_200 <- Astro_ctrlPANDA200@regNet
+
+Astro_Ctrl200 <- melt(regNet_200, varnames = c("TF", "gene"))#melting dataframe
+Setbp1regNet_200 <- Astro_Ctrl200 %>% filter_all(any_vars(.=="Setbp1")) #filtering for any row with Setbp1 in it
+Setbp1regNet_200_pos <- Setbp1regNet_200[Setbp1regNet_200$value > 0,] #filter for everything above zero aka positive only
+
+## counting occurence of Setbp1 
+TF_200 <- length(which(Setbp1regNet_200$TF=="Setbp1"))
+gene_200 <- length(which(Setbp1regNet_200$gene=="Setbp1"))
+
+TF_200_pos <- length(which(Setbp1regNet_200_pos$TF=="Setbp1"))
+gene_200_pos <- length(which(Setbp1regNet_200_pos$gene=="Setbp1"))
+
+# 300 -----
+load("/data/user/jbarham3/jw_cellspecific/jw_cellspecific/setbp1_clean/outputs/PANDA/test/Astro_ctrl300.Rdata")
+regNet_300 <- Astro_ctrlPANDA300@regNet
+
+Astro_Ctrl300 <- melt(regNet_300, varnames = c("TF", "gene"))#melting dataframe
+Setbp1regNet_300 <- Astro_Ctrl300 %>% filter_all(any_vars(.=="Setbp1")) #filtering for any row with Setbp1 in it
+Setbp1regNet_300_pos <- Setbp1regNet_300[Setbp1regNet_300$value > 0,] #filter for everything above zero aka positive only
+
+## counting occurence of Setbp1 
+TF_300 <- length(which(Setbp1regNet_300$TF=="Setbp1"))
+gene_300 <- length(which(Setbp1regNet_300$gene=="Setbp1"))
+
+TF_300_pos <- length(which(Setbp1regNet_300_pos$TF=="Setbp1"))
+gene_300_pos <- length(which(Setbp1regNet_300_pos$gene=="Setbp1"))
+
+# 400 -----
+load("/data/user/jbarham3/jw_cellspecific/jw_cellspecific/setbp1_clean/outputs/PANDA/test/Astro_ctrl400.Rdata")
+regNet_400 <- Astro_ctrlPANDA400@regNet
+
+Astro_Ctrl400 <- melt(regNet_400, varnames = c("TF", "gene"))#melting dataframe
+Setbp1regNet_400 <- Astro_Ctrl400 %>% filter_all(any_vars(.=="Setbp1")) #filtering for any row with Setbp1 in it
+Setbp1regNet_400_pos <- Setbp1regNet_400[Setbp1regNet_400$value > 0,] #filter for everything above zero aka positive only
+
+## counting occurence of Setbp1 
+TF_400 <- length(which(Setbp1regNet_400$TF=="Setbp1"))
+gene_400 <- length(which(Setbp1regNet_400$gene=="Setbp1"))
+
+TF_400_pos <- length(which(Setbp1regNet_400_pos$TF=="Setbp1"))
+gene_400_pos <- length(which(Setbp1regNet_400_pos$gene=="Setbp1"))
+
+# 500 -----
+load("/data/user/jbarham3/jw_cellspecific/jw_cellspecific/setbp1_clean/outputs/PANDA/test/Astro_ctrl500.Rdata")
+regNet_500 <- Astro_ctrlPANDA500@regNet
+
+Astro_Ctrl500 <- melt(regNet_500, varnames = c("TF", "gene"))#melting dataframe
+Setbp1regNet_500 <- Astro_Ctrl500 %>% filter_all(any_vars(.=="Setbp1")) #filtering for any row with Setbp1 in it
+Setbp1regNet_500_pos <- Setbp1regNet_500[Setbp1regNet_500$value > 0,] #filter for everything above zero aka positive only
+
+## counting occurence of Setbp1 
+TF_500 <- length(which(Setbp1regNet_500$TF=="Setbp1"))
+gene_500 <- length(which(Setbp1regNet_500$gene=="Setbp1"))
+
+TF_500_pos <- length(which(Setbp1regNet_500_pos$TF=="Setbp1"))
+gene_500_pos <- length(which(Setbp1regNet_500_pos$gene=="Setbp1"))
+
+# 700 -----
+load("/data/user/jbarham3/jw_cellspecific/jw_cellspecific/setbp1_clean/outputs/PANDA/cortex/Astro_ctrl.Rdata")
+regNet_700 <- Astro_ctrlPANDA@regNet
+
+Astro_Ctrl700 <- melt(regNet_700, varnames = c("TF", "gene"))#melting dataframe
+Setbp1regNet_700 <- Astro_Ctrl700 %>% filter_all(any_vars(.=="Setbp1")) #filtering for any row with Setbp1 in it
+Setbp1regNet_700_pos <- Setbp1regNet_700[Setbp1regNet_700$value > 0,] #filter for everything above zero aka positive only
+
+## counting occurence of Setbp1 
+TF_700 <- length(which(Setbp1regNet_700$TF=="Setbp1"))
+gene_700 <- length(which(Setbp1regNet_700$gene=="Setbp1"))
+
+TF_700_pos <- length(which(Setbp1regNet_700_pos$TF=="Setbp1"))
+gene_700_pos <- length(which(Setbp1regNet_700_pos$gene=="Setbp1"))
+
+# making a dataframe of all values to plot and visualize difference in Setbp1 occurence:
+Setbp1_occurence <- data.frame(Setbp1_gene = c(694, 221, 688, 215, 672, 210, 632, 197, 584, 183, 413, 127), Setbp1_TF = c(17104, 3234, 17104, 3279, 0, 0, 0, 0, 0, 0, 0, 0), score = c("100", "100_pos", "200", "200_pos", "300", "300_pos", "400", "400_pos", "500", "500_pos", "700", "700_pos"))
+
+Setbp1_occurence <- data.frame(Setbp1 = c(694, 221, 688, 215, 672, 210, 632, 197, 584, 183, 413, 127, 17104, 3234, 17104, 3279, 0, 0, 0, 0, 0, 0, 0, 0), score_thresh = c("gene_100", "gene_100_pos", "gene_200", "gene_200_pos", "gene_300", "gene_300_pos", "gene_400", "gene_400_pos", "gene_500", "gene_500_pos", "gene_700", "gene_700_pos", "tf_100", "tf_100_pos", "tf_200", "tf_200_pos", "tf_300", "tf_300_pos", "tf_400", "tf_400_pos", "tf_500", "tf_500_pos", "tf_700", "tf_700_pos"), type = c("gene", "gene", "gene", "gene", "gene", "gene","gene", "gene", "gene", "gene", "gene", "gene", "tf", "tf", "tf", "tf", "tf", "tf", "tf", "tf", "tf", "tf", "tf", "tf"))
+ggplot(Setbp1_occurence, aes(Setbp1, score_thresh, color=score_thresh)) + 
+geom_point + 
+facet_grid(type~.)
+
+
+Setbp1_occurence <- data.frame(Setbp1 = c(694, 221, 688, 215, 672, 210, 632, 197, 584, 183, 413, 127, 17104, 3234, 17104, 3279, 0, 0, 0, 0, 0, 0, 0, 0), score_thresh = c("gene_100", "gene_100_pos", "gene_200", "gene_200_pos", "gene_300", "gene_300_pos", "gene_400", "gene_400_pos", "gene_500", "gene_500_pos", "gene_700", "gene_700_pos", "tf_100", "tf_100_pos", "tf_200", "tf_200_pos", "tf_300", "tf_300_pos", "tf_400", "tf_400_pos", "tf_500", "tf_500_pos", "tf_700", "tf_700_pos"))
+ggplot(Setbp1_occurence, aes(x = score_thresh, y = Setbp1, color = score_thresh)) + geom_point()
+
+
+Setbp1_occurence <- data.frame(Setbp1_number = c(694, 221, 688, 215, 672, 210, 632, 197, 584, 183, 413, 127, 17104, 3234, 17104, 3279, 0, 0, 0, 0, 0, 0, 0, 0), score = c("100", "100_pos", "200", "200_pos", "300", "300_pos", "400", "400_pos", "500", "500_pos", "700", "700_pos", "100", "100_pos", "200", "200_pos", "300", "300_pos", "400", "400_pos", "500", "500_pos", "700", "700_pos"), type = c("gene", "gene", "gene", "gene", "gene", "gene","gene", "gene", "gene", "gene", "gene", "gene", "tf", "tf", "tf", "tf", "tf", "tf", "tf", "tf", "tf", "tf", "tf", "tf"))
+ggplot(Setbp1_occurence, aes(x = score, y = Setbp1_number, color = type)) + geom_point()
+
+
+Setbp1_occurence <- data.frame(Setbp1_occurence = c(694, 221, 688, 215, 672, 210, 632, 197, 584, 183, 413, 127, 17104, 3234, 17104, 3279, 0, 0, 0, 0, 0, 0, 0, 0), score = c("100", "100", "200", "200", "300", "300", "400", "400", "500", "500", "700", "700", "100", "100", "200", "200", "300", "300", "400", "400", "500", "500", "700", "700"), type = c("gene", "gene_pos", "gene", "gene_pos", "gene", "gene_pos","gene", "gene_pos", "gene", "gene_pos", "gene", "gene_pos", "tf", "tf_pos", "tf", "tf_pos", "tf", "tf_pos", "tf", "tf_pos", "tf", "tf_pos", "tf", "tf_pos"))
+ggplot(Setbp1_occurence, aes(x = score, y = Setbp1_occurence, color = type)) + geom_point(position = "jitter") + scale_color_manual(breaks = c("gene", "gene_pos", "tf", "tf_pos"), values = c("#D81B60","#EAB2C6","#0782E8","#7FBEF2")) + geom_vline(xintercept = 250)
+
+ggplot(Setbp1_occurence, aes(y = Setbp1_number, x = score, color = type)) + geom_bar(stat = "identity") + scale_color_manual(breaks = c("gene", "gene_pos", "tf", "tf_pos"), values = c("#D81B60","#EAB2C6","#0782E8","#7FBEF2"))
+
+```
+# Information on thresholds:
+Unfiltered scores range: 150 - 999
+
+82,534 interactions in total
+
+Proportion captured by filtering at subsequent thresholds:
+* PPI 100: 100% of data (82,534 interactions)
+* PPI 200: 65.43% of data (52,353 interactions)
+* PPI 300: 28% of data (23,339 interactions)
+* PPI 400: 14.2% of data (11,721 interactions) 
+* PPI 500: 7.8% of data (6,476 interactions)
+* PPI 700: 2.84% of data (2,346 interactions)
+
+
+
+
+
+
+
+
+
+
