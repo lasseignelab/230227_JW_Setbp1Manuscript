@@ -13,7 +13,7 @@ output:
 * Loading libraries
 * Selecting resolution
 * Investigating top markers for Cerebral Cortex
-* Assigning celltypes
+* Assigning cell types
 * Visualizing cell types distribution
 
 This analysis comes after 'Setbp1_MarkersCortex_05.Rmd' and comes before "Setbp1_DGEcortex_07.Rmd"
@@ -32,6 +32,7 @@ library(Seurat)
 library(cowplot)
 library(ggplot2)
 library(tidyverse)
+library(RColorBrewer)
 library(here)
 library(styler)
 library(lintr)
@@ -44,14 +45,14 @@ set.seed(2178)
 load(here("results/cerebral_markers.Rdata"))
 ```
 
-*also be sure that the previously generated clustered objects at resolution 0.8 are here if not loaded already, run below chunk:
+*also be sure that the previously generated clustered objects at resolution 0.9 are here if not loaded already, run below chunk:
 ```{r}
 load(here("data/cerebral_leiden.Rdata"))
 select_resolution <- "RNA_snn_res.0.9"
 cerebral_int <- SetIdent(cerebral_int, value = select_resolution)
 ```
 
-#### identify the top25 markers for kidney and cerebral cortex:
+#### identify the top25 markers for cerebral cortex:
 ```{r}
 # top 25 cerebral
 cerebral_top25 <- cerebral_markers_genes %>%
@@ -154,7 +155,7 @@ split_pt <- SplitObject(cerebral_int_celltypes, split.by = "type")
 het_pt <- table(split_pt$heterozygous@meta.data$cell_type)
 het_pt <- as.data.frame(het_pt)
 het_pt$Var1 <- as.character(het_pt$Var1)
-library(RColorBrewer)
+
 ggplot(het_pt, aes(y = Var1, fill = Var1), ) +
   geom_bar(aes(x = Freq), stat = "identity") +
   theme_bw(base_size = 15) +
