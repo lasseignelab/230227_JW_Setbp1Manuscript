@@ -9,12 +9,12 @@ output:
       toc_float: true
 ---
 
-This analysis comes after 'Setbp1_Integration_03.Rmd' and precedes 'Setbp1_MarkersCortex_05.Rmd' & 'Setbp1_MarkersKidney_05.Rmd'. Leiden clustering was run on supercomputer using 'Setbp1_Clustering_leiden_06.R' and 'Setbp1_Clustering_leiden_06' bash script
+This analysis comes after 'Setbp1_Integration_03.Rmd' and precedes 'Setbp1_MarkersCortex_05.Rmd' & 'Setbp1_MarkersKidney_05.Rmd'.
 
 # *Single-nuclei analysis: Clustering*
 * Finding Neighbors
 * Clustering with Leiden algorithm
-* Idnetify stable resolution with clustree
+* Identify stable resolution with clustree
 * Re-visualize bimodality
 * Set identity as new resolution
 
@@ -57,7 +57,7 @@ load(here("data/integrated_setbp1_cerebral.Rdata"))
 
 
 #### check the active assay
-It should be RNA, but need to make check the reduction used for everything downstream is set to "harmony"
+It should be RNA, but need to make sure the reduction used for everything downstream is set to "harmony"
 ```{r}
 kidney_int@active.assay # RNA
 cerebral_int@active.assay # RNA
@@ -67,7 +67,7 @@ cerebral_int@active.assay # RNA
 
 NOTE: Use LEIDEN (algorithm = 4) NOT LOUVAIN (algorithm = 1)
 
-#find neighbors
+# find neighbors
 ```{r}
 kidney_int <- FindNeighbors(kidney_int, dims = 1:30, reduction = "harmony")
 cerebral_int <- FindNeighbors(cerebral_int, dims = 1:30, reduction = "harmony")
@@ -136,7 +136,7 @@ DimPlot(cerebral_int, reduction = "umap_harmony", group.by = "RNA_snn_res.1.5") 
   ggtitle("leiden_1.5")
 ```
 
-#### rechecking bimodality from early QC to see if a particular cluster is driving it:
+#### Rechecking bimodality from early QC to see if a particular cluster is driving it:
 ##### Visualize the number of UMIs/transcripts per cell:
 nUMI = nCount_RNA
 nGene = nFeature_RNA
@@ -153,13 +153,13 @@ kidney_int@meta.data %>%
   geom_vline(xintercept = 500) +
   ggtitle("Kidney @ res 0.9")
 cerebral_int@meta.data %>%
-  ggplot(aes(color = RNA_snn_res.0.9, x = nCount_RNA, fill = RNA_snn_res.0.8)) +
+  ggplot(aes(color = RNA_snn_res.0.9, x = nCount_RNA, fill = RNA_snn_res.0.9)) +
   geom_density(alpha = 0.2) +
   scale_x_log10() +
   theme_classic() +
   ylab("Cell density") +
   geom_vline(xintercept = 500) +
-  ggtitle("Cerebral cortex @ res 0.8")
+  ggtitle("Cerebral cortex @ res 0.9")
 kidney_int@meta.data %>%
   ggplot(aes(color = RNA_snn_res.0.9, x = nFeature_RNA, fill = RNA_snn_res.0.9)) +
   geom_density(alpha = 0.2) +
@@ -169,13 +169,13 @@ kidney_int@meta.data %>%
   geom_vline(xintercept = 500) +
   ggtitle("Kidney @ res 0.9")
 cerebral_int@meta.data %>%
-  ggplot(aes(color = RNA_snn_res.0.9, x = nFeature_RNA, fill = RNA_snn_res.0.8)) +
+  ggplot(aes(color = RNA_snn_res.0.9, x = nFeature_RNA, fill = RNA_snn_res.0.9)) +
   geom_density(alpha = 0.2) +
   scale_x_log10() +
   theme_classic() +
   ylab("Cell density") +
   geom_vline(xintercept = 500) +
-  ggtitle("Cerebral cortex @ res 0.8")
+  ggtitle("Cerebral cortex @ res 0.9")
 ```
 
 #### set the identity as Leiden with resolution 0.9 for kidney and 0.9 for cerbral cortex:
@@ -189,10 +189,27 @@ kidney_int <- SetIdent(kidney_int, value = select_resolution)
 
 #### plot the clustering
 ```{r}
-plot_grid(ncol = 3, DimPlot(kidney_int, label = TRUE, reduction = "umap_harmony") + NoAxes(), DimPlot(kidney_int, group.by = "orig.ident", reduction = "umap_harmony") +
-  NoAxes(), DimPlot(kidney_int, group.by = "type", reduction = "umap_harmony") + NoAxes())
-plot_grid(ncol = 3, DimPlot(cerebral_int, label = TRUE, reduction = "umap_harmony") + NoAxes(), DimPlot(cerebral_int, group.by = "orig.ident", reduction = "umap_harmony") +
-  NoAxes(), DimPlot(cerebral_int, group.by = "type", reduction = "umap_harmony") + NoAxes())
+plot_grid(ncol = 3, 
+          DimPlot(kidney_int,
+                  label = TRUE,
+                  reduction = "umap_harmony") + NoAxes(), 
+          DimPlot(kidney_int, 
+                  group.by = "orig.ident", 
+                  reduction = "umap_harmony") + NoAxes(), 
+          DimPlot(kidney_int, 
+                  group.by = "type", 
+                  reduction = "umap_harmony") + NoAxes())
+
+plot_grid(ncol = 3, 
+          DimPlot(cerebral_int, 
+                  label = TRUE, 
+                  reduction = "umap_harmony") + NoAxes(), 
+          DimPlot(cerebral_int, 
+                  group.by = "orig.ident", 
+                  reduction = "umap_harmony") + NoAxes(), 
+          DimPlot(cerebral_int, 
+                  group.by = "type", 
+                  reduction = "umap_harmony") + NoAxes())
 ```
 
 ```{r}
