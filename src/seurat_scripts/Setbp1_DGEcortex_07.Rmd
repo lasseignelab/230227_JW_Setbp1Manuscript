@@ -993,7 +993,7 @@ ggplot(data = fibroblasts_het, aes(x = avg_log2FC, y = -log10(p_val), col = diff
 ```
 
 
-### For loop to generate DEG output at log2FC threshold of 0.1 (replaces all code above, except plotting, need to add that to loop later):
+### For loop to generate combined DEG output at log2FC threshold of 0.1:
 ```{r}
 # specify the cell types in the data to loop through
 celltypes <- levels(cerebral_int_celltypes)
