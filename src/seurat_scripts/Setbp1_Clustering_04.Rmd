@@ -189,10 +189,27 @@ kidney_int <- SetIdent(kidney_int, value = select_resolution)
 
 #### plot the clustering
 ```{r}
-plot_grid(ncol = 3, DimPlot(kidney_int, label = TRUE, reduction = "umap_harmony") + NoAxes(), DimPlot(kidney_int, group.by = "orig.ident", reduction = "umap_harmony") +
-  NoAxes(), DimPlot(kidney_int, group.by = "type", reduction = "umap_harmony") + NoAxes())
-plot_grid(ncol = 3, DimPlot(cerebral_int, label = TRUE, reduction = "umap_harmony") + NoAxes(), DimPlot(cerebral_int, group.by = "orig.ident", reduction = "umap_harmony") +
-  NoAxes(), DimPlot(cerebral_int, group.by = "type", reduction = "umap_harmony") + NoAxes())
+plot_grid(ncol = 3, 
+          DimPlot(kidney_int,
+                  label = TRUE,
+                  reduction = "umap_harmony") + NoAxes(), 
+          DimPlot(kidney_int, 
+                  group.by = "orig.ident", 
+                  reduction = "umap_harmony") + NoAxes(), 
+          DimPlot(kidney_int, 
+                  group.by = "type", 
+                  reduction = "umap_harmony") + NoAxes())
+
+plot_grid(ncol = 3, 
+          DimPlot(cerebral_int, 
+                  label = TRUE, 
+                  reduction = "umap_harmony") + NoAxes(), 
+          DimPlot(cerebral_int, 
+                  group.by = "orig.ident", 
+                  reduction = "umap_harmony") + NoAxes(), 
+          DimPlot(cerebral_int, 
+                  group.by = "type", 
+                  reduction = "umap_harmony") + NoAxes())
 ```
 
 ```{r}
