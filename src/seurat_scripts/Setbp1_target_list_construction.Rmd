@@ -1,7 +1,7 @@
 ---
 title: "Setbp1_targets"
 output: html_document
-date: '2023-02-16'
+date: 'date change test'
 ---
 
 * Obtained gene list of targets from msigdb SETBP1 target list (https://www.gsea-msigdb.org/gsea/msigdb/human/download_geneset.jsp?geneSetName=SETBP1_TARGET_GENES&fileType=TSV). The target list stored in cheaha at '221018_Setbp1_msigdb_targets.csv' at /data/user/jbarham3/jw_cellspecific/jw_cellspecific/setbp1_clean/inputs/unprocessed/, then converted from mouse to human using bioDBnet Ortho (may use biomart and redo if that is better! checking with Anisha) Results are in file '221019_bioDBnet_dbOrtho_msigdb.txt'
