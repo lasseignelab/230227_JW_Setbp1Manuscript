@@ -63,12 +63,12 @@ cerebral_top25
 
 ```{r}
 final_cerebral_features <- c("Slc17a7", "Pcp4", "Synpr", "Gad1", "Hapln2", "Olig2", "Pdgfra", "Aqp4", "Gja1", "Slc1a3", "Cx3cr1", "Csf1r", "Dock8", "Vtn", "Nr4a2", "Ptgds", "Ryr3")
-pdf(here("results/seurat/cerebal_celltype_featureVlnPlot.pdf"))
+pdf(here("results/seurat/cerebral_celltype_featureVlnPlot.pdf"))
 VlnPlot(cerebral_int, final_cerebral_features, stack = TRUE, sort = FALSE, flip = TRUE) +
   theme(legend.position = "none") + ggtitle("Cerebral Cortex Cell-type Identity Markers")
 dev.off()
 
-pdf(here("data/cerebal_celltype_allfeatureDotPlot.pdf"))
+pdf(here("data/cerebral_celltype_allfeatureDotPlot.pdf"))
 DotPlot(cerebral_int, features = final_cerebral_features) + coord_flip() + RotatedAxis()
 dev.off()
 ```
