@@ -13,9 +13,6 @@ This analysis comes after 'Setbp1_CellTypesCortex_06.Rmd' and precedes 'Setbp1_P
 
 # *Single-nuclei analysis: DGE cortex*
 
-
-
-
 ## Code: 
 
 Accompanying dry lab notebook for this analysis is here: https://docs.google.com/document/d/1FO_Je9oxbBFF9S_k-8tVF2t4ba88O4C77sw1v7DIFec/edit?usp=sharing
@@ -113,12 +110,12 @@ p4
 ## Change point color
 # 1. by default, it is assigned to the categories in an alphabetical order):
 p3 <- p2 + scale_color_manual(values = c("blue", "black", "red"))
-# 2. to automate a bit: ceate a named vector: the values are the colors to be used, the names are the categories they will be assigned to:
+# 2. to automate a bit: create a named vector: the values are the colors to be used, the names are the categories they will be assigned to:
 mycolors <- c("blue", "red", "black")
 names(mycolors) <- c("DOWN", "UP", "NO")
 p3 <- p2 + scale_colour_manual(values = mycolors)
 p3
-# label poitns:
+# label points:
 excitatory.neurons_het$delabel <- NA
 excitatory.neurons_het$delabel[excitatory.neurons_het$diffexpressed != "NO"] <- excitatory.neurons_het$gene[excitatory.neurons_het$diffexpressed != "NO"]
 ggplot(data = excitatory.neurons_het, aes(x = avg_log2FC, y = -log10(p_val), col = diffexpressed, label = delabel)) +
@@ -167,12 +164,12 @@ p4
 ## Change point color
 # 1. by default, it is assigned to the categories in an alphabetical order):
 p3 <- p2 + scale_color_manual(values = c("blue", "black", "red"))
-# 2. to automate a bit: ceate a named vector: the values are the colors to be used, the names are the categories they will be assigned to:
+# 2. to automate a bit: create a named vector: the values are the colors to be used, the names are the categories they will be assigned to:
 mycolors <- c("blue", "red", "black")
 names(mycolors) <- c("DOWN", "UP", "NO")
 p3 <- p2 + scale_colour_manual(values = mycolors)
 p3
-# label poitns:
+# label points:
 inhibitory.neurons_het$delabel <- NA
 inhibitory.neurons_het$delabel[inhibitory.neurons_het$diffexpressed != "NO"] <- inhibitory.neurons_het$gene[inhibitory.neurons_het$diffexpressed != "NO"]
 ggplot(data = inhibitory.neurons_het, aes(x = avg_log2FC, y = -log10(p_val), col = diffexpressed, label = delabel)) +
@@ -220,12 +217,12 @@ p4
 ## Change point color
 # 1. by default, it is assigned to the categories in an alphabetical order):
 p3 <- p2 + scale_color_manual(values = c("blue", "black", "red"))
-# 2. to automate a bit: ceate a named vector: the values are the colors to be used, the names are the categories they will be assigned to:
+# 2. to automate a bit: create a named vector: the values are the colors to be used, the names are the categories they will be assigned to:
 mycolors <- c("blue", "red", "black")
 names(mycolors) <- c("DOWN", "UP", "NO")
 p3 <- p2 + scale_colour_manual(values = mycolors)
 p3
-# label poitns:
+# label points:
 astrocytes_het$delabel <- NA
 astrocytes_het$delabel[astrocytes_het$diffexpressed != "NO"] <- astrocytes_het$gene[astrocytes_het$diffexpressed != "NO"]
 ggplot(data = astrocytes_het, aes(x = avg_log2FC, y = -log10(p_val), col = diffexpressed, label = delabel)) +
@@ -273,12 +270,12 @@ p4
 ## Change point color
 # 1. by default, it is assigned to the categories in an alphabetical order):
 p3 <- p2 + scale_color_manual(values = c("blue", "black", "red"))
-# 2. to automate a bit: ceate a named vector: the values are the colors to be used, the names are the categories they will be assigned to:
+# 2. to automate a bit: create a named vector: the values are the colors to be used, the names are the categories they will be assigned to:
 mycolors <- c("blue", "red", "black")
 names(mycolors) <- c("DOWN", "UP", "NO")
 p3 <- p2 + scale_colour_manual(values = mycolors)
 p3
-# label poitns:
+# label points:
 microglia_het$delabel <- NA
 microglia_het$delabel[microglia_het$diffexpressed != "NO"] <- microglia_het$gene[microglia_het$diffexpressed != "NO"]
 ggplot(data = microglia_het, aes(x = avg_log2FC, y = -log10(p_val), col = diffexpressed, label = delabel)) +
@@ -327,12 +324,12 @@ p4
 ## Change point color
 # 1. by default, it is assigned to the categories in an alphabetical order):
 p3 <- p2 + scale_color_manual(values = c("blue", "black", "red"))
-# 2. to automate a bit: ceate a named vector: the values are the colors to be used, the names are the categories they will be assigned to:
+# 2. to automate a bit: create a named vector: the values are the colors to be used, the names are the categories they will be assigned to:
 mycolors <- c("blue", "red", "black")
 names(mycolors) <- c("DOWN", "UP", "NO")
 p3 <- p2 + scale_colour_manual(values = mycolors)
 p3
-# label poitns:
+# label points:
 mural.cells_het$delabel <- NA
 mural.cells_het$delabel[mural.cells_het$diffexpressed != "NO"] <- mural.cells_het$gene[mural.cells_het$diffexpressed != "NO"]
 ggplot(data = mural.cells_het, aes(x = avg_log2FC, y = -log10(p_val), col = diffexpressed, label = delabel)) +
@@ -379,12 +376,12 @@ p4
 ## Change point color
 # 1. by default, it is assigned to the categories in an alphabetical order):
 p3 <- p2 + scale_color_manual(values = c("blue", "black", "red"))
-# 2. to automate a bit: ceate a named vector: the values are the colors to be used, the names are the categories they will be assigned to:
+# 2. to automate a bit: create a named vector: the values are the colors to be used, the names are the categories they will be assigned to:
 mycolors <- c("blue", "red", "black")
 names(mycolors) <- c("DOWN", "UP", "NO")
 p3 <- p2 + scale_colour_manual(values = mycolors)
 p3
-# label poitns:
+# label points:
 opcs_het$delabel <- NA
 opcs_het$delabel[opcs_het$diffexpressed != "NO"] <- opcs_het$gene[opcs_het$diffexpressed != "NO"]
 ggplot(data = opcs_het, aes(x = avg_log2FC, y = -log10(p_val), col = diffexpressed, label = delabel)) +
@@ -432,12 +429,12 @@ p4
 ## Change point color
 # 1. by default, it is assigned to the categories in an alphabetical order):
 p3 <- p2 + scale_color_manual(values = c("blue", "black", "red"))
-# 2. to automate a bit: ceate a named vector: the values are the colors to be used, the names are the categories they will be assigned to:
+# 2. to automate a bit: create a named vector: the values are the colors to be used, the names are the categories they will be assigned to:
 mycolors <- c("blue", "red", "black")
 names(mycolors) <- c("DOWN", "UP", "NO")
 p3 <- p2 + scale_colour_manual(values = mycolors)
 p3
-# label poitns:
+# label points:
 oligodendrocytes_het$delabel <- NA
 oligodendrocytes_het$delabel[oligodendrocytes_het$diffexpressed != "NO"] <- oligodendrocytes_het$gene[oligodendrocytes_het$diffexpressed != "NO"]
 ggplot(data = oligodendrocytes_het, aes(x = avg_log2FC, y = -log10(p_val), col = diffexpressed, label = delabel)) +
@@ -486,12 +483,12 @@ p4
 ## Change point color
 # 1. by default, it is assigned to the categories in an alphabetical order):
 p3 <- p2 + scale_color_manual(values = c("blue", "black", "red"))
-# 2. to automate a bit: ceate a named vector: the values are the colors to be used, the names are the categories they will be assigned to:
+# 2. to automate a bit: create a named vector: the values are the colors to be used, the names are the categories they will be assigned to:
 mycolors <- c("blue", "red", "black")
 names(mycolors) <- c("DOWN", "UP", "NO")
 p3 <- p2 + scale_colour_manual(values = mycolors)
 p3
-# label poitns:
+# label points:
 fibroblasts_het$delabel <- NA
 fibroblasts_het$delabel[fibroblasts_het$diffexpressed != "NO"] <- fibroblasts_het$gene[fibroblasts_het$diffexpressed != "NO"]
 ggplot(data = fibroblasts_het, aes(x = avg_log2FC, y = -log10(p_val), col = diffexpressed, label = delabel)) +
@@ -568,7 +565,7 @@ LabelClusters(plot = plot, id = "ident")
 VlnPlot(cerebral_int_celltypes, features = "Setbp1", split.by = "type")
 ```
 ### Calculating DGE by cell type: log2FC of 0.20
-(also doesnt return Setbp1 as a DEG)
+(also doesn't return Setbp1 as a DEG)
 ---excitatory neurons---
 ```{r}
 # subset seurat object for each cell type
@@ -610,12 +607,12 @@ p4
 ## Change point color
 # 1. by default, it is assigned to the categories in an alphabetical order):
 p3 <- p2 + scale_color_manual(values = c("blue", "black", "red"))
-# 2. to automate a bit: ceate a named vector: the values are the colors to be used, the names are the categories they will be assigned to:
+# 2. to automate a bit: create a named vector: the values are the colors to be used, the names are the categories they will be assigned to:
 mycolors <- c("blue", "red", "black")
 names(mycolors) <- c("DOWN", "UP", "NO")
 p3 <- p2 + scale_colour_manual(values = mycolors)
 p3
-# label poitns:
+# label points:
 excitatory.neurons_het$delabel <- NA
 excitatory.neurons_het$delabel[excitatory.neurons_het$diffexpressed != "NO"] <- excitatory.neurons_het$gene[excitatory.neurons_het$diffexpressed != "NO"]
 ggplot(data = excitatory.neurons_het, aes(x = avg_log2FC, y = -log10(p_val), col = diffexpressed, label = delabel)) +
@@ -663,12 +660,12 @@ p4
 ## Change point color
 # 1. by default, it is assigned to the categories in an alphabetical order):
 p3 <- p2 + scale_color_manual(values = c("blue", "black", "red"))
-# 2. to automate a bit: ceate a named vector: the values are the colors to be used, the names are the categories they will be assigned to:
+# 2. to automate a bit: create a named vector: the values are the colors to be used, the names are the categories they will be assigned to:
 mycolors <- c("blue", "red", "black")
 names(mycolors) <- c("DOWN", "UP", "NO")
 p3 <- p2 + scale_colour_manual(values = mycolors)
 p3
-# label poitns:
+# label points:
 inhibitory.neurons_het$delabel <- NA
 inhibitory.neurons_het$delabel[inhibitory.neurons_het$diffexpressed != "NO"] <- inhibitory.neurons_het$gene[inhibitory.neurons_het$diffexpressed != "NO"]
 ggplot(data = inhibitory.neurons_het, aes(x = avg_log2FC, y = -log10(p_val), col = diffexpressed, label = delabel)) +
@@ -716,12 +713,12 @@ p4
 ## Change point color
 # 1. by default, it is assigned to the categories in an alphabetical order):
 p3 <- p2 + scale_color_manual(values = c("blue", "black", "red"))
-# 2. to automate a bit: ceate a named vector: the values are the colors to be used, the names are the categories they will be assigned to:
+# 2. to automate a bit: create a named vector: the values are the colors to be used, the names are the categories they will be assigned to:
 mycolors <- c("blue", "red", "black")
 names(mycolors) <- c("DOWN", "UP", "NO")
 p3 <- p2 + scale_colour_manual(values = mycolors)
 p3
-# label poitns:
+# label points:
 astrocytes_het$delabel <- NA
 astrocytes_het$delabel[astrocytes_het$diffexpressed != "NO"] <- astrocytes_het$gene[astrocytes_het$diffexpressed != "NO"]
 ggplot(data = astrocytes_het, aes(x = avg_log2FC, y = -log10(p_val), col = diffexpressed, label = delabel)) +
@@ -769,12 +766,12 @@ p4
 ## Change point color
 # 1. by default, it is assigned to the categories in an alphabetical order):
 p3 <- p2 + scale_color_manual(values = c("blue", "black", "red"))
-# 2. to automate a bit: ceate a named vector: the values are the colors to be used, the names are the categories they will be assigned to:
+# 2. to automate a bit: create a named vector: the values are the colors to be used, the names are the categories they will be assigned to:
 mycolors <- c("blue", "red", "black")
 names(mycolors) <- c("DOWN", "UP", "NO")
 p3 <- p2 + scale_colour_manual(values = mycolors)
 p3
-# label poitns:
+# label points:
 microglia_het$delabel <- NA
 microglia_het$delabel[microglia_het$diffexpressed != "NO"] <- microglia_het$gene[microglia_het$diffexpressed != "NO"]
 ggplot(data = microglia_het, aes(x = avg_log2FC, y = -log10(p_val), col = diffexpressed, label = delabel)) +
@@ -823,12 +820,12 @@ p4
 ## Change point color
 # 1. by default, it is assigned to the categories in an alphabetical order):
 p3 <- p2 + scale_color_manual(values = c("blue", "black", "red"))
-# 2. to automate a bit: ceate a named vector: the values are the colors to be used, the names are the categories they will be assigned to:
+# 2. to automate a bit: create a named vector: the values are the colors to be used, the names are the categories they will be assigned to:
 mycolors <- c("blue", "red", "black")
 names(mycolors) <- c("DOWN", "UP", "NO")
 p3 <- p2 + scale_colour_manual(values = mycolors)
 p3
-# label poitns:
+# label points:
 mural.cells_het$delabel <- NA
 mural.cells_het$delabel[mural.cells_het$diffexpressed != "NO"] <- mural.cells_het$gene[mural.cells_het$diffexpressed != "NO"]
 ggplot(data = mural.cells_het, aes(x = avg_log2FC, y = -log10(p_val), col = diffexpressed, label = delabel)) +
@@ -875,12 +872,12 @@ p4
 ## Change point color
 # 1. by default, it is assigned to the categories in an alphabetical order):
 p3 <- p2 + scale_color_manual(values = c("blue", "black", "red"))
-# 2. to automate a bit: ceate a named vector: the values are the colors to be used, the names are the categories they will be assigned to:
+# 2. to automate a bit: create a named vector: the values are the colors to be used, the names are the categories they will be assigned to:
 mycolors <- c("blue", "red", "black")
 names(mycolors) <- c("DOWN", "UP", "NO")
 p3 <- p2 + scale_colour_manual(values = mycolors)
 p3
-# label poitns:
+# label points:
 opcs_het$delabel <- NA
 opcs_het$delabel[opcs_het$diffexpressed != "NO"] <- opcs_het$gene[opcs_het$diffexpressed != "NO"]
 ggplot(data = opcs_het, aes(x = avg_log2FC, y = -log10(p_val), col = diffexpressed, label = delabel)) +
@@ -928,12 +925,12 @@ p4
 ## Change point color
 # 1. by default, it is assigned to the categories in an alphabetical order):
 p3 <- p2 + scale_color_manual(values = c("blue", "black", "red"))
-# 2. to automate a bit: ceate a named vector: the values are the colors to be used, the names are the categories they will be assigned to:
+# 2. to automate a bit: create a named vector: the values are the colors to be used, the names are the categories they will be assigned to:
 mycolors <- c("blue", "red", "black")
 names(mycolors) <- c("DOWN", "UP", "NO")
 p3 <- p2 + scale_colour_manual(values = mycolors)
 p3
-# label poitns:
+# label points:
 oligodendrocytes_het$delabel <- NA
 oligodendrocytes_het$delabel[oligodendrocytes_het$diffexpressed != "NO"] <- oligodendrocytes_het$gene[oligodendrocytes_het$diffexpressed != "NO"]
 ggplot(data = oligodendrocytes_het, aes(x = avg_log2FC, y = -log10(p_val), col = diffexpressed, label = delabel)) +
@@ -981,12 +978,12 @@ p4
 ## Change point color
 # 1. by default, it is assigned to the categories in an alphabetical order):
 p3 <- p2 + scale_color_manual(values = c("blue", "black", "red"))
-# 2. to automate a bit: ceate a named vector: the values are the colors to be used, the names are the categories they will be assigned to:
+# 2. to automate a bit: create a named vector: the values are the colors to be used, the names are the categories they will be assigned to:
 mycolors <- c("blue", "red", "black")
 names(mycolors) <- c("DOWN", "UP", "NO")
 p3 <- p2 + scale_colour_manual(values = mycolors)
 p3
-# label poitns:
+# label points:
 fibroblasts_het$delabel <- NA
 fibroblasts_het$delabel[fibroblasts_het$diffexpressed != "NO"] <- fibroblasts_het$gene[fibroblasts_het$diffexpressed != "NO"]
 ggplot(data = fibroblasts_het, aes(x = avg_log2FC, y = -log10(p_val), col = diffexpressed, label = delabel)) +
@@ -1004,7 +1001,7 @@ celltypes <- levels(cerebral_int_celltypes)
 # create empty dataframe to store the loop outputs within
 DEGs_cerebralcells <- data.frame()
 
-# for loop, loops through each of the 'celltypes' in cerebral and calulates the DEG between conditions (heterozygous and control)
+# for loop, loops through each of the 'celltypes' in cerebral and calculates the DEG between conditions (heterozygous and control)
 for (i in celltypes) {
   # subset seurat data for each cerebral cell type ----------
   celltype <- subset(cerebral_int_celltypes, idents = i)
@@ -1017,7 +1014,7 @@ for (i in celltypes) {
     only.pos = FALSE,
     assay = "RNA"
   )
-  # add an additional column to the df with celltype annotation (for downstream analysis purposes) -----------
+  # add an additional column to the df with cell type annotation (for downstream analysis purposes) -----------
   DEGs$cell_type <- i
   # combine the dataframe generated in the for loop with the entire list of all DEGs across cell types in cerebral ----------
   DEGs_cerebralcells <- rbind(DEGs_cerebralcells, DEGs)
@@ -1039,7 +1036,7 @@ setbp1_genes <- append(setbp1_genes, "Setbp1")
 ```
 
 
-#generating seurat input for complex heatmap from DGE data
+# generating seurat input for complex heatmap from DGE data
 resource: 
 * NormalizeData, ScaleData  was not used because of https://www.embopress.org/doi/full/10.15252/msb.20188746
 
