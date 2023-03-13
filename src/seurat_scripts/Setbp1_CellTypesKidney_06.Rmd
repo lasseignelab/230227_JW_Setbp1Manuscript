@@ -94,87 +94,93 @@ DotPlot(object = kidney_int, features = features, assay = "RNA") + theme(legend.
 
 #Glomerular Parietal Epithelial Cells:
 ```{r}
-FeaturePlot(kidney_int, features = c("Krt8", "Krt18"), reduction = "umap_harmony")
+FeaturePlot(kidney_int, features = c("Krt8", "Krt18"), reduction = "umap_harmony", label = TRUE)
 ```
 
 #B Lymphocytes:
 ```{r}
-FeaturePlot(kidney_int, features = c("Cd79a", "Cd79b", "Ltb"), reduction = "umap_harmony")
+FeaturePlot(kidney_int, features = c("Cd79a", "Cd79b", "Ltb"), reduction = "umap_harmony", label = TRUE)
 ```
 
 #T lymphocytes: 
 ```{r}
-FeaturePlot(kidney_int, features = c("Msa4"), reduction = "umap_harmony")
+FeaturePlot(kidney_int, features = c("Msa4"), reduction = "umap_harmony", label = TRUE)
 ```
 
 #Loop of Henle (LOH):
 ```{r}
-FeaturePlot(kidney_int, features = c("Umod", "Slc12a1"), reduction = "umap_harmony")
+FeaturePlot(kidney_int, features = c("Umod", "Slc12a1"), reduction = "umap_harmony", label = TRUE)
 ```
 
 #Macrophages:
 ```{r}
-FeaturePlot(kidney_int, features = c("C1qb", "C1qa"), reduction = "umap_harmony")
+FeaturePlot(kidney_int, features = c("C1qb", "C1qa"), reduction = "umap_harmony", label = TRUE)
 ```
 
 #Collecting Duct - Intercalating Cell Type A (CD-IC-A):
 ```{r}
-FeaturePlot(kidney_int, features = c("Rhbg", "Slc4a1", "Aqp6", "Insrr", "Atp6v0d2", "Atp6v1g3"), reduction = "umap_harmony")
+FeaturePlot(kidney_int, features = c("Rhbg", "Slc4a1", "Aqp6", "Insrr", "Atp6v0d2", "Atp6v1g3"), reduction = "umap_harmony", label = TRUE)
 ```
 
 #Collecting Duct - Intercalating Cell Type B (CD-IC-B):
 ```{r}
-FeaturePlot(kidney_int, features = c("Rhbg", "Slc25a4", "Hmx2", "Insrr", "Atp6v0d2", "Atp6v1g3"), reduction = "umap_harmony")
+FeaturePlot(kidney_int, features = c("Rhbg", "Slc25a4", "Hmx2", "Insrr", "Atp6v0d2", "Atp6v1g3"), reduction = "umap_harmony", label = TRUE)
 ```
 
 #Collecting Duct - Principal Cell (CD-PC):
 ```{r}
-FeaturePlot(kidney_int, features = c("Hsd11b2", "Aqp2", "Rhbg"), reduction = "umap_harmony")
+FeaturePlot(kidney_int, features = c("Hsd11b2", "Aqp2", "Rhbg"), reduction = "umap_harmony", label = TRUE)
 ```
 
 #Proximal convoluted tubule segment 2 (PCT-S2)cells:
 ```{r}
-FeaturePlot(kidney_int, features = c("Fxyd2"), reduction = "umap_harmony")
+FeaturePlot(kidney_int, features = c("Fxyd2"), reduction = "umap_harmony", label = TRUE)
 ```
 
 #Proximal convoluted tubule segment 1 (PCT-S1)cells:
 ```{r}
-FeaturePlot(kidney_int, features = c("Slc5a2", "Slc5a12"), reduction = "umap_harmony")
+FeaturePlot(kidney_int, features = c("Slc5a2", "Slc5a12"), reduction = "umap_harmony", label = TRUE)
 ```
 
 #Proximal convoluted tubule cells:
 ```{r}
-FeaturePlot(kidney_int, features = c("Knl1", "Lrp", "Slc27a2", "Tmem174", "Nat8", "Slc22a8"), reduction = "umap_harmony")
+FeaturePlot(kidney_int, features = c("Knl1", "Lrp", "Slc27a2", "Tmem174", "Nat8", "Slc22a8"), reduction = "umap_harmony", label = TRUE)
+FeaturePlot(kidney_int, features = c("Slc27a2", "Slc22a8"), reduction = "umap_harmony", label = TRUE)
+```
+
+#Proximal tubule cells:
+```{r}
+FeaturePlot(kidney_int, features = c("Gpx3", "Umod"), reduction = "umap_harmony", label = TRUE)
 ```
 
 #Proximal straight tubule cells (PST):
 ```{r}
-FeaturePlot(kidney_int, features = c("Atp11a", "Slc13a3"), reduction = "umap_harmony")
+FeaturePlot(kidney_int, features = c("Atp11a", "Slc13a3"), reduction = "umap_harmony", label = TRUE)
 ```
 
 #Endothelial cells:
 ```{r}
-FeaturePlot(kidney_int, features = c("Kdr", "Ehd3", "Nrp1"), reduction = "umap_harmony")
+FeaturePlot(kidney_int, features = c("Kdr", "Ehd3", "Nrp1"), reduction = "umap_harmony", label = TRUE)
 ```
 
 #Fibroblasts:
 ```{r}
-FeaturePlot(kidney_int, features = c("Plac8", "S100a4"), reduction = "umap_harmony")
+FeaturePlot(kidney_int, features = c("Plac8", "S100a4"), reduction = "umap_harmony", label = TRUE)
 ```
 
 #Distal Convoluted Tubule (DCT):
 ```{r}
-FeaturePlot(kidney_int, features = c("Umod", "Slc12a3", "Pvalb"), reduction = "umap_harmony")
+FeaturePlot(kidney_int, features = c("Umod", "Slc12a3", "Pvalb"), reduction = "umap_harmony", label = TRUE)
 ```
 
 #Podocytes:
 ```{r}
-FeaturePlot(kidney_int, features = c("Nphs1", "Nphs2"), reduction = "umap_harmony")
+FeaturePlot(kidney_int, features = c("Nphs1", "Nphs2"), reduction = "umap_harmony", label = TRUE)
 ```
 
 #Descending Loop of Henle (DLH):
 ```{r}
-FeaturePlot(kidney_int, features = c("Bst1", "Aqp1"), reduction = "umap_harmony")
+FeaturePlot(kidney_int, features = c("Bst1", "Aqp1"), reduction = "umap_harmony", label = TRUE)
 ```
 
 **no pericytes, natural killer cells, or dendritic cells, or smooth muscle
