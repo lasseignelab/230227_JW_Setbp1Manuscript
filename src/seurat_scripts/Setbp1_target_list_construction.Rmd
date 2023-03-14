@@ -4,51 +4,63 @@ output: html_document
 date: '2023-02-16'
 ---
 
-* Obtained gene list of targets from msigdb SETBP1 target list (https://www.gsea-msigdb.org/gsea/msigdb/human/download_geneset.jsp?geneSetName=SETBP1_TARGET_GENES&fileType=TSV). The target list stored in cheaha at '221018_Setbp1_msigdb_targets.csv' at /data/user/jbarham3/jw_cellspecific/jw_cellspecific/setbp1_clean/inputs/unprocessed/, then converted from mouse to human using bioDBnet Ortho (may use biomart and redo if that is better! checking with Anisha) Results are in file '221019_bioDBnet_dbOrtho_msigdb.txt'
+* Obtained gene list of targets from msigdb SETBP1 target list (https://www.gsea-msigdb.org/gsea/msigdb/human/download_geneset.jsp?geneSetName=SETBP1_TARGET_GENES&fileType=TSV). The target list stored in cheaha at '221018_Setbp1_msigdb_targets.csv' at /data/user/jbarham3/2302227_JW_Setbp1Manuscript/results/seurat/, then converted from mouse to human using bioDBnet Ortho GUI. Results are in file '221019_bioDBnet_dbOrtho_msigdb.txt'
 * Additional genes were compiled from the below resources into '221019_bioDBnet_dbOrtho_lit_signor.txt':
 1. the literature (papers here): HCF1, KMT2A, PHF8, PHF6, SET, HOXA9, HOXA10, PP2A, HMGA1, PHF6, BMP5, PDE4D, ERPP4, RUNX1, TCF4, BCL11A, DNTT, MYB, MYC, CEBPB, PARP1, TAF1A, ANP32A, AKT, HMG2, TREX1, NME1, APEX1
 2. Signor:
 * Human: SET, HOXA9, HOXA10
 
-The final list is composed of 228 Human genes mapped to 682 mouse orthologs/aliases.
+The final target list is composed of 228 Human genes mapped to 682 mouse orthologs/aliases.
 
-Mouse literature and Signor genes were manually added when all lists were merged below:
 ```{r}
-#generate dataframe for human genes from literature,  and signor converted to mouse using bioDBnet (INCLUDING SYNONYMS)
-lms <- read.table("/data/user/jbarham3/jw_cellspecific/jw_cellspecific/setbp1_clean/inputs/unprocessed/221019_bioDBnet_dbOrtho_lit_signor.txt", sep = "\t")
-
-lms <- lms[-1,] #remove first row value which was title
-
+set.seed(2178)
+library(here)
+library(styler)
+library(lintr)
 library(stringr)
-t <- str_split(lms$V2, "; ") #separate ; 
-d2 <- do.call(rbind, t) #make single dataframe
-d2 <- pivot_longer(as.data.frame(d2), cols = 1:17, values_to = "genes") #rearrange to pivot longer
-lms <- as.data.frame(unique(d2$genes)) #make final dataframe for lit  and signor mouse symbols
-lms <- lms[-1,]
+library(tidyr)
+```
 
-#generate dataframe for human genes from msigdb convereted to mouse using bioDBnnet (INCLUDING SYNONYMS)
-m <- read.table("/data/user/jbarham3/jw_cellspecific/jw_cellspecific/setbp1_clean/inputs/unprocessed/221019_bioDBnet_dbOrtho_msigdb.txt", sep = "\t")
-m <- m[,1:2] #remove V3 empty column
-m <- m[-1,] #remove first row value which was title
 
-t <- str_split(m$V2, "; ") #separate ; 
-d2 <- do.call(rbind, t) #make single dataframe
-d2 <- pivot_longer(as.data.frame(d2), cols = 1:16, values_to = "genes") #rearrange to pivot longer
-m <- as.data.frame(unique(d2$genes)) #make final dataframe for lit  and signor mouse symbols
-m <- m[-41,]#removing blank
+Mouse lit and Signor genes were manually added when all lists were merged below:
+```{r}
+# generate dataframe for human genes from literature, and signor converted to mouse using bioDBnet (INCLUDING SYNONYMS)
+lms <- read.table(here("results/seurat/221019_bioDBnet_dbOrtho_lit_signor.txt"), sep = "\t", header = TRUE)
 
-#create datframe with mouse  and signor genes (signor is the same in mouse as it is in human):
+t <- str_split(lms$Gene.Symbol.and.Synonyms, "; ") # separate ;
+d2 <- do.call(rbind, t) # make single matrix
+d2 <- pivot_longer(as.data.frame(d2), cols = 1:17, values_to = "genes") # rearrange to pivot longer
+lms <- as.data.frame(unique(d2$genes)) # make final dataframe for lit  and signor mouse symbols
+lms <- lms[!apply(lms == "", 1, all),] #removing blank
+
+# generate dataframe for human genes from msigdb convereted to mouse using bioDBnnet (INCLUDING SYNONYMS)
+m <- read.table(here("results/seurat/221019_bioDBnet_dbOrtho_msigdb.txt"), sep = "\t", header = TRUE)
+m <- m[, 1:2] # remove X empty column
+
+t <- str_split(m$Gene.Symbol.and.Synonyms, "; ") # separate ;
+d2 <- do.call(rbind, t) # make single matrix
+d2 <- pivot_longer(as.data.frame(d2), cols = 1:16, values_to = "genes") # rearrange to pivot longer
+m <- as.data.frame(unique(d2$genes)) # make final dataframe for lit and signor mouse symbols
+m <- m[!apply(m == "", 1, all),] # removing blank
+
+# create dataframe with mouse and signor genes (signor is the same in mouse as it is in human):
 ms <- as.data.frame(c("Nap1l2", "Anp32a"))
 colnames(ms) <- "gene"
 
-#join all dataframes into a giant gene set for Setbp1 interactors:
+# join all dataframes into a giant gene set for Setbp1 interactors:
 setbp1_genes <- union(lms, m)
 setbp1_genes <- union(setbp1_genes, ms)
 setbp1_genes <- unlist(setbp1_genes, recursive = FALSE)
-setbp1_genes <- gsub(" ", "", setbp1_genes) #removing spaces in elements of vector list
-setbp1_genes <- (unique(setbp1_genes)) #228 human genes, mapped to 682 human aliases
+setbp1_genes <- gsub(" ", "", setbp1_genes) # removing spaces in elements of vector list
+setbp1_genes <- (unique(setbp1_genes)) # 228 human genes, mapped to 682 mouse ortholologs/aliases
 
 setbp1_genes <- as.data.frame(setbp1_genes)
 
-#write.csv(setbp1_genes, file = "/data/user/jbarham3/jw_cellspecific/jw_cellspecific/setbp1_clean/inputs/processed/setbp1_targets/setbp1_targets.csv") #written out once then commented out 
+write.csv(setbp1_genes, file = here("results/seurat/setbp1_targets.csv")) # written out once then commented out
+```
+
+```{r}
+# run style
+style_file(here("src/seurat_scripts/Setbp1_target_list_construction.Rmd"))
+# lintr was run as well
 ```
