@@ -580,7 +580,7 @@ for (i in celltypes) {
   DEGs_cerebralcells <- rbind(DEGs_cerebralcells, DEGs)
 }
 
-write.csv(DEGs_cerebralcells, file = here("results/seurat/DEGs_cerebralcells.csv")) #written out once then commented out
+#write.csv(DEGs_cerebralcells, file = here("results/seurat/DEGs_cerebralcells.csv")) #written out once then commented out
 
 DEGs_cerebralcells <- read.csv(here("results/seurat/DEGs_cerebralcells.csv"))
 ```
@@ -590,7 +590,7 @@ DEGs_cerebralcells <- read.csv(here("results/seurat/DEGs_cerebralcells.csv"))
 
 Setbp1 target gene list was constructed in 'Setbp1_target_list_construction.Rmd' found in /data/user/jbarham3/jw_cellspecific/jw_cellspecific/setbp1_clean/inputs/processed/setbp1_targets/
 ```{r}
-setbp1_genes <- read.csv(here("data/processed/setbp1_targets.csv"))
+setbp1_genes <- read.csv(here("results/seurat/setbp1_targets.csv"))
 setbp1_genes <- setbp1_genes[, -1]
 setbp1_genes <- append(setbp1_genes, "Setbp1")
 ```
