@@ -28,7 +28,7 @@ lms <- read.table(here("results/seurat/221019_bioDBnet_dbOrtho_lit_signor.txt"),
 lms <- lms[-1, ] # remove first row value which was title
 
 t <- str_split(lms$V2, "; ") # separate ;
-d2 <- do.call(rbind, t) # make single dataframe
+d2 <- do.call(rbind, t) # make single matrix
 d2 <- pivot_longer(as.data.frame(d2), cols = 1:17, values_to = "genes") # rearrange to pivot longer
 lms <- as.data.frame(unique(d2$genes)) # make final dataframe for lit  and signor mouse symbols
 lms <- lms[-1, ]
