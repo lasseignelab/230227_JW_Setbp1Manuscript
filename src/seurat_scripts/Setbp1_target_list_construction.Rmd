@@ -12,9 +12,9 @@ date: '2023-02-16'
 
 The final list is composed of 228 Human genes mapped to 682 mouse orthologs/aliases.
 
-Mouse literature and Signor genes were manually added when all lists were merged below:
+Mouse lit and Signor genes were manually added when all lists were merged below:
 ```{r}
-#generate dataframe for human genes from literature,  and signor converted to mouse using bioDBnet (INCLUDING SYNONYMS)
+#generate dataframe for human genes from literature, and signor converted to mouse using bioDBnet (INCLUDING SYNONYMS)
 lms <- read.table(here("results/seurat/221019_bioDBnet_dbOrtho_lit_signor.txt"), sep = "\t")
 
 lms <- lms[-1,] #remove first row value which was title
