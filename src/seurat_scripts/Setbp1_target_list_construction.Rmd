@@ -12,43 +12,56 @@ date: '2023-02-16'
 
 The final list is composed of 228 Human genes mapped to 682 mouse orthologs/aliases.
 
+```{r}
+set.seed(2178)
+library(styler)
+library(lintr)
+```
+
+
 Mouse lit and Signor genes were manually added when all lists were merged below:
 ```{r}
-#generate dataframe for human genes from literature, and signor converted to mouse using bioDBnet (INCLUDING SYNONYMS)
+# generate dataframe for human genes from literature, and signor converted to mouse using bioDBnet (INCLUDING SYNONYMS)
 lms <- read.table(here("results/seurat/221019_bioDBnet_dbOrtho_lit_signor.txt"), sep = "\t")
 
-lms <- lms[-1,] #remove first row value which was title
+lms <- lms[-1, ] # remove first row value which was title
 
 library(stringr)
-t <- str_split(lms$V2, "; ") #separate ; 
-d2 <- do.call(rbind, t) #make single dataframe
-d2 <- pivot_longer(as.data.frame(d2), cols = 1:17, values_to = "genes") #rearrange to pivot longer
-lms <- as.data.frame(unique(d2$genes)) #make final dataframe for lit  and signor mouse symbols
-lms <- lms[-1,]
+t <- str_split(lms$V2, "; ") # separate ;
+d2 <- do.call(rbind, t) # make single dataframe
+d2 <- pivot_longer(as.data.frame(d2), cols = 1:17, values_to = "genes") # rearrange to pivot longer
+lms <- as.data.frame(unique(d2$genes)) # make final dataframe for lit  and signor mouse symbols
+lms <- lms[-1, ]
 
-#generate dataframe for human genes from msigdb convereted to mouse using bioDBnnet (INCLUDING SYNONYMS)
+# generate dataframe for human genes from msigdb convereted to mouse using bioDBnnet (INCLUDING SYNONYMS)
 m <- read.table(here("results/seurat/221019_bioDBnet_dbOrtho_msigdb.txt"), sep = "\t")
-m <- m[,1:2] #remove V3 empty column
-m <- m[-1,] #remove first row value which was title
+m <- m[, 1:2] # remove V3 empty column
+m <- m[-1, ] # remove first row value which was title
 
-t <- str_split(m$V2, "; ") #separate ; 
-d2 <- do.call(rbind, t) #make single dataframe
-d2 <- pivot_longer(as.data.frame(d2), cols = 1:16, values_to = "genes") #rearrange to pivot longer
-m <- as.data.frame(unique(d2$genes)) #make final dataframe for lit  and signor mouse symbols
-m <- m[-41,]#removing blank
+t <- str_split(m$V2, "; ") # separate ;
+d2 <- do.call(rbind, t) # make single dataframe
+d2 <- pivot_longer(as.data.frame(d2), cols = 1:16, values_to = "genes") # rearrange to pivot longer
+m <- as.data.frame(unique(d2$genes)) # make final dataframe for lit  and signor mouse symbols
+m <- m[-41, ] # removing blank
 
-#create datframe with mouse  and signor genes (signor is the same in mouse as it is in human):
+# create datframe with mouse  and signor genes (signor is the same in mouse as it is in human):
 ms <- as.data.frame(c("Nap1l2", "Anp32a"))
 colnames(ms) <- "gene"
 
-#join all dataframes into a giant gene set for Setbp1 interactors:
+# join all dataframes into a giant gene set for Setbp1 interactors:
 setbp1_genes <- union(lms, m)
 setbp1_genes <- union(setbp1_genes, ms)
 setbp1_genes <- unlist(setbp1_genes, recursive = FALSE)
-setbp1_genes <- gsub(" ", "", setbp1_genes) #removing spaces in elements of vector list
-setbp1_genes <- (unique(setbp1_genes)) #228 human genes, mapped to 682 human aliases
+setbp1_genes <- gsub(" ", "", setbp1_genes) # removing spaces in elements of vector list
+setbp1_genes <- (unique(setbp1_genes)) # 228 human genes, mapped to 682 human aliases
 
 setbp1_genes <- as.data.frame(setbp1_genes)
 
-write.csv(setbp1_genes, file = here("results/seurat/setbp1_targets.csv")) #written out once then commented out 
+write.csv(setbp1_genes, file = here("results/seurat/setbp1_targets.csv")) # written out once then commented out
+```
+
+```{r}
+# run style
+style_file(here("src/seurat_scripts/Setbp1_target_list_construction.Rmd"))
+# lintr was run as well
 ```
