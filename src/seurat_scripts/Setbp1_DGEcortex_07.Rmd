@@ -588,7 +588,7 @@ DEGs_cerebralcells <- read.csv(here("results/seurat/DEGs_cerebralcells.csv"))
 
 #### Heatmap of expression of regulators and targets of Setbp1 across cell types:
 
-Setbp1 target gene list was constructed in 'Setbp1_target_list_construction.Rmd' found in /data/user/jbarham3/jw_cellspecific/jw_cellspecific/setbp1_clean/inputs/processed/setbp1_targets/
+Setbp1 target gene list was constructed in 'Setbp1_target_list_construction.Rmd' and is stored in ./results/seurat/
 ```{r}
 setbp1_genes <- read.csv(here("results/seurat/setbp1_targets.csv"))
 setbp1_genes <- setbp1_genes[, -1]
