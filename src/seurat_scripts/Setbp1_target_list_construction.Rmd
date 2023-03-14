@@ -4,7 +4,7 @@ output: html_document
 date: '2023-02-16'
 ---
 
-* Obtained gene list of targets from msigdb SETBP1 target list (https://www.gsea-msigdb.org/gsea/msigdb/human/download_geneset.jsp?geneSetName=SETBP1_TARGET_GENES&fileType=TSV). The target list stored in cheaha at '221018_Setbp1_msigdb_targets.csv' at /data/user/jbarham3/jw_cellspecific/jw_cellspecific/setbp1_clean/inputs/unprocessed/, then converted from mouse to human using bioDBnet Ortho (may use biomart and redo if that is better! checking with Anisha) Results are in file '221019_bioDBnet_dbOrtho_msigdb.txt'
+* Obtained gene list of targets from msigdb SETBP1 target list (https://www.gsea-msigdb.org/gsea/msigdb/human/download_geneset.jsp?geneSetName=SETBP1_TARGET_GENES&fileType=TSV). The target list stored in cheaha at '221018_Setbp1_msigdb_targets.csv' at /data/user/jbarham3/2302227_JW_Setbp1Manuscript/results/seurat/, then converted from mouse to human using bioDBnet Ortho GUI. Results are in file '221019_bioDBnet_dbOrtho_msigdb.txt'
 * Additional genes were compiled from the below resources into '221019_bioDBnet_dbOrtho_lit_signor.txt':
 1. the literature (papers here): HCF1, KMT2A, PHF8, PHF6, SET, HOXA9, HOXA10, PP2A, HMGA1, PHF6, BMP5, PDE4D, ERPP4, RUNX1, TCF4, BCL11A, DNTT, MYB, MYC, CEBPB, PARP1, TAF1A, ANP32A, AKT, HMG2, TREX1, NME1, APEX1
 2. Signor:
@@ -14,9 +14,11 @@ The final target list is composed of 228 Human genes mapped to 682 mouse ortholo
 
 ```{r}
 set.seed(2178)
+library(here)
 library(styler)
 library(lintr)
 library(stringr)
+library(tidyr)
 ```
 
 
@@ -29,7 +31,7 @@ t <- str_split(lms$Gene.Symbol.and.Synonyms, "; ") # separate ;
 d2 <- do.call(rbind, t) # make single matrix
 d2 <- pivot_longer(as.data.frame(d2), cols = 1:17, values_to = "genes") # rearrange to pivot longer
 lms <- as.data.frame(unique(d2$genes)) # make final dataframe for lit  and signor mouse symbols
-lms <- lms[-1, ]
+lms <- lms[!apply(lms == "", 1, all),] #removing blank
 
 # generate dataframe for human genes from msigdb convereted to mouse using bioDBnnet (INCLUDING SYNONYMS)
 m <- read.table(here("results/seurat/221019_bioDBnet_dbOrtho_msigdb.txt"), sep = "\t", header = TRUE)
@@ -39,7 +41,7 @@ t <- str_split(m$Gene.Symbol.and.Synonyms, "; ") # separate ;
 d2 <- do.call(rbind, t) # make single matrix
 d2 <- pivot_longer(as.data.frame(d2), cols = 1:16, values_to = "genes") # rearrange to pivot longer
 m <- as.data.frame(unique(d2$genes)) # make final dataframe for lit and signor mouse symbols
-m <- m[-41, ] # removing blank
+m <- m[!apply(m == "", 1, all),] # removing blank
 
 # create dataframe with mouse and signor genes (signor is the same in mouse as it is in human):
 ms <- as.data.frame(c("Nap1l2", "Anp32a"))
