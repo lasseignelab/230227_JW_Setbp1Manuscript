@@ -16,6 +16,7 @@ The final target list is composed of 228 Human genes mapped to 682 mouse ortholo
 set.seed(2178)
 library(styler)
 library(lintr)
+library(stringr)
 ```
 
 
@@ -26,7 +27,6 @@ lms <- read.table(here("results/seurat/221019_bioDBnet_dbOrtho_lit_signor.txt"),
 
 lms <- lms[-1, ] # remove first row value which was title
 
-library(stringr)
 t <- str_split(lms$V2, "; ") # separate ;
 d2 <- do.call(rbind, t) # make single dataframe
 d2 <- pivot_longer(as.data.frame(d2), cols = 1:17, values_to = "genes") # rearrange to pivot longer
@@ -41,10 +41,10 @@ m <- m[-1, ] # remove first row value which was title
 t <- str_split(m$V2, "; ") # separate ;
 d2 <- do.call(rbind, t) # make single dataframe
 d2 <- pivot_longer(as.data.frame(d2), cols = 1:16, values_to = "genes") # rearrange to pivot longer
-m <- as.data.frame(unique(d2$genes)) # make final dataframe for lit  and signor mouse symbols
+m <- as.data.frame(unique(d2$genes)) # make final dataframe for lit and signor mouse symbols
 m <- m[-41, ] # removing blank
 
-# create datframe with mouse  and signor genes (signor is the same in mouse as it is in human):
+# create dataframe with mouse and signor genes (signor is the same in mouse as it is in human):
 ms <- as.data.frame(c("Nap1l2", "Anp32a"))
 colnames(ms) <- "gene"
 
@@ -53,7 +53,7 @@ setbp1_genes <- union(lms, m)
 setbp1_genes <- union(setbp1_genes, ms)
 setbp1_genes <- unlist(setbp1_genes, recursive = FALSE)
 setbp1_genes <- gsub(" ", "", setbp1_genes) # removing spaces in elements of vector list
-setbp1_genes <- (unique(setbp1_genes)) # 228 human genes, mapped to 682 human aliases
+setbp1_genes <- (unique(setbp1_genes)) # 228 human genes, mapped to 682 mouse ortholologs/aliases
 
 setbp1_genes <- as.data.frame(setbp1_genes)
 
