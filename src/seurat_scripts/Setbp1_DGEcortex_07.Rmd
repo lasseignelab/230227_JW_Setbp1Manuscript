@@ -633,7 +633,7 @@ heat.anno <- HeatmapAnnotation(df = ordered.meta.data, show_annotation_name = TR
 genes_pivot <- genes_pivot[, rownames(ordered.meta.data), drop = FALSE]
 rownames(genes_pivot) <- rownames
 
-# convert datframe to matrix
+# convert dataframe to matrix
 mat <- as.matrix(genes_pivot)
 
 # plot heatmap
