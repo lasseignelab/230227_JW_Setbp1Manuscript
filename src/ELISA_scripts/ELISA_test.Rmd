@@ -9,20 +9,23 @@ output: html_document
 library(here)
 library(readr)
 library(ggplot2)
+library(ggpubr)
+library(styler)
+library(lintr)
 
-#load in ELISA results
+# load in ELISA results
 test <- read_csv(here("results/ELISA/230314_Setbp1_ELISA.csv"))
 ```
 
 ```{r}
-#average blanks:
+# average blanks:
 blank <- (test$blank_1 + test$blank_2) / 2
 
 # subtract blank from measurement and average replicates
-measurements <- test[,-c(7:12)]
+measurements <- test[, -c(7:12)]
 
-kidney_rep <- (test$kidney_rep1 + test$kidney_rep2) / 2 # averaging vlaues for kidney replicates
-cortex_rep <- (test$cortex_rep1 + test$cortex_rep2) / 2 # averaging values for cortex replicates 
+kidney_rep <- (test$kidney_rep1 + test$kidney_rep2) / 2 # averaging values for kidney replicates
+cortex_rep <- (test$cortex_rep1 + test$cortex_rep2) / 2 # averaging values for cortex replicates
 
 measurements <- cbind(measurements, kidney_rep, cortex_rep)
 
@@ -31,10 +34,10 @@ measurements <- measurements - blank
 # add concentration
 concentrations <- c(3.12, 6.25, 12.5, 25, 50, 100)
 
-standards <- rbind(measurements[,1:6], concentrations)
+standards <- rbind(measurements[, 1:6], concentrations)
 row.names(standards) <- c("OD", "concentration")
 
-#fit curve and get formula for standards
+# fit curve and get formula for standards
 testing <- as.data.frame(t(standards))
 
 ggplot(data = testing) +
@@ -42,21 +45,23 @@ ggplot(data = testing) +
   theme_bw() +
   xlab("Concentration") +
   ylab("Optical Density (OD) at 450 nm") +
-  geom_smooth(aes(x = concentration, y = OD), method = lm, se = FALSE, formula = y ~ x)
+  geom_smooth(aes(x = concentration, y = OD),
+              method = lm, se = FALSE,
+              formula = y ~ x)
 
-#extract intercept and slope from line
+# extract intercept and slope from line
 line <- lm(testing$OD ~ testing$concentration)
 int <- line$coefficients[1]
-int #0.04645464
+int # 0.04645464
 slope <- line$coefficients[2]
-slope #0.01572394
+slope # 0.01572394
 
-#using formula for line, determine unknown concentration from kidney_rep and cortex_rep (formula: OD  = slope*concentration + int, concentration = (OD - int/slope)
-sample_concentrations <- (measurements[,7:8] - int)/slope
+# using formula for line, determine unknown concentration from kidney_rep and cortex_rep (formula: OD  = slope*concentration + int, concentration = (OD - int/slope)
+sample_concentrations <- (measurements[, 7:8] - int) / slope
 sample_concentrations <- unlist(as.vector(c(concentrations, sample_concentrations)))
 
 
-# wrangle and format concentrations 
+# wrangle and format concentrations
 ELISA_data <- rbind(measurements, sample_concentrations)
 
 data <- as.data.frame(t(ELISA_data))
@@ -65,34 +70,39 @@ colnames(data) <- c("OD", "concentration", "sample_ID")
 
 # plot data
 ggplot(data = data) +
-  geom_point(aes(x = concentration, y = OD, color = sample_ID), position = "jitter") +
+  geom_point(aes(x = concentration,
+                 y = OD,
+                 color = sample_ID),
+             position = "jitter") +
   theme_bw() +
   xlab("Concentration") +
   ylab("Optical Density (OD) at 450 nm")
 
 # plot data with eq and r^2
-ggscatter(data = data,
-          x = "concentration",
-          y = "OD",
-          color = "sample_ID", size = 3, shape = 21,
-          add = "reg.line", add.params = list(color = "black"),
-          ggtheme =theme_bw(),
-          xlab = "Concentration",
-          ylab = "Optical Density (OD) at 450 nm",
-          title = "Setbp1 ELISA Quantification Test Samples") +
-  stat_regline_equation(label.x = 3, label.y = 1.2) 
+ggscatter(
+  data = data,
+  x = "concentration",
+  y = "OD",
+  color = "sample_ID", size = 3, shape = 21,
+  add = "reg.line", add.params = list(color = "black"),
+  ggtheme = theme_bw(),
+  xlab = "Concentration",
+  ylab = "Optical Density (OD) at 450 nm",
+  title = "Setbp1 ELISA Quantification Test Samples"
+) +
+  stat_regline_equation(label.x = 3, label.y = 1.2)
 ```
 
 ```{r}
-measurements <- test[,1:10] - blank
+measurements <- test[, 1:10] - blank
 
 # add concentration
 concentrations <- c(3.12, 6.25, 12.5, 25, 50, 100)
 
-standards <- rbind(measurements[,1:6], concentrations)
+standards <- rbind(measurements[, 1:6], concentrations)
 row.names(standards) <- c("OD", "concentration")
 
-#fit curve and get formula for standards
+# fit curve and get formula for standards
 testing <- as.data.frame(t(standards))
 
 ggplot(data = testing) +
@@ -100,21 +110,24 @@ ggplot(data = testing) +
   theme_bw() +
   xlab("Concentration") +
   ylab("Optical Density (OD) at 450 nm") +
-  geom_smooth(aes(x = concentration, y = OD), method = lm, se = FALSE, formula = y ~ x)
+  geom_smooth(aes(x = concentration, y = OD),
+              method = lm,
+              se = FALSE,
+              formula = y ~ x)
 
-#extract intercept and slope from line
+# extract intercept and slope from line
 line <- lm(testing$OD ~ testing$concentration)
 int <- line$coefficients[1]
-int #0.04645464
+int # 0.04645464
 slope <- line$coefficients[2]
-slope #0.01572394
+slope # 0.01572394
 
-#using formula for line, determine unknown concentration from kidney_rep and cortex_rep (formula: OD  = slope*concentration + int, concentration = (OD - int/slope)
-sample_concentrations <- (measurements[,7:10] - int)/slope
+# using formula for line, determine unknown concentration from kidney_rep and cortex_rep (formula: OD  = slope*concentration + int, concentration = (OD - int/slope)
+sample_concentrations <- (measurements[, 7:10] - int) / slope
 sample_concentrations <- unlist(as.vector(c(concentrations, sample_concentrations)))
 
 
-# wrangle and format concentrations 
+# wrangle and format concentrations
 ELISA_data_all <- rbind(measurements, sample_concentrations)
 
 data <- as.data.frame(t(ELISA_data_all))
@@ -123,23 +136,33 @@ colnames(data) <- c("OD", "concentration", "sample_ID")
 
 # plot data
 ggplot(data = data) +
-  geom_point(aes(x = concentration, y = OD, color = sample_ID), position = "jitter") +
+  geom_point(aes(x = concentration,
+                 y = OD,
+                 color = sample_ID),
+             position = "jitter") +
   theme_bw() +
   xlab("Concentration") +
   ylab("Optical Density (OD) at 450 nm")
 
 # plot data with eq and r^2
-ggscatter(data = data,
-          x = "concentration",
-          y = "OD",
-          color = "sample_ID", size = 3, shape = 21,
-          add = "reg.line", add.params = list(color = "black"),
-          ggtheme =theme_bw(),
-          xlab = "Concentration",
-          ylab = "Optical Density (OD) at 450 nm",
-          title = "Setbp1 ELISA Quantification Test Samples with replicates plotted") +
-  stat_regline_equation(label.x = 3, label.y = 1.2) 
+ggscatter(
+  data = data,
+  x = "concentration",
+  y = "OD",
+  color = "sample_ID", size = 3, shape = 21,
+  add = "reg.line", add.params = list(color = "black"),
+  ggtheme = theme_bw(),
+  xlab = "Concentration",
+  ylab = "Optical Density (OD) at 450 nm",
+  title = "Setbp1 ELISA Quantification Test Samples with replicates plotted"
+) +
+  stat_regline_equation(label.x = 3, label.y = 1.2)
 ```
 
+```{r}
+# run style
+style_file(here("src/ELISA_scripts/ELISA_test.Rmd"))
+# lintr was run as well
+```
 
 
