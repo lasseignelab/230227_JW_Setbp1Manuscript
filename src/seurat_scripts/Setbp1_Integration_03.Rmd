@@ -13,6 +13,7 @@ This analysis follows 'Setbp1_DoubletFinder_02.Rmd'.
 
 ### Loading in all required libraries
 ```{r}
+set.seed(2178)
 library(devtools)
 library(magrittr)
 library(SingleCellExperiment)
