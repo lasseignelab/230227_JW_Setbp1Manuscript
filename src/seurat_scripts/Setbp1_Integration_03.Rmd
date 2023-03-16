@@ -98,7 +98,7 @@ LabelPoints(
 #### scale data: z-score transformation
 
 ```{r scale-kidney}
-set.seed(2178)
+#set.seed(2178)
 
 kidney_seurat_filtered <- ScaleData(kidney_seurat_filtered,
   vars.to.regress = c("percent_mito", "nFeature_RNA"),
