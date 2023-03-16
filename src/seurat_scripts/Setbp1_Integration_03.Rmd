@@ -32,29 +32,34 @@ library(edgeR)
 library(here)
 library(styler)
 library(lintr)
-#set.seed(2178)
 ```
 
 
 # Load in the object after doublets are removed
-```{r}
+```{r load-kindey-object}
 load(here("data/nodoublet_setbp1_cerebral_seurat.Rdata")) # cerebral_seurat_filtered
+```
+
+```{r load-cortex-object}
 load(here("data/nodoublet_setbp1_kidney_seurat.Rdata")) # kidney_seurat_filtered
 ```
 
 ### Normalize FindVariableFeatures and Integrate -- Harmony
 
 #### normalize data:
-```{r}
+```{r normalize-kidney}
 kidney_seurat_filtered <- NormalizeData(kidney_seurat_filtered)
+save(kidney_seurat_filtered, file = "data/project/lasseigne_lab/JordanWhitlock/test/code_review_check/integration_normalized_JW.Rdata")
+```
 
+```{r normalize-cortex}
 cerebral_seurat_filtered <- NormalizeData(cerebral_seurat_filtered)
 ```
 
 
 #### feature selection:
-kidney
-```{r}
+
+```{r variable-features-kidney}
 suppressWarnings(suppressMessages(kidney_seurat_filtered <- FindVariableFeatures(kidney_seurat_filtered,
   selection.method = "vst",
   nfeatures = 4000,
@@ -68,10 +73,11 @@ LabelPoints(
   points = top20_kidney,
   repel = TRUE
 )
+
+save(top20_kidney, file = "data/project/lasseigne_lab/JordanWhitlock/test/code_review_check/integration_top20_JW.Rdata")
 ```
 
-cerebral
-```{r}
+```{r variable-features-cortex}
 suppressWarnings(suppressMessages(cerebral_seurat_filtered <- FindVariableFeatures(cerebral_seurat_filtered,
   selection.method = "vst",
   nfeatures = 4000,
@@ -89,20 +95,20 @@ LabelPoints(
 
 
 #### scale data: z-score transformation
-kidney
-```{r}
+
+```{r scale-kidney}
 set.seed(2178)
 
 kidney_seurat_filtered <- ScaleData(kidney_seurat_filtered,
   vars.to.regress = c("percent_mito", "nFeature_RNA"),
   assay = "RNA"
 )
+
+save(kidney_seurat_filtered, file = "data/project/lasseigne_lab/JordanWhitlock/test/code_review_check/integration_scaled_JW.Rdata")
 ```
 
-cerebral
-```{r}
-set.seed(2178)
 
+```{r scale-cortex}
 cerebral_seurat_filtered <- ScaleData(cerebral_seurat_filtered,
   vars.to.regress = c("percent_mito", "nFeature_RNA"),
   assay = "RNA"
@@ -110,16 +116,22 @@ cerebral_seurat_filtered <- ScaleData(cerebral_seurat_filtered,
 ```
 
 #### check dimensions with PCA
-```{r}
-cerebral_seurat_filtered <- RunPCA(cerebral_seurat_filtered, npcs = 50, verbose = FALSE)
+```{r PCA-elbow-cortex}
+cerebral_seurat_filtered <- RunPCA(cerebral_seurat_filtered, npcs = 50, verbose = FALSE) #has a seed already set in source code
 ElbowPlot(cerebral_seurat_filtered, reduction = "pca", ndims = 50)
-kidney_seurat_filtered <- RunPCA(kidney_seurat_filtered, npcs = 50, verbose = FALSE)
+```
+
+```{r PCA-elbow-kidney}
+kidney_seurat_filtered <- RunPCA(kidney_seurat_filtered, npcs = 50, verbose = FALSE) #has a seed set already in source code
+
+save(kidney_seurat_filtered, file = "data/project/lasseigne_lab/JordanWhitlock/test/code_review_check/integration_PCA_JW.Rdata")
+
 ElbowPlot(kidney_seurat_filtered, reduction = "pca", ndims = 50)
 ```
 
 #### visualize PCs:
 plotting the first few
-```{r}
+```{r visualize-PCs-cortex}
 plot_grid(
   ncol = 3, DimPlot(cerebral_seurat_filtered,
     reduction = "pca", group.by = "orig.ident",
@@ -127,6 +139,9 @@ plot_grid(
   ), DimPlot(cerebral_seurat_filtered, reduction = "pca", group.by = "orig.ident", dims = 3:4),
   DimPlot(cerebral_seurat_filtered, reduction = "pca", group.by = "orig.ident", dims = 29:30)
 )
+```
+
+```{r visualize-PCs-kidney}
 plot_grid(
   ncol = 3, DimPlot(kidney_seurat_filtered,
     reduction = "pca", group.by = "orig.ident",
@@ -137,7 +152,7 @@ plot_grid(
 ```
 
 #### visualize tSNE:
-```{r}
+```{r tSNE-cortex}
 cerebral_seurat_filtered <- RunTSNE(cerebral_seurat_filtered,
   reduction = "pca",
   dims = 1:30,
@@ -147,6 +162,11 @@ cerebral_seurat_filtered <- RunTSNE(cerebral_seurat_filtered,
   eta = 200,
   num_threads = 0
 )
+
+plot_grid(ncol = 3, DimPlot(cerebral_seurat_filtered, reduction = "tsne", group.by = "orig.ident"))
+```
+
+```{r tSNE-kidney}
 kidney_seurat_filtered <- RunTSNE(kidney_seurat_filtered,
   reduction = "pca",
   dims = 1:30,
@@ -154,24 +174,34 @@ kidney_seurat_filtered <- RunTSNE(kidney_seurat_filtered,
   max_iter = 1000,
   theta = 0.5,
   eta = 200,
-  num_threads = 0
+  num_threads = 0,
+  seed.use = 1
 )
-plot_grid(ncol = 3, DimPlot(cerebral_seurat_filtered, reduction = "tsne", group.by = "orig.ident"))
+
+save(kidney_seurat_filtered, file = "data/project/lasseigne_lab/JordanWhitlock/test/code_review_check/integration_tSNE_JW.Rdata")
+
 plot_grid(ncol = 3, DimPlot(kidney_seurat_filtered, reduction = "tsne", group.by = "orig.ident"))
 ```
 
 #### visualize the UMAP:
-```{r}
+```{r kidney-UMAP}
 kidney_seurat_filtered <- RunUMAP(kidney_seurat_filtered,
   reduction = "pca", dims = 1:30, n.components = 2, n.neighbors = 30,
-  n.epochs = 200, min.dist = 0.3, learning.rate = 1, spread = 1
+  n.epochs = 200, min.dist = 0.3, learning.rate = 1, spread = 1 #note: has seed.use = 42 set as default
 )
+
+save(kidney_seurat_filtered, file = "data/project/lasseigne_lab/JordanWhitlock/test/code_review_check/integration_UMAP_JW.Rdata")
+
+plot_grid(ncol = 3, DimPlot(kidney_seurat_filtered, reduction = "umap", group.by = "orig.ident") +
+  ggplot2::ggtitle(label = "Kidney_UMAP_on_PCA"))
+```
+
+```{r cortex-UMAP}
 cerebral_seurat_filtered <- RunUMAP(cerebral_seurat_filtered,
   reduction = "pca", dims = 1:30, n.components = 2, n.neighbors = 30,
   n.epochs = 200, min.dist = 0.3, learning.rate = 1, spread = 1
 )
-plot_grid(ncol = 3, DimPlot(kidney_seurat_filtered, reduction = "umap", group.by = "orig.ident") +
-  ggplot2::ggtitle(label = "Kidney_UMAP_on_PCA"))
+
 plot_grid(ncol = 3, DimPlot(cerebral_seurat_filtered, reduction = "umap", group.by = "orig.ident") +
   ggplot2::ggtitle(label = "CerebralCortex_UMAP_on_PCA"))
 ```
@@ -179,11 +209,16 @@ plot_grid(ncol = 3, DimPlot(cerebral_seurat_filtered, reduction = "umap", group.
 
 ### Integrate - using harmony
 
-```{r}
+```{r kidney-harmony}
 kidney_harmony <- RunHarmony(kidney_seurat_filtered,
   group.by.vars = "orig.ident", reduction = "pca",
   dims.use = 1:30, assay.use = "RNA"
 )
+
+save(kidney_harmony, file = "data/project/lasseigne_lab/JordanWhitlock/test/code_review_check/integration_harmony_JW.Rdata")
+```
+
+```{r cortex-harmony}
 cerebral_harmony <- RunHarmony(cerebral_seurat_filtered,
   group.by.vars = "orig.ident", reduction = "pca",
   dims.use = 1:30, assay.use = "RNA"
@@ -192,20 +227,25 @@ cerebral_harmony <- RunHarmony(cerebral_seurat_filtered,
 
 #### UMAP in harmony:
 Here we use all PCs computed from Harmony for UMAP calculation
-```{r}
+```{r visualize-harmony-UMAP-kidney}
 kidney_int <- kidney_seurat_filtered
+kidney_int[["harmony"]] <- kidney_harmony[["harmony"]]
+kidney_int <- RunUMAP(kidney_int, dims = 1:30, reduction = "harmony", reduction.name = "umap_harmony")
+
+save(kidney_int, file = "data/project/lasseigne_lab/JordanWhitlock/test/code_review_check/integration_harmonyUMAP_JW.Rdata")
+```
+
+```{r visualize-harmony-UMAP-cortex}
 cerebral_int <- cerebral_seurat_filtered
 cerebral_int[["harmony"]] <- cerebral_harmony[["harmony"]]
 cerebral_int <- RunUMAP(cerebral_int, dims = 1:30, reduction = "harmony", reduction.name = "umap_harmony")
-kidney_int[["harmony"]] <- kidney_harmony[["harmony"]]
-kidney_int <- RunUMAP(kidney_int, dims = 1:30, reduction = "harmony", reduction.name = "umap_harmony")
 ```
 
 
 #### UMAP before and after harmony:
 
 Visualizing the post-harmony integration UMAP compared to raw:
-```{r}
+```{r compare-pre-postint-cortex}
 # cerebral
 p1 <- DimPlot(cerebral_seurat_filtered, reduction = "umap", group.by = "orig.ident") + ggtitle("Cerebral UMAP raw_data")
 p2 <- DimPlot(cerebral_int, reduction = "umap_harmony", group.by = "orig.ident") + ggtitle("Cerebral UMAP Harmony")
@@ -216,6 +256,9 @@ gridExtra::grid.arrange(
   leg,
   ncol = 2, widths = c(8, 2)
 )
+```
+
+```{r compare-pre-postint-kidney}
 # kidney
 p3 <- DimPlot(kidney_seurat_filtered, reduction = "umap", group.by = "orig.ident") +
   ggtitle("Kidney UMAP raw data")
@@ -231,8 +274,11 @@ gridExtra::grid.arrange(
 ```
 
 #### save integrated objects, can start from here:
-```{r}
+```{r save-kidney-object}
 save(kidney_int, file = here("data/integrated_setbp1_kidney.Rdata"))
+```
+
+```{r save-cortex-object}
 save(cerebral_int, file = here("data/integrated_setbp1_cerebral.Rdata"))
 ```
 
