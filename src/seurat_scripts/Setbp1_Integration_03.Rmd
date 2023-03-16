@@ -32,7 +32,7 @@ library(edgeR)
 library(here)
 library(styler)
 library(lintr)
-set.seed(2178)
+#set.seed(2178)
 ```
 
 
@@ -91,6 +91,8 @@ LabelPoints(
 #### scale data: z-score transformation
 kidney
 ```{r}
+set.seed(2178)
+
 kidney_seurat_filtered <- ScaleData(kidney_seurat_filtered,
   vars.to.regress = c("percent_mito", "nFeature_RNA"),
   assay = "RNA"
@@ -99,6 +101,8 @@ kidney_seurat_filtered <- ScaleData(kidney_seurat_filtered,
 
 cerebral
 ```{r}
+set.seed(2178)
+
 cerebral_seurat_filtered <- ScaleData(cerebral_seurat_filtered,
   vars.to.regress = c("percent_mito", "nFeature_RNA"),
   assay = "RNA"
@@ -299,3 +303,5 @@ style_file(here("src/seurat_scripts/Setbp1_Integration_03.Rmd"))
 
 
 This analysis is followed by 'Setbp1_Clustering_04.Rmd'
+
+
