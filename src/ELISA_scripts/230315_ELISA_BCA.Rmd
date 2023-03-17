@@ -1,0 +1,437 @@
+---
+_title: "230315_ELISA_BCA"
+author: "Jordan Whitlock"
+date: '2023-03-14'
+output: html_document
+---
+
+```{r library-seed-setup}
+set.seed(2178)
+library(here)
+library(readr)
+library(ggplot2)
+library(ggpubr)
+library(styler)
+library(lintr)
+```
+
+```{r load-results}
+ELISA <- read_csv(here("results/ELISA/230315_jw_setbp1ELISA.csv"))
+BCA <- read_csv(here("results/ELISA/230315_jw_setbp1BCA.csv"))
+```
+
+
+```{r analyzing-ELISA}
+# average entire dataset except blanks:
+measurements <- t(colMeans(ELISA[, -c(7:8)]))
+
+# average blanks
+blanks <- ELISA[, c(7:8)]
+blanks$sum <- rowSums(blanks)
+blank <- colSums(blanks) / 6
+blank <- blank[3] / 6
+
+
+# subtract blank from measurement
+measurements <- measurements - blank
+
+# add concentration
+concentrations <- c(3.12, 6.25, 12.5, 25, 50, 100)
+
+standards <- rbind(measurements[, 1:6], concentrations)
+row.names(standards) <- c("OD", "concentration")
+
+# fit curve and get formula for standards
+standards <- as.data.frame(t(standards))
+
+ggplot(data = standards) +
+  geom_point(aes(x = concentration, y = OD)) +
+  theme_bw() +
+  xlab("Concentration") +
+  ylab("Optical Density (OD) at 450 nm") +
+  geom_smooth(aes(x = concentration, y = OD),
+    method = lm, se = FALSE,
+    formula = y ~ x
+  )
+
+# extract intercept and slope from line
+line <- lm(standards$OD ~ standards$concentration)
+int <- line$coefficients[1]
+int # 0.1075113
+slope <- line$coefficients[2]
+slope # 0.0129213
+
+# using formula for line, determine unknown concentration from kidney_rep and cortex_rep (formula: OD  = slope*concentration + int, concentration = (OD - int/slope)
+sample_concentrations <- (measurements[, 7:10] - int) / slope
+sample_concentrations <- unlist(as.vector(c(concentrations, sample_concentrations)))
+sample_concentrations
+
+# wrangle and format concentrations
+setbp1ELISA_data <- rbind(measurements, sample_concentrations)
+
+setbp1ELISA_data <- as.data.frame(t(setbp1ELISA_data))
+setbp1ELISA_data$sample_ID <- c("standard", "standard", "standard", "standard", "standard", "standard", "cerebral cortex het", "cerebral cortex WT", "kidney het", "kidney WT")
+colnames(setbp1ELISA_data) <- c("OD", "concentration", "sample_ID")
+
+# plot data
+ggplot(data = setbp1ELISA_data) +
+  geom_point(
+    aes(
+      x = concentration,
+      y = OD,
+      color = sample_ID
+    ),
+    position = "jitter"
+  ) +
+  theme_bw() +
+  xlab("Concentration") +
+  ylab("Optical Density (OD) at 450 nm")
+
+# plot data with eq
+png(here("results/ELISA/setbp1ELISA_quantification.png"),
+  width = 1000, height = 1000
+)
+ggscatter(
+  data = setbp1ELISA_data,
+  x = "concentration",
+  y = "OD",
+  color = "sample_ID",
+  size = 3, shape = "sample_ID",
+  palette = get_palette(c("#644DD4", "#5F9EFD", "#FE6100", "#FFB000", "black"), 5),
+  add = "reg.line", add.params = list(color = "black"),
+  ggtheme = theme_bw(),
+  xlab = "Concentration",
+  ylab = "Optical Density (OD) at 450 nm",
+  title = "Setbp1 ELISA Quantification"
+) +
+  stat_regline_equation(label.x = 3, label.y = 1.2)
+dev.off()
+```
+
+```{r plotting-individual-ELISA-reps}
+measurements <- ELISA[, c(1:6, 9:12)] - blank
+
+# add concentration
+concentrations <- c(3.12, 6.25, 12.5, 25, 50, 100)
+
+standards <- rbind(measurements[, 1:6], concentrations)
+row.names(standards) <- c("rep1", "rep2", "rep3", "concentration")
+
+# fit curve and get formula for standards
+ELISA_repdata <- as.data.frame(t(standards))
+ELISA_repdata <- pivot_longer(ELISA_repdata, values_to = "OD", cols = 1:3)
+
+ggplot(data = ELISA_repdata) +
+  geom_point(aes(x = concentration, y = OD)) +
+  theme_bw() +
+  xlab("Concentration") +
+  ylab("Optical Density (OD) at 450 nm") +
+  geom_smooth(aes(x = concentration, y = OD),
+    method = lm,
+    se = FALSE,
+    formula = y ~ x
+  )
+
+# extract intercept and slope from line
+line <- lm(ELISA_repdata$OD ~ ELISA_repdata$concentration)
+int <- line$coefficients[1]
+int # 0.1075113
+slope <- line$coefficients[2]
+slope # 0.0129213
+
+# using formula for line, determine unknown concentration from kidney_rep and cortex_rep (formula: OD  = slope*concentration + int, concentration = (OD - int/slope)
+sample_concentrations <- (measurements[, 7:10] - int) / slope
+sample_concentrations <- unlist(as.vector(sample_concentrations))
+sample_concentrations
+
+# wrangle and format concentrations
+sample_ID <- c("cortex_het", "cortex_het", "cortex_het", "cortex_wt", "cortex_wt", "cortex_wt", "kidney_het", "kidney_het", "kidney_het", "kidney_wt", "kidney_wt", "kidney_wt")
+rep_conc_ELISA <- as.data.frame(cbind(sample_ID, as.numeric(sample_concentrations)))
+
+# plot data
+png(here("results/ELISA/setbp1ELISA_quantification_boxplot.png"),
+  width = 1000, height = 1000
+)
+ggplot(data = rep_conc_ELISA, aes(
+  x = sample_ID,
+  y = sample_concentrations,
+  fill = sample_ID
+)) +
+  geom_boxplot() +
+  geom_point() +
+  theme_bw() +
+  xlab("Group") +
+  ylab("Concentration") +
+  stat_boxplot(
+    geom = "errorbar", # Boxplot with error bars
+    width = 0.2
+  ) +
+  ggtitle("Setbp1 Protein Concentration") +
+  scale_fill_manual(values = c("kidney_wt" = "#FE6100", "kidney_het" = "#FFB000", "cortex_het" = "#5F9EFD", "cortex_wt" = "#644DD4"))
+dev.off()
+```
+
+```{r analyzing-BCA}
+# average entire dataset except blank:
+measurements <- t(colMeans(BCA[, 2:13]))
+
+# grabbing blank
+blanks <- BCA[, 1]
+blank <- colSums(blanks) / 3
+
+# subtract blank from measurement
+measurements <- measurements - blank
+
+# add concentration
+concentrations <- c(25, 125, 250, 500, 750, 1000, 1500, 2000)
+
+standards <- rbind(measurements[, 1:8], concentrations)
+row.names(standards) <- c("OD", "concentration")
+
+# fit curve and get formula for standards
+standards <- as.data.frame(t(standards))
+standards <- standards[1:5, ] # note: we dropped 1000 (standard 7), 1500 (standard 8), and 2000 (standard 9)
+
+ggplot(data = standards) +
+  geom_point(aes(x = concentration, y = OD)) +
+  theme_bw() +
+  xlab("Concentration") +
+  ylab("Optical Density (OD) at 450 nm") +
+  geom_smooth(aes(x = concentration, y = OD),
+    method = lm, se = FALSE,
+    formula = y ~ x
+  )
+
+# extract intercept and slope from line
+line <- lm(standards$OD ~ standards$concentration)
+int <- line$coefficients[1]
+int # 0.2909356
+slope <- line$coefficients[2]
+slope # 0.0006567205
+
+# using formula for line, determine unknown concentration from kidney_rep and cortex_rep (formula: OD  = slope*concentration + int, concentration = (OD - int/slope)
+sample_concentrations <- (measurements[, 9:12] - int) / slope
+sample_concentrations <- unlist(as.vector(c(concentrations[1:5], sample_concentrations)))
+sample_concentrations
+
+# wrangle and format concentrations
+setbp1BCA_data <- rbind(measurements[, c(1:5, 9:12)], sample_concentrations)
+
+setbp1BCA_data <- as.data.frame(t(setbp1BCA_data))
+setbp1BCA_data$sample_ID <- c("standard", "standard", "standard", "standard", "standard", "cerebral cortex het", "cerebral cortex WT", "kidney het", "kidney WT")
+colnames(setbp1BCA_data) <- c("OD", "concentration", "sample_ID")
+
+# plot data
+ggplot(data = setbp1BCA_data) +
+  geom_point(
+    aes(
+      x = concentration,
+      y = OD,
+      color = sample_ID
+    ),
+    position = "jitter"
+  ) +
+  theme_bw() +
+  xlab("Concentration") +
+  ylab("Optical Density (OD) at 562 nm")
+
+# plot data with eq
+png(here("results/ELISA/setbp1BCA_quantification.png"),
+  width = 1000, height = 1000
+)
+ggscatter(
+  data = setbp1BCA_data,
+  x = "concentration",
+  y = "OD",
+  color = "sample_ID", size = 3,
+  shape = "sample_ID",
+  add = "reg.line", add.params = list(color = "black"),
+  palette = get_palette(c("#644DD4", "#5F9EFD", "#FE6100", "#FFB000", "black"), 5),
+  ggtheme = theme_bw(),
+  xlab = "Concentration",
+  ylab = "Optical Density (OD) at 562 nm",
+  title = "Setbp1 BCA Quantification"
+) +
+  stat_regline_equation(label.x = 3, label.y = 1.2)
+dev.off()
+```
+
+```{r plotting-individual-BCAreps}
+measurements <- BCA[, c(2:6, 10:13)] - blank
+
+# add concentration
+concentrations <- c(25, 125, 250, 500, 750)
+
+standards <- rbind(measurements[, 1:5], concentrations)
+row.names(standards) <- c("rep1", "rep2", "rep3", "concentration")
+
+# fit curve and get formula for standards
+BCA_repdata <- as.data.frame(t(standards))
+BCA_repdata <- pivot_longer(BCA_repdata, values_to = "OD", cols = 1:3)
+
+ggplot(data = BCA_repdata) +
+  geom_point(aes(x = concentration, y = OD)) +
+  theme_bw() +
+  xlab("Concentration") +
+  ylab("Optical Density (OD) at 562 nm") +
+  geom_smooth(aes(x = concentration, y = OD),
+    method = lm,
+    se = FALSE,
+    formula = y ~ x
+  )
+
+# extract intercept and slope from line
+line <- lm(BCA_repdata$OD ~ BCA_repdata$concentration)
+int <- line$coefficients[1]
+int # 0.3657495
+slope <- line$coefficients[2]
+slope # 0.0006567205
+
+# using formula for line, determine unknown concentration from kidney_rep and cortex_rep (formula: OD  = slope*concentration + int, concentration = (OD - int/slope)
+sample_concentrations <- (measurements[, 6:9] - int) / slope
+sample_concentrations <- unlist(as.vector(sample_concentrations))
+sample_concentrations
+
+# wrangle and format concentrations
+sample_ID <- c("cortex_het", "cortex_het", "cortex_het", "cortex_wt", "cortex_wt", "cortex_wt", "kidney_het", "kidney_het", "kidney_het", "kidney_wt", "kidney_wt", "kidney_wt")
+rep_conc_BCA <- as.data.frame(cbind(sample_ID, as.numeric(sample_concentrations)))
+
+# plot data
+png(here("results/ELISA/setbp1BCA_quantification_boxplot.png"),
+  width = 1000, height = 1000
+)
+ggplot(data = rep_conc_BCA, aes(
+  x = sample_ID,
+  y = sample_concentrations,
+  fill = sample_ID
+)) +
+  scale_fill_manual(values = c("kidney_wt" = "#FE6100", "kidney_het" = "#FFB000", "cortex_het" = "#5F9EFD", "cortex_wt" = "#644DD4")) +
+  geom_boxplot() +
+  geom_point() +
+  theme_bw() +
+  xlab("Group") +
+  ylab("Concentration") +
+  stat_boxplot(
+    geom = "errorbar", # Boxplot with error bars
+    width = 0.2
+  ) +
+  ggtitle("Setbp1 Protein Concentration BCA")
+dev.off()
+```
+
+Determining total proportion of total protein that Setbp1 is:
+*ELISA quantifies Setbp1 protein concentration in ng/mL
+*BCA quantifies total protein in ug/mL
+
+Step 1: Convert concentrations to the same units. To convert ng/mL to ug/mL, divide the ELISA concentrations for ng/mL by 1000
+```{r convert-units}
+ng_concentrations <- setbp1ELISA_data[7:10, 2:3] # subset Setbp1 samples
+ng_concentrations$ELISA_ug_mL <- ng_concentrations$concentration / 1000 # convert units
+ELISA_concentrations <- ng_concentrations[, 2:3] # save in new df for merging
+```
+
+Step 2: Compare ELISA in ug/mL to BCA in ug/mL to calculate a proportion
+```{r calc-prop}
+BCA_concentrations <- setbp1BCA_data[6:9, 2:3] # subset Setbp1 samples
+colnames(BCA_concentrations) <- c("BCA_ug_mL", "sample_ID") # rename cols to make more clear for merging
+
+concentrations_ug_mL <- merge(BCA_concentrations, ELISA_concentrations)
+concentrations_ug_mL$Setbp1_prop <- concentrations_ug_mL$ELISA_ug_mL / concentrations_ug_mL$BCA_ug_mL # dividing ELISA concentration by total protein concentration
+concentrations_ug_mL$Setbp1_percent <- concentrations_ug_mL$Setbp1_prop * 100 # converting to a percent
+
+ggplot(concentrations_ug_mL, aes(y = Setbp1_percent, x = sample_ID, fill = sample_ID)) +
+  scale_fill_manual(values = c("kidney_wt" = "#FE6100", "kidney_het" = "#FFB000", "cortex_het" = "#5F9EFD", "cortex_wt" = "#644DD4")) +
+  geom_bar(stat = "identity") +
+  theme_bw() +
+  geom_signif(
+    comparisons = list(c("cerebral cortex WT", "cerebral cortex het"), c("kidney WT", "kidney het")),
+    map_signif_level = TRUE
+  )
+```
+
+Step 1: Convert concentrations to the same units. To convert ng/mL to ug/mL, divide the ELISA concentrations for ng/mL by 1000
+```{r convert-units}
+ng_concentrations <- setbp1ELISA_data[7:10, 2:3] # subset Setbp1 samples
+ng_concentrations$ELISA_ug_mL <- ng_concentrations$concentration / 1000 # convert units
+ELISA_concentrations <- ng_concentrations[, 2:3] # save in new df for merging
+```
+
+Step 2: Compare ELISA in ug/mL to BCA in ug/mL to calculate a proportion
+```{r calc-prop}
+BCA_concentrations <- setbp1BCA_data[6:9, 2:3] # subset Setbp1 samples
+colnames(BCA_concentrations) <- c("BCA_ug_mL", "sample_ID") # rename cols to make more clear for merging
+
+concentrations_ug_mL <- merge(BCA_concentrations, ELISA_concentrations)
+concentrations_ug_mL$Setbp1_prop <- concentrations_ug_mL$ELISA_ug_mL / concentrations_ug_mL$BCA_ug_mL # dividing ELISA concentration by total protein concentration
+concentrations_ug_mL$Setbp1_percent <- concentrations_ug_mL$Setbp1_prop * 100 # converting to a percent
+
+png(here("results/ELISA/setbp1_percent_total_protein_barplot.png"),
+  width = 1000, height = 1000
+)
+ggplot(concentrations_ug_mL, aes(y = Setbp1_percent, x = sample_ID, fill = sample_ID)) +
+  geom_bar(stat = "identity") +
+  theme_bw() +
+  scale_fill_manual(values = c("kidney_wt" = "#FE6100", "kidney_het" = "#FFB000", "cortex_het" = "#5F9EFD", "cortex_wt" = "#644DD4")) +
+  ggtitle("Proportion of Total Protein") +
+  ylab("percent of Setb1p protein") +
+  xlab("Group")
+dev.off()
+```
+
+# plot proportion of total protein of replicates
+
+Step 1: Convert concentrations to the same units. To convert ng/mL to ug/mL, divide the ELISA concentrations for ng/mL by 1000
+```{r convert-units}
+rep_conc_ELISA$ELISA_ug_mL <- as.numeric(rep_conc_ELISA$V2) / 1000 # convert units
+ELISA_concentrations_reps <- rep_conc_ELISA[, c(1, 3)] # save in new df for merging
+```
+
+Step 2: Compare ELISA in ug/mL to BCA in ug/mL to calculate a proportion
+```{r calculate-prop}
+colnames(rep_conc_BCA) <- c("sample_ID", "BCA_ug_mL") # rename cols to make more clear for merging
+
+concentrations_ug_mL <- cbind(rep_conc_BCA, ELISA_concentrations_reps) %>% .[, -3]
+concentrations_ug_mL$Setbp1_prop <- concentrations_ug_mL$ELISA_ug_mL / as.numeric(concentrations_ug_mL$BCA_ug_mL) # dividing ELISA concentration by total protein concentration
+concentrations_ug_mL$Setbp1_percent <- concentrations_ug_mL$Setbp1_prop * 100 # converting to a percent
+
+# caluclate a p-value and plot with singificance indicated
+compare_means(Setbp1_percent ~ sample_ID, concentrations_ug_mL, method = "t.test")
+my_comparisons <- list(c("cortex_het", "cortex_wt"), c("kidney_het", "kidney_wt"), c("cortex_het", "kidney_het"))
+
+png(here("results/ELISA/setbp1_percent_total_protein_boxplot.png"),
+  width = 1000, height = 1000
+)
+ggplot(data = concentrations_ug_mL, aes(
+  x = sample_ID,
+  y = Setbp1_percent,
+  fill = sample_ID,
+  add = "jitter",
+  legend = "none"
+)) +
+  scale_fill_manual(values = c("kidney_wt" = "#FE6100", "kidney_het" = "#FFB000", "cortex_het" = "#5F9EFD", "cortex_wt" = "#644DD4")) +
+  geom_boxplot() +
+  geom_point() +
+  theme_bw() +
+  xlab("Group") +
+  ylab("Percent of total protein") +
+  stat_boxplot(
+    geom = "errorbar", # Boxplot with error bars
+    width = 0.2
+  ) +
+  ggtitle("Setbp1 proportion of Total Protein with t.test") +
+  stat_compare_means(
+    comparisons = my_comparisons,
+    label = "p.signif",
+    method = "t.test",
+  )
+dev.off()
+```
+
+
+```{r lint-file-style}
+# run style
+style_file(here("src/ELISA_scripts/230315_ELISA_BCA.Rmd"))
+# lintr was run as well
+```
+
+
