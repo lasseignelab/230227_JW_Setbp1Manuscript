@@ -347,8 +347,15 @@ cerebral_seurat@meta.data %>%
 
 #### Filter out nFeature_RNA and mt:
 ```{r}
-kidney_seurat_filtered <- subset(kidney_seurat, subset = nFeature_RNA >= 1000 & nFeature_RNA <= 15000 & percent_mito < 5)
-cerebral_seurat_filtered <- subset(cerebral_seurat, subset = nFeature_RNA >= 1000 & nFeature_RNA <= 15000 & percent_mito < 5) # 5.0 here because percent_mito is a percent not a ratio.
+kidney_seurat_filtered <- subset(
+  kidney_seurat, 
+  subset = nFeature_RNA >= 1000 & nFeature_RNA <= 15000 & percent_mito < 5
+)
+cerebral_seurat_filtered <- subset(
+  cerebral_seurat,
+  subset = nFeature_RNA >= 1000 & nFeature_RNA <= 15000 & percent_mito < 5
+) 
+# 5.0 here because percent_mito is a percent not a ratio.
 ```
 
 
@@ -379,8 +386,14 @@ boxplot(t(as.matrix(C[most_expressed, ])),
 
 #### Removing Malat1:
 ```{r}
-kidney_seurat_filtered <- kidney_seurat_filtered[!grepl("Malat1", rownames(kidney_seurat_filtered)), ]
-cerebral_seurat_filtered <- cerebral_seurat_filtered[!grepl("Malat1", rownames(cerebral_seurat_filtered)), ]
+kidney_seurat_filtered <- kidney_seurat_filtered[!grepl(
+  "Malat1",
+  rownames(kidney_seurat_filtered)
+), ]
+cerebral_seurat_filtered <- cerebral_seurat_filtered[!grepl(
+  "Malat1",
+  rownames(cerebral_seurat_filtered)
+), ]
 ```
 
 
