@@ -430,13 +430,49 @@ VlnPlot(cerebral_seurat_filtered,
 ```{r}
 feats <- c("nFeature_RNA", "nCount_RNA", "percent_mito", "percent_ribo")
 # violin:
-VlnPlot(cerebral_seurat_filtered, group.by = "orig.ident", features = feats, pt.size = 0.1, ncol = 3)
-VlnPlot(kidney_seurat_filtered, group.by = "orig.ident", features = feats, pt.size = 0.1, ncol = 3)
+VlnPlot(
+  cerebral_seurat_filtered,
+  group.by = "orig.ident",
+  features = feats,
+  pt.size = 0.1,
+  ncol = 3
+)
+VlnPlot(
+  kidney_seurat_filtered,
+  group.by = "orig.ident",
+  features = feats,
+  pt.size = 0.1,
+  ncol = 3
+)
 # scatter:
-FeatureScatter(cerebral_seurat_filtered, "nCount_RNA", "nFeature_RNA", group.by = "orig.ident", pt.size = 0.5)
-FeatureScatter(cerebral_seurat_filtered, "percent_mito", "percent_ribo", group.by = "orig.ident", pt.size = 0.5)
-FeatureScatter(kidney_seurat_filtered, "nCount_RNA", "nFeature_RNA", group.by = "orig.ident", pt.size = 0.5)
-FeatureScatter(kidney_seurat_filtered, "percent_mito", "percent_ribo", group.by = "orig.ident", pt.size = 0.5)
+FeatureScatter(
+  cerebral_seurat_filtered,
+  "nCount_RNA",
+  "nFeature_RNA",
+  group.by = "orig.ident",
+  pt.size = 0.5
+)
+FeatureScatter(
+  cerebral_seurat_filtered,
+  "percent_mito",
+  "percent_ribo",
+  group.by = "orig.ident",
+  pt.size = 0.5
+)
+FeatureScatter(
+  kidney_seurat_filtered,
+  "nCount_RNA",
+  "nFeature_RNA",
+  group.by = "orig.ident",
+  pt.size = 0.5
+)
+FeatureScatter(
+  kidney_seurat_filtered,
+  "percent_mito",
+  "percent_ribo",
+  group.by = "orig.ident",
+  pt.size = 0.5
+)
 ```
 
 ###### Visualize the number of cell counts per sample
