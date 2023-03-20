@@ -37,11 +37,11 @@ library(lintr)
 
 
 # Load in the object after doublets are removed
-```{r load-kindey-object}
+```{r load-cortex-object}
 load(here("data/nodoublet_setbp1_cerebral_seurat.Rdata")) # cerebral_seurat_filtered
 ```
 
-```{r load-cortex-object}
+```{r load-kidney-object}
 load(here("data/nodoublet_setbp1_kidney_seurat.Rdata")) # kidney_seurat_filtered
 ```
 
@@ -50,7 +50,7 @@ load(here("data/nodoublet_setbp1_kidney_seurat.Rdata")) # kidney_seurat_filtered
 #### normalize data:
 ```{r normalize-kidney}
 kidney_seurat_filtered <- NormalizeData(kidney_seurat_filtered)
-save(kidney_seurat_filtered, file = "data/project/lasseigne_lab/JordanWhitlock/test/code_review_check/integration_normalized_JW.Rdata")
+#save(kidney_seurat_filtered, file = "/data/project/lasseigne_lab/JordanWhitlock/test/code_review_check/integration_normalized_JW.Rdata")
 ```
 
 ```{r normalize-cortex}
@@ -68,6 +68,8 @@ suppressWarnings(suppressMessages(kidney_seurat_filtered <- FindVariableFeatures
   assay = "RNA"
 ))) # changed from std 2000 for nFeatures based on data distribution
 
+
+
 top20_kidney <- head(VariableFeatures(kidney_seurat_filtered), 20)
 LabelPoints(
   plot = VariableFeaturePlot(kidney_seurat_filtered),
@@ -75,7 +77,7 @@ LabelPoints(
   repel = TRUE
 )
 
-save(top20_kidney, file = "data/project/lasseigne_lab/JordanWhitlock/test/code_review_check/integration_top20_JW.Rdata")
+#save(top20_kidney, file = "/data/project/lasseigne_lab/JordanWhitlock/test/code_review_check/integration_top20_JW.Rdata")
 ```
 
 ```{r variable-features-cortex}
@@ -105,7 +107,7 @@ kidney_seurat_filtered <- ScaleData(kidney_seurat_filtered,
   assay = "RNA"
 )
 
-save(kidney_seurat_filtered, file = "data/project/lasseigne_lab/JordanWhitlock/test/code_review_check/integration_scaled_JW.Rdata")
+save(kidney_seurat_filtered, file = "/data/project/lasseigne_lab/JordanWhitlock/test/code_review_check/integration_scaled_JW.Rdata")
 ```
 
 
@@ -125,7 +127,7 @@ ElbowPlot(cerebral_seurat_filtered, reduction = "pca", ndims = 50)
 ```{r PCA-elbow-kidney}
 kidney_seurat_filtered <- RunPCA(kidney_seurat_filtered, npcs = 50, verbose = FALSE) #has a seed set already in source code
 
-save(kidney_seurat_filtered, file = "data/project/lasseigne_lab/JordanWhitlock/test/code_review_check/integration_PCA_JW.Rdata")
+save(kidney_seurat_filtered, file = "/data/project/lasseigne_lab/JordanWhitlock/test/code_review_check/integration_PCA_JW.Rdata")
 
 ElbowPlot(kidney_seurat_filtered, reduction = "pca", ndims = 50)
 ```
@@ -179,7 +181,7 @@ kidney_seurat_filtered <- RunTSNE(kidney_seurat_filtered,
   seed.use = 1
 )
 
-save(kidney_seurat_filtered, file = "data/project/lasseigne_lab/JordanWhitlock/test/code_review_check/integration_tSNE_JW.Rdata")
+save(kidney_seurat_filtered, file = "/data/project/lasseigne_lab/JordanWhitlock/test/code_review_check/integration_tSNE_JW.Rdata")
 
 plot_grid(ncol = 3, DimPlot(kidney_seurat_filtered, reduction = "tsne", group.by = "orig.ident"))
 ```
@@ -191,7 +193,7 @@ kidney_seurat_filtered <- RunUMAP(kidney_seurat_filtered,
   n.epochs = 200, min.dist = 0.3, learning.rate = 1, spread = 1 #note: has seed.use = 42 set as default
 )
 
-save(kidney_seurat_filtered, file = "data/project/lasseigne_lab/JordanWhitlock/test/code_review_check/integration_UMAP_JW.Rdata")
+save(kidney_seurat_filtered, file = "/data/project/lasseigne_lab/JordanWhitlock/test/code_review_check/integration_UMAP_JW.Rdata")
 
 plot_grid(ncol = 3, DimPlot(kidney_seurat_filtered, reduction = "umap", group.by = "orig.ident") +
   ggplot2::ggtitle(label = "Kidney_UMAP_on_PCA"))
@@ -216,7 +218,7 @@ kidney_harmony <- RunHarmony(kidney_seurat_filtered,
   dims.use = 1:30, assay.use = "RNA"
 )
 
-save(kidney_harmony, file = "data/project/lasseigne_lab/JordanWhitlock/test/code_review_check/integration_harmony_JW.Rdata")
+save(kidney_harmony, file = "/data/project/lasseigne_lab/JordanWhitlock/test/code_review_check/integration_harmony_JW.Rdata")
 ```
 
 ```{r cortex-harmony}
@@ -233,7 +235,7 @@ kidney_int <- kidney_seurat_filtered
 kidney_int[["harmony"]] <- kidney_harmony[["harmony"]]
 kidney_int <- RunUMAP(kidney_int, dims = 1:30, reduction = "harmony", reduction.name = "umap_harmony")
 
-save(kidney_int, file = "data/project/lasseigne_lab/JordanWhitlock/test/code_review_check/integration_harmonyUMAP_JW.Rdata")
+save(kidney_int, file = "/data/project/lasseigne_lab/JordanWhitlock/test/code_review_check/integration_harmonyUMAP_JW.Rdata")
 ```
 
 ```{r visualize-harmony-UMAP-cortex}
@@ -341,6 +343,11 @@ pheatmap::pheatmap(t(overlap * 1), cluster_rows = FALSE, color = c("grey90", "gr
 save(kidney_hvgs_per_dataset, file = here("data/kidney_hvgs.Rdata"))
 save(cerebral_hvgs_per_dataset, file = here("data/cerebral_hvgs.Rdata"))
 ```
+
+```{r}
+JW_SI <- sessionInfo()
+```
+
 
 ```{r}
 # run style
