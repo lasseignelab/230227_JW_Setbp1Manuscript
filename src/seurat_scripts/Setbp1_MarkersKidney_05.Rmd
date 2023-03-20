@@ -23,9 +23,10 @@ Accompanying dry lab notebook for this analysis is here: https://docs.google.com
 
 ```{r}
 # loading packages
+set.seed(2178)
 library(Seurat)
 library(here)
-set.seed(2178)
+library(styler)
 
 # loading in the objects
 load(here("data/kidney_leiden.Rdata"))
