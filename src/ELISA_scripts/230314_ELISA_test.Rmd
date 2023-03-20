@@ -1,23 +1,25 @@
 ---
-_title: "ELISA_test"
+title: "230314_ELISA_test"
 author: "Jordan Whitlock"
-date: '2023-03-14'
+date: '2023-03-16'
 output: html_document
 ---
-
 ```{r}
+set.seed(2178)
 library(here)
 library(readr)
 library(ggplot2)
 library(ggpubr)
 library(styler)
 library(lintr)
+```
 
-# load in ELISA results
+# load in ELISA 
+```{r}
 test <- read_csv(here("results/ELISA/230314_Setbp1_ELISA.csv"))
 ```
 
-```{r}
+```{r analysing-test-results}
 # average blanks:
 blank <- (test$blank_1 + test$blank_2) / 2
 
@@ -88,12 +90,11 @@ ggscatter(
   ggtheme = theme_bw(),
   xlab = "Concentration",
   ylab = "Optical Density (OD) at 450 nm",
-  title = "Setbp1 ELISA Quantification Test Samples"
-) +
+  title = "Setbp1 ELISA Quantification Test Samples") +
   stat_regline_equation(label.x = 3, label.y = 1.2)
 ```
 
-```{r}
+```{r plotting-individual-reps}
 measurements <- test[, 1:10] - blank
 
 # add concentration
@@ -158,11 +159,3 @@ ggscatter(
 ) +
   stat_regline_equation(label.x = 3, label.y = 1.2)
 ```
-
-```{r}
-# run style
-style_file(here("src/ELISA_scripts/ELISA_test.Rmd"))
-# lintr was run as well
-```
-
-

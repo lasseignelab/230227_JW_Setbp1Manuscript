@@ -1,0 +1,27 @@
+#!/bin/bash
+#
+#SBATCH --mail-type=ALL
+#SBATCH --mail-user=jbarham3@uab.edu
+#SBATCH --job-name=K1i_Setbp1
+#SBATCH --ntasks=1
+#SBATCH --mem-per-cpu=64000
+#SBATCH --nodes=1
+#SBATCH --cpus-per-task=4
+#SBATCH --time=48:00:00
+#SBATCH --share
+#SBATCH --partition=long
+#SBATCH --error=K1.err.txt
+#SBATCH --output=K1.out.txt
+
+########################################
+### PUT YOUR COMMANDS BELOW THIS BOX ###
+########################################
+cd /data/project/lasseigne_lab/JordanWhitlock/jw_setbp1/introns_processed_data
+
+module load CellRanger/6.1.1
+
+cellranger count --id=K1 \
+                 --transcriptome=/data/project/lasseigne_lab/JordanWhitlock/jw_refs/refdata-gex-mm10-2020-A \
+                 --fastqs=/data/project/lasseigne_lab/JordanWhitlock/jw_setbp1 \
+                 --sample=K1 \
+		 --include-introns
