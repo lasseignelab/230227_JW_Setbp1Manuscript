@@ -116,9 +116,10 @@ png(
   height = 1000
 )
 FeaturePlot(kidney_int,
-            features = c("Pdgfrb"),
-            reduction = "umap_harmony",
-            label = TRUE) # clusters 9, 16, 22, 24, 33, 34
+  features = c("Pdgfrb"),
+  reduction = "umap_harmony",
+  label = TRUE
+) # clusters 9, 16, 22, 24, 33, 34
 dev.off()
 ```
 
@@ -130,9 +131,10 @@ png(
   height = 1000
 )
 FeaturePlot(kidney_int,
-            features = c("Kdr", "Ptprb"),
-            reduction = "umap_harmony",
-            label = TRUE) # 1, 11, 29
+  features = c("Kdr", "Ptprb"),
+  reduction = "umap_harmony",
+  label = TRUE
+) # 1, 11, 29
 dev.off()
 ```
 
@@ -144,9 +146,10 @@ png(
   height = 1000
 )
 FeaturePlot(kidney_int,
-            features = c("Slc34a1", "Slc13a3"),
-            reduction = "umap_harmony",
-            label = TRUE) # clusters 2, 3, 5, 8, 14, 21, 23, 25
+  features = c("Slc34a1", "Slc13a3"),
+  reduction = "umap_harmony",
+  label = TRUE
+) # clusters 2, 3, 5, 8, 14, 21, 23, 25
 dev.off()
 ```
 
@@ -158,9 +161,10 @@ png(
   height = 1000
 )
 FeaturePlot(kidney_int,
-            features = c("Slc22a7", "Atp11a"),
-            reduction = "umap_harmony",
-            label = TRUE) # 2, 3, 4, 14, 27
+  features = c("Slc22a7", "Atp11a"),
+  reduction = "umap_harmony",
+  label = TRUE
+) # 2, 3, 4, 14, 27
 dev.off()
 ```
 
@@ -172,9 +176,10 @@ png(
   height = 1000
 )
 FeaturePlot(kidney_int,
-            features = c("Slc5a2", "Slc5a12"),
-            reduction = "umap_harmony",
-            label = TRUE) # cluster 21, 5, 8, 23, 25
+  features = c("Slc5a2", "Slc5a12"),
+  reduction = "umap_harmony",
+  label = TRUE
+) # cluster 21, 5, 8, 23, 25
 dev.off()
 ```
 
@@ -186,9 +191,10 @@ png(
   height = 1000
 )
 FeaturePlot(kidney_int,
-            features = c("Slc12a1"),
-            reduction = "umap_harmony",
-            label = TRUE) # cluster 7, 6, 36, and 40
+  features = c("Slc12a1"),
+  reduction = "umap_harmony",
+  label = TRUE
+) # cluster 7, 6, 36, and 40
 dev.off()
 ```
 
@@ -200,9 +206,10 @@ png(
   height = 1000
 )
 FeaturePlot(kidney_int,
-            features = c("Aqp2", "Hsd11b2"),
-            reduction = "umap_harmony",
-            label = TRUE) # cluster 12 and 13, and 39
+  features = c("Aqp2", "Hsd11b2"),
+  reduction = "umap_harmony",
+  label = TRUE
+) # cluster 12 and 13, and 39
 dev.off()
 ```
 
@@ -214,9 +221,10 @@ png(
   height = 1000
 )
 FeaturePlot(kidney_int,
-            features = c("Slc12a3"),
-            reduction = "umap_harmony",
-            label = TRUE) # cluster 10
+  features = c("Slc12a3"),
+  reduction = "umap_harmony",
+  label = TRUE
+) # cluster 10
 dev.off()
 ```
 
@@ -228,9 +236,10 @@ png(
   height = 1000
 )
 FeaturePlot(kidney_int,
-            features = c("Ptprc", "Runx1"),
-            reduction = "umap_harmony",
-            label = TRUE) # cluster 15, 35, 31
+  features = c("Ptprc", "Runx1"),
+  reduction = "umap_harmony",
+  label = TRUE
+) # cluster 15, 35, 31
 dev.off()
 ```
 
@@ -242,9 +251,10 @@ png(
   height = 1000
 )
 FeaturePlot(kidney_int,
-            features = c("Bst1"),
-            reduction = "umap_harmony",
-            label = TRUE) # cluster 17 and 18
+  features = c("Bst1"),
+  reduction = "umap_harmony",
+  label = TRUE
+) # cluster 17 and 18
 dev.off()
 ```
 
@@ -256,9 +266,10 @@ png(
   height = 1000
 )
 FeaturePlot(kidney_int,
-            features = c("Aqp6"),
-            reduction = "umap_harmony",
-            label = TRUE) # cluster 19
+  features = c("Aqp6"),
+  reduction = "umap_harmony",
+  label = TRUE
+) # cluster 19
 dev.off()
 ```
 
@@ -270,9 +281,10 @@ png(
   height = 1000
 )
 FeaturePlot(kidney_int,
-            features = c("Hmx2"),
-            reduction = "umap_harmony",
-            label = TRUE) # cluster 20
+  features = c("Hmx2"),
+  reduction = "umap_harmony",
+  label = TRUE
+) # cluster 20
 dev.off()
 ```
 
@@ -284,9 +296,10 @@ png(
   height = 1000
 )
 FeaturePlot(kidney_int,
-            features = c("Atp6v1g3", "Atp6v0d2"),
-            reduction = "umap_harmony",
-            label = TRUE) # clusters 19 and 20
+  features = c("Atp6v1g3", "Atp6v0d2"),
+  reduction = "umap_harmony",
+  label = TRUE
+) # clusters 19 and 20
 dev.off()
 ```
 
@@ -298,9 +311,10 @@ png(
   height = 1000
 )
 FeaturePlot(kidney_int,
-            features = c("Cd79b"),
-            reduction = "umap_harmony",
-            label = TRUE) # cluster 35
+  features = c("Cd79b"),
+  reduction = "umap_harmony",
+  label = TRUE
+) # cluster 35
 dev.off()
 ```
 
@@ -312,9 +326,10 @@ png(
   height = 1000
 )
 FeaturePlot(kidney_int,
-            features = c("Nphs1", "Nphs2", "Wt1"),
-            reduction = "umap_harmony",
-            label = TRUE) # cluster 28
+  features = c("Nphs1", "Nphs2", "Wt1"),
+  reduction = "umap_harmony",
+  label = TRUE
+) # cluster 28
 dev.off()
 ```
 
@@ -326,9 +341,10 @@ png(
   height = 1000
 )
 FeaturePlot(kidney_int,
-            features = c("Acta2"),
-            reduction = "umap_harmony",
-            label = TRUE) # cluster 24; need to subcluster it
+  features = c("Acta2"),
+  reduction = "umap_harmony",
+  label = TRUE
+) # cluster 24; need to subcluster it
 dev.off()
 ```
 
@@ -340,9 +356,10 @@ png(
   height = 1000
 )
 FeaturePlot(kidney_int,
-            features = c("Pdgfra"),
-            reduction = "umap_harmony",
-            label = TRUE) # 9, 16, 33, 22, 33, 24, 34
+  features = c("Pdgfra"),
+  reduction = "umap_harmony",
+  label = TRUE
+) # 9, 16, 33, 22, 33, 24, 34
 dev.off()
 ```
 
@@ -354,18 +371,20 @@ png(
   height = 1000
 )
 FeaturePlot(kidney_int,
-            features = c("Akr1b3"),
-            reduction = "umap_harmony",
-            label = TRUE) # DLH; https://esbl.nhlbi.nih.gov/Databases/AllTranscripts/
+  features = c("Akr1b3"),
+  reduction = "umap_harmony",
+  label = TRUE
+) # DLH; https://esbl.nhlbi.nih.gov/Databases/AllTranscripts/
 dev.off()
 ```
 
 ##### Looking at unknown cluster 30
 ```{r cluster-30}
 FeaturePlot(kidney_int,
-            features = c("Ncam1", "Wt1", "Nphs1", "Nphs2"),
-            reduction = "umap_harmony",
-            label = TRUE) # podocytes 28 and 30, so podocytes; https://pubmed.ncbi.nlm.nih.gov/11912180/, https://www.sciencedirect.com/science/article/pii/S0002944013005853
+  features = c("Ncam1", "Wt1", "Nphs1", "Nphs2"),
+  reduction = "umap_harmony",
+  label = TRUE
+) # podocytes 28 and 30, so podocytes; https://pubmed.ncbi.nlm.nih.gov/11912180/, https://www.sciencedirect.com/science/article/pii/S0002944013005853
 ```
 
 ##### Looking at unknown cluster 31
@@ -599,14 +618,15 @@ pdf(file = here("results/figures/KidneyFig2AVln.pdf"), width = 20, height = 30)
 
 # generate plot
 yy <- VlnPlot(kidney_int_celltypes,
-              kidney_features,
-              stack = TRUE,
-              sort = FALSE,
-              flip = TRUE,
-              assay = "RNA",
-              group.by = "cell_type",
-              fill.by = "ident",
-              cols = c("B.lymphocytes" = "#FFBE1D", "CD.IC.typeA" = "#4E3801", "CD.IC.typeB" = "#EEDF37", "CD.PC" = "#F03F00", "DCT" = "#6D0404", "DLH" = "#AA6320", "endothelial" = "#CF9400", "fibroblasts" = "#FFC8C4", "LOH" = "#AA937E", "macrophages" = "#C70F0F", "PCT.S1" = "#A85A5A", "PCT.S2" = "#F8766D", "podocytes" = "#BD085E", "PST" = "#948802")) +
+  kidney_features,
+  stack = TRUE,
+  sort = FALSE,
+  flip = TRUE,
+  assay = "RNA",
+  group.by = "cell_type",
+  fill.by = "ident",
+  cols = c("B.lymphocytes" = "#FFBE1D", "CD.IC.typeA" = "#4E3801", "CD.IC.typeB" = "#EEDF37", "CD.PC" = "#F03F00", "DCT" = "#6D0404", "DLH" = "#AA6320", "endothelial" = "#CF9400", "fibroblasts" = "#FFC8C4", "LOH" = "#AA937E", "macrophages" = "#C70F0F", "PCT.S1" = "#A85A5A", "PCT.S2" = "#F8766D", "podocytes" = "#BD085E", "PST" = "#948802")
+) +
   labs(fill = "Cell Type") +
   theme_bw() +
   theme(legend.position = "left") +
@@ -659,10 +679,11 @@ colnames(stats) <- c("Condition", "Cell_type", "Nb", "C", "prop")
 
 # generate plot
 yy <- DotPlot(kidney_int_celltypes,
-              unique(kidney_features),
-              assay = "RNA",
-              group.by = "cell_type",
-              cols = c("black", "#EECB00")) +
+  unique(kidney_features),
+  assay = "RNA",
+  group.by = "cell_type",
+  cols = c("black", "#EECB00")
+) +
   labs(fill = "Cell Type") +
   theme_bw() +
   theme(legend.position = "left") +
