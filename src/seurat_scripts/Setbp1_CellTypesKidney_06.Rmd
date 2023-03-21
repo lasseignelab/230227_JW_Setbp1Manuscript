@@ -20,7 +20,7 @@ Accompanying dry lab notebook for this analysis is here: https://docs.google.com
 
 This analysis follows 'Setbp1_MarkersKidney_05.Rmd' and precedes "Setbp1_DGEkidney_07.Rmd"
 
-####load in libraries:
+#### load in libraries:
 ```{r}
 set.seed(2178)
 library(Seurat)
@@ -32,12 +32,12 @@ library(magrittr)
 library(dplyr)
 ```
 
-####load in markers:
+#### load in markers:
 ```{r}
 load(here("results/kidney_markers.Rdata"))
 ```
 
-*also be sure that the previously generated clustered objects at resolution 0.8 are here if not loaded already, run below chunk:
+*also be sure that the previously generated clustered objects at resolution 0.9 are here if not loaded already, run below chunk:
 ```{r}
 load(here("data/kidney_leiden.Rdata"))
 select_resolution <- "RNA_snn_res.0.9"
@@ -460,7 +460,7 @@ subset <- FindClusters(subset, graph.name = "RNA_snn", resolution = 0.2, algorit
 p4 <- DimPlot(subset, reduction = "umap_harmony", group.by = "seurat_clusters", label = TRUE)
 p4
 
-FeaturePlot(subset, features = c("Pdgfrb", "Acta2", "Pdgfra"), reduction = "umap_harmony", label = TRUE) # pdgfrb is for pericytes and acta2 for vsmcs pdgfra for fibroblasts; look like all of this cluster is majority pericytes. going to assign as such
+FeaturePlot(subset, features = c("Pdgfrb", "Acta2", "Pdgfra"), reduction = "umap_harmony", label = TRUE) # pdgfrb is for pericytes and acta2 for vsmcs, pdgfra for fibroblasts; look like all of this cluster is majority pericytes. going to assign as such
 
 # unknown 2
 subset <- subset(kidney_int_celltypes, idents = "unknown2")
