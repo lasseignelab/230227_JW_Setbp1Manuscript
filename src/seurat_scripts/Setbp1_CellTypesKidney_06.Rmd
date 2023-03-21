@@ -397,7 +397,7 @@ FeaturePlot(kidney_int, features = c("Ptprc", "Runx1"), reduction = "umap_harmon
 kidney_features <- c("Pdgfra", "Acta2", "Nphs1", "Nphs2", "Wt1", "Cd79b", "Hmx2", "Aqp6", "Atp6v1g3", "Atp6v0d2", "Bst1", "Runx1", "Ptprc", "Slc12a3", "Aqp2", "Hsd11b2", "Slc12a1", "Slc5a2", "Slc5a12", "Slc22a7", "Atp11a", "Slc34a1", "Slc13a3", "Kdr", "Ptprb", "Pdgfrb", "Akr1b3")
 
 png(
-  filename = here("resultsfigures/setbp1_kidney_markers_dotplot.png"),
+  filename = here("results/figures/setbp1_kidney_markers_dotplot.png"),
   width = 1000,
   height = 1000
 )
