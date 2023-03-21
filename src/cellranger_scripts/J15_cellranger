@@ -9,8 +9,8 @@
 #SBATCH --cpus-per-task=4
 #SBATCH --time=48:00:00
 #SBATCH --partition=long
-#SBATCH --error=%j.%N.err.txt
-#SBATCH --output=%j.%N.out.txt
+#SBATCH --error=J15.err.txt
+#SBATCH --output=J15.out.txt
 
 ########################################
 ### PUT YOUR COMMANDS BELOW THIS BOX ###
