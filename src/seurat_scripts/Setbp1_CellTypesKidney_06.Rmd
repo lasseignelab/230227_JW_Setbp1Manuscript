@@ -20,7 +20,7 @@ Accompanying dry lab notebook for this analysis is here: https://docs.google.com
 
 This analysis follows 'Setbp1_MarkersKidney_05.Rmd' and precedes "Setbp1_DGEkidney_07.Rmd"
 
-####load in libraries:
+#### load in libraries:
 ```{r}
 set.seed(2178)
 library(Seurat)
@@ -32,12 +32,12 @@ library(magrittr)
 library(dplyr)
 ```
 
-####load in markers:
+#### load in markers:
 ```{r}
 load(here("results/kidney_markers.Rdata"))
 ```
 
-*also be sure that the previously generated clustered objects at resolution 0.8 are here if not loaded already, run below chunk:
+*also be sure that the previously generated clustered objects at resolution 0.9 are here if not loaded already, run below chunk:
 ```{r}
 load(here("data/kidney_leiden.Rdata"))
 select_resolution <- "RNA_snn_res.0.9"
@@ -378,7 +378,7 @@ FeaturePlot(kidney_int, features = c("Ptprc", "Runx1"), reduction = "umap_harmon
 kidney_features <- c("Pdgfra", "Acta2", "Nphs1", "Nphs2", "Wt1", "Cd79b", "Hmx2", "Aqp6", "Atp6v1g3", "Atp6v0d2", "Bst1", "Runx1", "Ptprc", "Slc12a3", "Aqp2", "Hsd11b2", "Slc12a1", "Slc5a2", "Slc5a12", "Slc22a7", "Atp11a", "Slc34a1", "Slc13a3", "Kdr", "Ptprb", "Pdgfrb", "Akr1b3")
 
 png(
-  filename = here("results/figures/setbp1_kidney_markers_dotplot.png"),
+  filename = here("resultsfigures/setbp1_kidney_markers_dotplot.png"),
   width = 1000,
   height = 1000
 )
@@ -390,9 +390,6 @@ DotPlot(kidney_int, kidney_features, assay = "RNA") +
   coord_flip()
 dev.off()
 ```
-
-
-
 
 ## assigning kidney cell markers
 
@@ -460,7 +457,7 @@ subset <- FindClusters(subset, graph.name = "RNA_snn", resolution = 0.2, algorit
 p4 <- DimPlot(subset, reduction = "umap_harmony", group.by = "seurat_clusters", label = TRUE)
 p4
 
-FeaturePlot(subset, features = c("Pdgfrb", "Acta2", "Pdgfra"), reduction = "umap_harmony", label = TRUE) # pdgfrb is for pericytes and acta2 for vsmcs pdgfra for fibroblasts; look like all of this cluster is majority pericytes. going to assign as such
+FeaturePlot(subset, features = c("Pdgfrb", "Acta2", "Pdgfra"), reduction = "umap_harmony", label = TRUE) # pdgfrb is for pericytes and acta2 for vsmcs, pdgfra for fibroblasts; look like all of this cluster is majority pericytes. going to assign as such
 
 # unknown 2
 subset <- subset(kidney_int_celltypes, idents = "unknown2")
