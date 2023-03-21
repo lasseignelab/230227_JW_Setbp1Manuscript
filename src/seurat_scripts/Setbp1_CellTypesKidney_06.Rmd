@@ -732,6 +732,11 @@ kidney_int_celltypes@meta.data %>%
   geom_vline(xintercept = 500)
 ```
 
+```{r}
+sessionInfo()
+```
+
+
 This script is followed by 'Setbp1_DGEkidney_07.Rmd'
 
 ```{r}
