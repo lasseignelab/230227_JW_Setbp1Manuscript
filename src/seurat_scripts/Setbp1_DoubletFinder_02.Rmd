@@ -106,7 +106,7 @@ split_sample$K1 <- no_doublets
 
 #K2
 define_pK(split_sample$K2)
-doublet_removal(sample = split_sample$K2, expected = 0.146, pK = 0.10) #pK obtained from plot in line above
+doublet_removal(sample = split_sample$K2, expected = 0.146, pK = 0.15) #pK obtained from plot in line above
 split_sample$K2 <- no_doublets
 
 #K3
