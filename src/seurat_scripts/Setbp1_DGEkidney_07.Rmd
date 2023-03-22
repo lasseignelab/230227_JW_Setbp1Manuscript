@@ -56,11 +56,12 @@ VlnPlot(kidney_int_celltypes, features = "Setbp1", split.by = "type")
 #### split violin plotting of setbp1 across celltypes
 ```{r}
 # grabbing the Setbp1 expression data and moving from S4 to a dataframe
-setbp1_exp <- FetchData(kidney_int_celltypes, vars = c("Setbp1", "cell_type", "type"))
+setbp1_exp <- FetchData(kidney_int_celltypes, 
+                        vars = c("Setbp1", "cell_type", "type"))
 colnames(setbp1_exp) <- c("Expression", "cell_type", "type")
 
 png(
-  filename = here("results/figures/kidney_setbp1_UMAP.png"),
+  filename = here("results/figures/kidney_setbp1_splitviolin.png"),
   width = 1500,
   height = 1000
 )
@@ -1032,7 +1033,7 @@ for (i in celltypes) {
   DEGs_kidneycells <- rbind(DEGs_kidneycells, DEGs)
 }
 
-write.csv(DEGs_kidneycells, file = here("results/seurat/DEGs_kidneycells.csv")) # written out once then commented out
+write.csv(DEGs_kidneycells, file = here("results/ts_results/seurat/DEGs_kidneycells.csv")) # written out once then commented out
 # DEGs_kidneycells <- read.csv(here("results/seurat/DEGs_kidneycells.csv"))
 ```
 
