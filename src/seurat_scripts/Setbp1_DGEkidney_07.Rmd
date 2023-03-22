@@ -76,7 +76,7 @@ dev.off()
 
 
 
-#### Calculating DGE by cell type: log2FC of 0.1 (previously ran with 0.25 and outputs are saved below)
+#### Calculating DGE by cell type: log2FC of 0.1
 
 ---B.lymphocytes---
 ```{r}
