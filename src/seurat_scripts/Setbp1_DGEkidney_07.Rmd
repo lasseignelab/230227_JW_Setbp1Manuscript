@@ -95,7 +95,9 @@ head(blymph_data, n = 5)
 
 ```{r}
 # plotting just the DEG from Het:
-blymph_het <- blymph_data[blymph_data$p_val < 0.5 & blymph_data$avg_log2FC > 0.1 | blymph_data$avg_log2FC < -0.1, ]
+blymph_het <- blymph_data[blymph_data$p_val < 0.5 & 
+                            blymph_data$avg_log2FC > 0.1 | 
+                            blymph_data$avg_log2FC < -0.1, ]
 blymph_het <- blymph_het[blymph_het$cluster == "heterozygous", ]
 
 p <- ggplot(data = blymph_het, aes(x = avg_log2FC, y = -log10(p_val))) +
@@ -104,14 +106,18 @@ p <- ggplot(data = blymph_het, aes(x = avg_log2FC, y = -log10(p_val))) +
 p2 <- p + geom_vline(xintercept = c(-0.1, 0.1), col = "red") +
   geom_hline(yintercept = -log10(0.05), col = "red")
 p2
+
 # add column to data to indicate if DE or not:
 blymph_het$diffexpressed <- "NO"
 # if log2Foldchange > 0.1 and pvalue < 0.05, set as "UP"
-blymph_het$diffexpressed[blymph_het$avg_log2FC > 0.1 & blymph_het$p_val < 0.05] <- "UP"
+blymph_het$diffexpressed[blymph_het$avg_log2FC > 0.1 & 
+                           blymph_het$p_val < 0.05] <- "UP"
 # if log2Foldchange < -0.1 and pvalue < 0.05, set as "DOWN"
-blymph_het$diffexpressed[blymph_het$avg_log2FC < -0.1 & blymph_het$p_val < 0.05] <- "DOWN"
+blymph_het$diffexpressed[blymph_het$avg_log2FC < -0.1 & 
+                           blymph_het$p_val < 0.05] <- "DOWN"
 # Re-plot but this time color the points with "diffexpressed"
-p <- ggplot(data = blymph_het, aes(x = avg_log2FC, y = -log10(p_val), col = diffexpressed)) +
+p <- ggplot(data = blymph_het, 
+            aes(x = avg_log2FC, y = -log10(p_val), col = diffexpressed)) +
   geom_point() +
   theme_minimal()
 # Add lines as before...
@@ -124,15 +130,17 @@ p4
 ## Change point color
 # 1. by default, it is assigned to the categories in an alphabetical order):
 p3 <- p2 + scale_color_manual(values = c("blue", "black", "red"))
-# 2. to automate a bit: ceate a named vector: the values are the colors to be used, the names are the categories they will be assigned to:
+# 2. to automate a bit: create a named vector: the values are the colors to be used, the names are the categories they will be assigned to:
 mycolors <- c("blue", "red", "black")
 names(mycolors) <- c("DOWN", "UP", "NO")
 p3 <- p2 + scale_colour_manual(values = mycolors)
 p3
-# label poitns:
+# label points:
 blymph_het$delabel <- NA
 blymph_het$delabel[blymph_het$diffexpressed != "NO"] <- blymph_het$gene[blymph_het$diffexpressed != "NO"]
-ggplot(data = blymph_het, aes(x = avg_log2FC, y = -log10(p_val), col = diffexpressed, label = delabel)) +
+ggplot(data = blymph_het, 
+       aes(x = avg_log2FC,y = -log10(p_val), 
+           col = diffexpressed, label = delabel)) +
   geom_point() +
   geom_point() +
   theme_minimal()
