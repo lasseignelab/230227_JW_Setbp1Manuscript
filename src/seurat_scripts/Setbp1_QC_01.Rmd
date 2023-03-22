@@ -40,6 +40,7 @@ library(cowplot)
 library(ggplot2)
 library(here)
 library(tidyverse)
+library(gprofiler2)
 library(styler)
 library(lintr)
 ```
@@ -156,23 +157,49 @@ head(kidney_seurat)
 ```{r}
 feats <- c("nFeature_RNA", "nCount_RNA", "percent_mito", "percent_ribo")
 # violin:
+png(
+  filename = here("results/seurat/preQC_metrics_VlnPlot_cortex.png"),
+  width = 1000,
+  height = 1000
+)
 VlnPlot(cerebral_seurat,
   group.by = "orig.ident",
   features = feats,
   pt.size = 0.1,
   ncol = 3
 )
+dev.off()
+
+png(
+  filename = here("results/seurat/preQC_metrics_VlnPlot_kidney.png"),
+  width = 1000,
+  height = 1000
+)
 VlnPlot(kidney_seurat,
   group.by = "orig.ident",
   features = feats,
   pt.size = 0.1, ncol = 3
 )
+dev.off()
+
 # scatter:
+png(
+  filename = here("results/seurat/preQC_metrics_scatter_countsfeatures_cortex.png"),
+  width = 1000,
+  height = 1000
+)
 FeatureScatter(cerebral_seurat,
   "nCount_RNA",
   "nFeature_RNA",
   group.by = "orig.ident",
   pt.size = 0.5
+)
+dev.off()
+
+png(
+  filename = here("results/seurat/preQC_metrics_scatter_mitoribo_cortex.png"),
+  width = 1000,
+  height = 1000
 )
 FeatureScatter(cerebral_seurat,
   "percent_mito",
@@ -180,11 +207,25 @@ FeatureScatter(cerebral_seurat,
   group.by = "orig.ident",
   pt.size = 0.5
 )
+dev.off()
+
+png(
+  filename = here("results/seurat/preQC_metrics_scatter_countsfeatures_kidney.png"),
+  width = 1000,
+  height = 1000
+)
 FeatureScatter(kidney_seurat,
   "nCount_RNA",
   "nFeature_RNA",
   group.by = "orig.ident",
   pt.size = 0.5
+)
+dev.off()
+
+png(
+  filename = here("results/seurat/preQC_metrics_scatter_mitoribo_kidney.png"),
+  width = 1000,
+  height = 1000
 )
 FeatureScatter(kidney_seurat,
   "percent_mito",
@@ -192,6 +233,7 @@ FeatureScatter(kidney_seurat,
   group.by = "orig.ident",
   pt.size = 0.5
 )
+dev.off()
 ```
 
 
@@ -201,6 +243,11 @@ FeatureScatter(kidney_seurat,
 kidney_seurat$log10GenesPerUMI <- log10(kidney_seurat$nFeature_RNA) / log10(kidney_seurat$nCount_RNA)
 cerebral_seurat$log10GenesPerUMI <- log10(cerebral_seurat$nFeature_RNA) / log10(cerebral_seurat$nCount_RNA)
 
+png(
+  filename = here("results/seurat/preQC_metrics_nucleicount_bysample_kidney.png"),
+  width = 1000,
+  height = 1000
+)
 kidney_seurat@meta.data %>%
   ggplot(aes(x = orig.ident, fill = orig.ident)) +
   geom_bar() +
@@ -208,6 +255,13 @@ kidney_seurat@meta.data %>%
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
   theme(plot.title = element_text(hjust = 0.5, face = "bold")) +
   ggtitle("NCells")
+dev.off()
+
+png(
+  filename = here("results/seurat/preQC_metrics_nucleicount_bysample_cortex.png"),
+  width = 1000,
+  height = 1000
+)
 cerebral_seurat@meta.data %>%
   ggplot(aes(x = orig.ident, fill = orig.ident)) +
   geom_bar() +
@@ -215,6 +269,13 @@ cerebral_seurat@meta.data %>%
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
   theme(plot.title = element_text(hjust = 0.5, face = "bold")) +
   ggtitle("NCells")
+dev.off()
+
+png(
+  filename = here("results/seurat/preQC_metrics_nucleicount_bytype_kidney.png"),
+  width = 1000,
+  height = 1000
+)
 kidney_seurat@meta.data %>%
   ggplot(aes(x = orig.ident, fill = type)) +
   geom_bar() +
@@ -222,6 +283,13 @@ kidney_seurat@meta.data %>%
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
   theme(plot.title = element_text(hjust = 0.5, face = "bold")) +
   ggtitle("NCells")
+dev.off()
+
+png(
+  filename = here("results/seurat/preQC_metrics_nucleicount_bytype_cortex.png"),
+  width = 1000,
+  height = 1000
+)
 cerebral_seurat@meta.data %>%
   ggplot(aes(x = orig.ident, fill = type)) +
   geom_bar() +
@@ -229,6 +297,7 @@ cerebral_seurat@meta.data %>%
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
   theme(plot.title = element_text(hjust = 0.5, face = "bold")) +
   ggtitle("NCells")
+dev.off()
 ```
 
 
@@ -238,6 +307,11 @@ nGene = nFeature_RNA
 
 500 is the minimum threshold for number of UMI counts per cell.
 ```{r}
+png(
+  filename = here("results/seurat/preQC_metrics_nCount_bysample_kidney.png"),
+  width = 1000,
+  height = 1000
+)
 kidney_seurat@meta.data %>%
   ggplot(aes(color = orig.ident, x = nCount_RNA, fill = orig.ident)) +
   geom_density(alpha = 0.2) +
@@ -245,6 +319,13 @@ kidney_seurat@meta.data %>%
   theme_classic() +
   ylab("Cell density") +
   geom_vline(xintercept = 500)
+dev.off()
+
+png(
+  filename = here("results/seurat/preQC_metrics_nCount_bysample_cortex.png"),
+  width = 1000,
+  height = 1000
+)
 cerebral_seurat@meta.data %>%
   ggplot(aes(color = orig.ident, x = nCount_RNA, fill = orig.ident)) +
   geom_density(alpha = 0.2) +
@@ -252,6 +333,13 @@ cerebral_seurat@meta.data %>%
   theme_classic() +
   ylab("Cell density") +
   geom_vline(xintercept = 500)
+dev.off()
+
+png(
+  filename = here("results/seurat/preQC_metrics_nCount_bytype_kidney.png"),
+  width = 1000,
+  height = 1000
+)
 kidney_seurat@meta.data %>%
   ggplot(aes(color = type, x = nCount_RNA, fill = type)) +
   geom_density(alpha = 0.2) +
@@ -259,6 +347,13 @@ kidney_seurat@meta.data %>%
   theme_classic() +
   ylab("Cell density") +
   geom_vline(xintercept = 500)
+dev.off()
+
+png(
+  filename = here("results/seurat/preQC_metrics_nCount_bytype_cortex.png"),
+  width = 1000,
+  height = 1000
+)
 cerebral_seurat@meta.data %>%
   ggplot(aes(color = type, x = nCount_RNA, fill = type)) +
   geom_density(alpha = 0.2) +
@@ -266,40 +361,73 @@ cerebral_seurat@meta.data %>%
   theme_classic() +
   ylab("Cell density") +
   geom_vline(xintercept = 500)
+dev.off()
 ```
 
 
 ##### Visualize the distribution of nFeature_RNA (genes) detected per cell via density plot
 ```{r}
+png(
+  filename = here("results/seurat/preQC_metrics_nFeature_bysample_cortex.png"),
+  width = 1000,
+  height = 1000
+)
 cerebral_seurat@meta.data %>%
   ggplot(aes(color = orig.ident, x = nFeature_RNA, fill = orig.ident)) +
   geom_density(alpha = 0.2) +
   theme_classic() +
   scale_x_log10() +
   geom_vline(xintercept = 300)
+dev.off()
+
+png(
+  filename = here("results/seurat/preQC_metrics_nFeature_bysample_kidney.png"),
+  width = 1000,
+  height = 1000
+)
 kidney_seurat@meta.data %>%
   ggplot(aes(color = orig.ident, x = nFeature_RNA, fill = orig.ident)) +
   geom_density(alpha = 0.2) +
   theme_classic() +
   scale_x_log10() +
   geom_vline(xintercept = 300)
+dev.off()
+
+png(
+  filename = here("results/seurat/preQC_metrics_nFeature_bytype_cortex.png"),
+  width = 1000,
+  height = 1000
+)
 cerebral_seurat@meta.data %>%
   ggplot(aes(color = type, x = nFeature_RNA, fill = type)) +
   geom_density(alpha = 0.2) +
   theme_classic() +
   scale_x_log10() +
   geom_vline(xintercept = 300)
+dev.off()
+
+png(
+  filename = here("results/seurat/preQC_metrics_nFeature_bytype_kidney.png"),
+  width = 1000,
+  height = 1000
+)
 kidney_seurat@meta.data %>%
   ggplot(aes(color = type, x = nFeature_RNA, fill = type)) +
   geom_density(alpha = 0.2) +
   theme_classic() +
   scale_x_log10() +
   geom_vline(xintercept = 300)
+dev.off()
 ```
 
 
 #### Visualize the distribution of genes detected per cell via boxplot
 ```{r}
+png(
+  filename = here("results/seurat/preQC_metrics_nCellvsnGenes_kidney.png"),
+  width = 1000,
+  height = 1000
+)
 kidney_seurat@meta.data %>%
   ggplot(aes(x = orig.ident, y = log10(nFeature_RNA), fill = orig.ident)) +
   geom_boxplot() +
@@ -307,6 +435,13 @@ kidney_seurat@meta.data %>%
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
   theme(plot.title = element_text(hjust = 0.5, face = "bold")) +
   ggtitle("NCells vs NGenes")
+dev.off()
+
+png(
+  filename = here("results/seurat/preQC_metrics_nCellvsnGenes_cortex.png"),
+  width = 1000,
+  height = 1000
+)
 cerebral_seurat@meta.data %>%
   ggplot(aes(x = orig.ident, y = log10(nFeature_RNA), fill = orig.ident)) +
   geom_boxplot() +
@@ -314,16 +449,22 @@ cerebral_seurat@meta.data %>%
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
   theme(plot.title = element_text(hjust = 0.5, face = "bold")) +
   ggtitle("NCells vs NGenes")
+dev.off()
 ```
 
 
 #### Visualize the correlation between nFeature_RNA (genes) and nCount_RNA (nuclei)
 ```{r}
 # determine whether strong presence of cells with low numbers of genes/UMIs
+png(
+  filename = here("results/seurat/preQC_metrics_nFeaturenCountCorrelation_kidney.png"),
+  width = 1000,
+  height = 1000
+)
 kidney_seurat@meta.data %>%
   ggplot(aes(x = nCount_RNA, y = nFeature_RNA, color = percent_mito)) +
   geom_point() +
-  scale_colour_gradient(low = "gray90", high = "black") +
+  scale_color_gradient(low = "gray90", high = "black") +
   stat_smooth(method = lm) +
   scale_x_log10() +
   scale_y_log10() +
@@ -331,10 +472,17 @@ kidney_seurat@meta.data %>%
   geom_vline(xintercept = 500) +
   geom_hline(yintercept = 250) +
   facet_wrap(~orig.ident)
+dev.off()
+
+png(
+  filename = here("results/seurat/preQC_metrics_nFeaturenCountCorrelation_cortex.png"),
+  width = 1000,
+  height = 1000
+)
 cerebral_seurat@meta.data %>%
   ggplot(aes(x = nCount_RNA, y = nFeature_RNA, color = percent_mito)) +
   geom_point() +
-  scale_colour_gradient(low = "gray90", high = "black") +
+  scale_color_gradient(low = "gray90", high = "black") +
   stat_smooth(method = lm) +
   scale_x_log10() +
   scale_y_log10() +
@@ -342,25 +490,31 @@ cerebral_seurat@meta.data %>%
   geom_vline(xintercept = 500) +
   geom_hline(yintercept = 250) +
   facet_wrap(~orig.ident)
+dev.off()
 ```
 
 
 #### Filter out nFeature_RNA and mt:
 ```{r}
 kidney_seurat_filtered <- subset(
-  kidney_seurat, 
+  kidney_seurat,
   subset = nFeature_RNA >= 1000 & nFeature_RNA <= 15000 & percent_mito < 5
 )
 cerebral_seurat_filtered <- subset(
   cerebral_seurat,
   subset = nFeature_RNA >= 1000 & nFeature_RNA <= 15000 & percent_mito < 5
-) 
+)
 # 5.0 here because percent_mito is a percent not a ratio.
 ```
 
 
 #### Plot genes contributing most to reads:
 ```{r}
+png(
+  filename = here("results/seurat/postfilt_feature_mito_contrib_genes_cortex.png"),
+  width = 1000,
+  height = 1000
+)
 par(mar = c(4, 8, 2, 1))
 C <- cerebral_seurat_filtered@assays$RNA@counts
 C <- Matrix::t(Matrix::t(C) / Matrix::colSums(C)) * 100
@@ -370,7 +524,13 @@ boxplot(t(as.matrix(C[most_expressed, ])),
   las = 1, xlab = "% total count per cell in cerebral cortex",
   col = (scales::hue_pal())(20)[20:1], horizontal = TRUE
 )
+dev.off()
 
+png(
+  filename = here("results/seurat/postfilt_feature_mito_contrib_genes_kidney.png"),
+  width = 1000,
+  height = 1000
+)
 par(mar = c(4, 8, 2, 1))
 C <- kidney_seurat_filtered@assays$RNA@counts
 C <- Matrix::t(Matrix::t(C) / Matrix::colSums(C)) * 100
@@ -381,6 +541,7 @@ boxplot(t(as.matrix(C[most_expressed, ])),
   xlab = "% total count per cell in kidney",
   col = (scales::hue_pal())(20)[20:1], horizontal = TRUE
 )
+dev.off()
 ```
 
 
@@ -399,30 +560,62 @@ cerebral_seurat_filtered <- cerebral_seurat_filtered[!grepl(
 
 #### Checking cell cycle scoring
 ```{r}
+# Change default from human to mouse, Seurat uses a human list and we are working with mouse data. (code credit: TCH)
+# reading in cell cycle gene list (downloded from https://github.com/hbc/tinyatlas/blob/master/cell_cycle/Mus_musculus.csv) on 230322
+cell_cycle_gene <- read_csv(here("results/seurat/230322_mouse_cell_cycle_genes.csv"))
+# converting ENSMUSG to Gene Symbol
+symbols <- gconvert(cell_cycle_gene$geneID,
+  organism = "mmusculus",
+  target = "ENTREZGENE",
+  filter_na = FALSE
+)
+symbols <- symbols[, c(2, 5)]
+colnames(symbols) <- c("geneID", "symbol")
+
+mouse_cell_cycle_gene <- merge(cell_cycle_gene, symbols, by = "geneID") %>% .[, c(1, 2, 4)]
+mouse_cell_cycle_gene <- mouse_cell_cycle_gene[order(mouse_cell_cycle_gene$phase), ] %>% .[, c(2, 3)]
+
 # Before running CellCycleScoring the data need to be normalized and log transformed.
 kidney_seurat_filtered <- NormalizeData(kidney_seurat_filtered)
+
 # now check cell cycle scoring
 kidney_seurat_filtered <- CellCycleScoring(
-  object = kidney_seurat_filtered, g2m.features = cc.genes$g2m.genes,
-  s.features = cc.genes$s.genes
+  object = kidney_seurat_filtered,
+  g2m.features = mouse_cell_cycle_gene[1:54, ],
+  s.features = mouse_cell_cycle_gene[55:97, ]
+)
+
+png(
+  filename = here("results/seurat/postfiltQC_cellcycle_genes_kidney.png"),
+  width = 1000,
+  height = 1000
 )
 VlnPlot(kidney_seurat_filtered,
   features = c("S.Score", "G2M.Score"), group.by = "orig.ident",
   ncol = 4, pt.size = 0.1
 )
+dev.off()
+
 # Before running CellCycleScoring the data need to be normalized and log transformed.
 cerebral_seurat_filtered <- NormalizeData(cerebral_seurat_filtered)
+
 # now check cell cycle scoring
 cerebral_seurat_filtered <- CellCycleScoring(
-  object = cerebral_seurat_filtered, g2m.features = cc.genes$g2m.genes,
-  s.features = cc.genes$s.genes
+  object = cerebral_seurat_filtered,
+  g2m.features = mouse_cell_cycle_gene[1:54, ],
+  s.features = mouse_cell_cycle_gene[55:97, ]
+)
+png(
+  filename = here("results/seurat/postfiltQC_cellcycle_genes_cortex.png"),
+  width = 1000,
+  height = 1000
 )
 VlnPlot(cerebral_seurat_filtered,
   features = c("S.Score", "G2M.Score"), group.by = "orig.ident",
   ncol = 4, pt.size = 0.1
 )
+dev.off()
 ```
-
 
 #### Revisualizing QC metrics after data has been filtered:
 
@@ -430,12 +623,24 @@ VlnPlot(cerebral_seurat_filtered,
 ```{r}
 feats <- c("nFeature_RNA", "nCount_RNA", "percent_mito", "percent_ribo")
 # violin:
+png(
+  filename = here("results/seurat/postQC_metrics_VlnPlot_cortex.png"),
+  width = 1000,
+  height = 1000
+)
 VlnPlot(
   cerebral_seurat_filtered,
   group.by = "orig.ident",
   features = feats,
   pt.size = 0.1,
   ncol = 3
+)
+dev.off()
+
+png(
+  filename = here("results/seurat/postQC_metrics_VlnPlot_kidney.png"),
+  width = 1000,
+  height = 1000
 )
 VlnPlot(
   kidney_seurat_filtered,
@@ -444,13 +649,27 @@ VlnPlot(
   pt.size = 0.1,
   ncol = 3
 )
+dev.off()
+
 # scatter:
+png(
+  filename = here("results/seurat/postQC_metrics_scatter_countsfeatures_cortex.png"),
+  width = 1000,
+  height = 1000
+)
 FeatureScatter(
   cerebral_seurat_filtered,
   "nCount_RNA",
   "nFeature_RNA",
   group.by = "orig.ident",
   pt.size = 0.5
+)
+dev.off()
+
+png(
+  filename = here("results/seurat/postQC_metrics_scatter_mitoribo_cortex.png"),
+  width = 1000,
+  height = 1000
 )
 FeatureScatter(
   cerebral_seurat_filtered,
@@ -459,12 +678,26 @@ FeatureScatter(
   group.by = "orig.ident",
   pt.size = 0.5
 )
+dev.off()
+
+png(
+  filename = here("results/seurat/postQC_metrics_scatter_countsfeatures_kidney.png"),
+  width = 1000,
+  height = 1000
+)
 FeatureScatter(
   kidney_seurat_filtered,
   "nCount_RNA",
   "nFeature_RNA",
   group.by = "orig.ident",
   pt.size = 0.5
+)
+dev.off()
+
+png(
+  filename = here("results/seurat/postQC_metrics_scatter_mitribo_kidney.png"),
+  width = 1000,
+  height = 1000
 )
 FeatureScatter(
   kidney_seurat_filtered,
@@ -473,6 +706,7 @@ FeatureScatter(
   group.by = "orig.ident",
   pt.size = 0.5
 )
+dev.off()
 ```
 
 ###### Visualize the number of cell counts per sample
@@ -480,6 +714,12 @@ FeatureScatter(
 # Add number of genes per UMI for each cell to metadata -- tells the complexity of the data
 kidney_seurat_filtered$log10GenesPerUMI <- log10(kidney_seurat_filtered$nFeature_RNA) / log10(kidney_seurat_filtered$nCount_RNA)
 cerebral_seurat_filtered$log10GenesPerUMI <- log10(cerebral_seurat_filtered$nFeature_RNA) / log10(cerebral_seurat_filtered$nCount_RNA)
+
+png(
+  filename = here("results/seurat/postQC_metrics_nucleicount_bysample_kidney.png"),
+  width = 1000,
+  height = 1000
+)
 kidney_seurat_filtered@meta.data %>%
   ggplot(aes(x = orig.ident, fill = orig.ident)) +
   geom_bar() +
@@ -487,6 +727,13 @@ kidney_seurat_filtered@meta.data %>%
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
   theme(plot.title = element_text(hjust = 0.5, face = "bold")) +
   ggtitle("NCells")
+dev.off()
+
+png(
+  filename = here("results/seurat/postQC_metrics_nucleicount_bysample_cortex.png"),
+  width = 1000,
+  height = 1000
+)
 cerebral_seurat_filtered@meta.data %>%
   ggplot(aes(x = orig.ident, fill = orig.ident)) +
   geom_bar() +
@@ -494,6 +741,13 @@ cerebral_seurat_filtered@meta.data %>%
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
   theme(plot.title = element_text(hjust = 0.5, face = "bold")) +
   ggtitle("NCells")
+dev.off()
+
+png(
+  filename = here("results/seurat/postQC_metrics_nucleicount_bytype_kidney.png"),
+  width = 1000,
+  height = 1000
+)
 kidney_seurat_filtered@meta.data %>%
   ggplot(aes(x = orig.ident, fill = type)) +
   geom_bar() +
@@ -501,6 +755,13 @@ kidney_seurat_filtered@meta.data %>%
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
   theme(plot.title = element_text(hjust = 0.5, face = "bold")) +
   ggtitle("NCells")
+dev.off()
+
+png(
+  filename = here("results/seurat/postQC_metrics_nucleicount_bytype_cortex.png"),
+  width = 1000,
+  height = 1000
+)
 cerebral_seurat_filtered@meta.data %>%
   ggplot(aes(x = orig.ident, fill = type)) +
   geom_bar() +
@@ -508,6 +769,7 @@ cerebral_seurat_filtered@meta.data %>%
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
   theme(plot.title = element_text(hjust = 0.5, face = "bold")) +
   ggtitle("NCells")
+dev.off()
 ```
 ##### Visualize the number of UMIs/transcripts per cell:
 nUMI = nCount_RNA
@@ -515,6 +777,11 @@ nGene = nFeature_RNA
 
 500 is the minimum threshold for number of UMI counts per cell.
 ```{r}
+png(
+  filename = here("results/seurat/postQC_metrics_nCount_bysample_kidney.png"),
+  width = 1000,
+  height = 1000
+)
 kidney_seurat_filtered@meta.data %>%
   ggplot(aes(color = orig.ident, x = nCount_RNA, fill = orig.ident)) +
   geom_density(alpha = 0.2) +
@@ -522,6 +789,13 @@ kidney_seurat_filtered@meta.data %>%
   theme_classic() +
   ylab("Cell density") +
   geom_vline(xintercept = 500)
+dev.off()
+
+png(
+  filename = here("results/seurat/postQC_metrics_nCount_bysample_cortex.png"),
+  width = 1000,
+  height = 1000
+)
 cerebral_seurat_filtered@meta.data %>%
   ggplot(aes(color = orig.ident, x = nCount_RNA, fill = orig.ident)) +
   geom_density(alpha = 0.2) +
@@ -529,6 +803,13 @@ cerebral_seurat_filtered@meta.data %>%
   theme_classic() +
   ylab("Cell density") +
   geom_vline(xintercept = 500)
+dev.off()
+
+png(
+  filename = here("results/seurat/postQC_metrics_nCount_bytype_kidney.png"),
+  width = 1000,
+  height = 1000
+)
 kidney_seurat_filtered@meta.data %>%
   ggplot(aes(color = type, x = nCount_RNA, fill = type)) +
   geom_density(alpha = 0.2) +
@@ -536,6 +817,13 @@ kidney_seurat_filtered@meta.data %>%
   theme_classic() +
   ylab("Cell density") +
   geom_vline(xintercept = 500)
+dev.off()
+
+png(
+  filename = here("results/seurat/postQC_metrics_nCount_bytype_cortex.png"),
+  width = 1000,
+  height = 1000
+)
 cerebral_seurat_filtered@meta.data %>%
   ggplot(aes(color = type, x = nCount_RNA, fill = type)) +
   geom_density(alpha = 0.2) +
@@ -543,34 +831,62 @@ cerebral_seurat_filtered@meta.data %>%
   theme_classic() +
   ylab("Cell density") +
   geom_vline(xintercept = 500)
+dev.off()
 ```
 
 ###### Visualize the distribution of nFeature_RNA (genes) detected per cell via density plot
 ```{r}
+png(
+  filename = here("results/seurat/postQC_metrics_nFeature_bysample_cortex.png"),
+  width = 1000,
+  height = 1000
+)
 cerebral_seurat_filtered@meta.data %>%
   ggplot(aes(color = orig.ident, x = nFeature_RNA, fill = orig.ident)) +
   geom_density(alpha = 0.2) +
   theme_classic() +
   scale_x_log10() +
   geom_vline(xintercept = 300)
+dev.off()
+
+png(
+  filename = here("results/seurat/postQC_metrics_nFeature_bysample_kidney.png"),
+  width = 1000,
+  height = 1000
+)
 kidney_seurat_filtered@meta.data %>%
   ggplot(aes(color = orig.ident, x = nFeature_RNA, fill = orig.ident)) +
   geom_density(alpha = 0.2) +
   theme_classic() +
   scale_x_log10() +
   geom_vline(xintercept = 300)
+dev.off()
+
+png(
+  filename = here("results/seurat/postQC_metrics_nFeature_bytype_cortex.png"),
+  width = 1000,
+  height = 1000
+)
 cerebral_seurat_filtered@meta.data %>%
   ggplot(aes(color = type, x = nFeature_RNA, fill = type)) +
   geom_density(alpha = 0.2) +
   theme_classic() +
   scale_x_log10() +
   geom_vline(xintercept = 300)
+dev.off()
+
+png(
+  filename = here("results/seurat/postQC_metrics_nFeature_bytype_kidney.png"),
+  width = 1000,
+  height = 1000
+)
 kidney_seurat_filtered@meta.data %>%
   ggplot(aes(color = type, x = nFeature_RNA, fill = type)) +
   geom_density(alpha = 0.2) +
   theme_classic() +
   scale_x_log10() +
   geom_vline(xintercept = 300)
+dev.off()
 ```
 
 ##### Visualize the distribution of genes detected per cell via boxplot
@@ -594,10 +910,15 @@ cerebral_seurat_filtered@meta.data %>%
 ##### Visualize the correlation between nFeature_RNA (genes) and nCount_RNA (nuclei)
 ```{r}
 # determine whether strong presence of cells with low numbers of genes/UMIs
+png(
+  filename = here("results/seurat/postQC_metrics_nFeaturenCountCorrelation_kidney.png"),
+  width = 1000,
+  height = 1000
+)
 kidney_seurat_filtered@meta.data %>%
   ggplot(aes(x = nCount_RNA, y = nFeature_RNA, color = percent_mito)) +
   geom_point() +
-  scale_colour_gradient(low = "gray90", high = "black") +
+  scale_color_gradient(low = "gray90", high = "black") +
   stat_smooth(method = lm) +
   scale_x_log10() +
   scale_y_log10() +
@@ -605,10 +926,17 @@ kidney_seurat_filtered@meta.data %>%
   geom_vline(xintercept = 500) +
   geom_hline(yintercept = 250) +
   facet_wrap(~orig.ident)
+dev.off()
+
+png(
+  filename = here("results/seurat/postQC_metrics_nFeaturenCountCorrelation_cortex.png"),
+  width = 1000,
+  height = 1000
+)
 cerebral_seurat_filtered@meta.data %>%
   ggplot(aes(x = nCount_RNA, y = nFeature_RNA, color = percent_mito)) +
   geom_point() +
-  scale_colour_gradient(low = "gray90", high = "black") +
+  scale_color_gradient(low = "gray90", high = "black") +
   stat_smooth(method = lm) +
   scale_x_log10() +
   scale_y_log10() +
@@ -616,6 +944,7 @@ cerebral_seurat_filtered@meta.data %>%
   geom_vline(xintercept = 500) +
   geom_hline(yintercept = 250) +
   facet_wrap(~orig.ident)
+dev.off()
 ```
 
 #### Saving filtered data as new object:
