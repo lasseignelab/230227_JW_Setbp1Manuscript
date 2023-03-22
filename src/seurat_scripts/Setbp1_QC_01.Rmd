@@ -563,16 +563,17 @@ cerebral_seurat_filtered <- cerebral_seurat_filtered[!grepl(
 # Change default from human to mouse, Seurat uses a human list and we are working with mouse data. (code credit: TCH)
 # reading in cell cycle gene list (downloded from https://github.com/hbc/tinyatlas/blob/master/cell_cycle/Mus_musculus.csv) on 230322
 cell_cycle_gene <- read_csv(here("results/seurat/230322_mouse_cell_cycle_genes.csv"))
-#converting ENSMUSG to Gene Symbol
-symbols <- gconvert(cell_cycle_gene$geneID, 
-                         organism="mmusculus",
-                         target="ENTREZGENE",
-                         filter_na = FALSE)
-symbols <- symbols[,c(2,5)]
+# converting ENSMUSG to Gene Symbol
+symbols <- gconvert(cell_cycle_gene$geneID,
+  organism = "mmusculus",
+  target = "ENTREZGENE",
+  filter_na = FALSE
+)
+symbols <- symbols[, c(2, 5)]
 colnames(symbols) <- c("geneID", "symbol")
 
-mouse_cell_cycle_gene <- merge(cell_cycle_gene, symbols, by = "geneID") %>% .[,c(1,2,4)]
-mouse_cell_cycle_gene <- mouse_cell_cycle_gene[order(mouse_cell_cycle_gene$phase),] %>% .[,c(2,3)]
+mouse_cell_cycle_gene <- merge(cell_cycle_gene, symbols, by = "geneID") %>% .[, c(1, 2, 4)]
+mouse_cell_cycle_gene <- mouse_cell_cycle_gene[order(mouse_cell_cycle_gene$phase), ] %>% .[, c(2, 3)]
 
 # Before running CellCycleScoring the data need to be normalized and log transformed.
 kidney_seurat_filtered <- NormalizeData(kidney_seurat_filtered)
