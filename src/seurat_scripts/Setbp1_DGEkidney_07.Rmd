@@ -1184,24 +1184,24 @@ ordered.meta.data <- meta.data[order(rownames(meta.data)), ] # order by cell typ
 
 
 annotation_colors <- list(
-  "condition" = c("control" = "#FE6100", "heterozygous" = "#FFB000"),
-  "cell_type" = c(
-    "endothelial" = "#CF9400",
-    "PST" = "#948802",
-    "PCT.S1" = "#A85A5A",
-    "LOH" = "#AA937E",
-    "DCT" = "#6D0404",
-    "CD.PC" = "#F03F00",
-    "macrophages" = "#C70F0F",
-    "fibroblasts" = "#FFC8C4",
-    "DLH" = "#AA6320",
-    "CD.IC.typeA" = "#4E3801",
-    "CD.IC.typeB" = "#EEDF37",
-    "podocytes" = "#BD085E",
-    "pericytes" = "#FFE196",
-    "B.lymphocytes" = "#FFBE1D"
+  "condition" = c("control" = "#FE6100", 
+                  "heterozygous" = "#FFB000"),
+  "cell_type" = c("endothelial" = "#CF9400",
+                  "PST" = "#948802",
+                  "PCT.S1" = "#A85A5A",
+                  "LOH" = "#AA937E",
+                  "DCT" = "#6D0404",
+                  "CD.PC" = "#F03F00",
+                  "macrophages" = "#C70F0F",
+                  "fibroblasts" = "#FFC8C4",
+                  "DLH" = "#AA6320",
+                  "CD.IC.typeA" = "#4E3801",
+                  "CD.IC.typeB" = "#EEDF37",
+                  "podocytes" = "#BD085E",
+                  "pericytes" = "#FFE196",
+                  "B.lymphocytes" = "#FFBE1D"
+                  )
   )
-)
 
 # set heatmap annotations:
 heat.anno <- HeatmapAnnotation(
@@ -1215,7 +1215,7 @@ heat.anno <- HeatmapAnnotation(
 genes_pivot <- genes_pivot[, rownames(ordered.meta.data), drop = FALSE]
 rownames(genes_pivot) <- rownames
 
-# convert datframe to matrix
+# convert dataframe to matrix
 mat <- as.matrix(genes_pivot)
 
 # plot heatmap
