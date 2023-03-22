@@ -1,3 +1,49 @@
+# Function-scatterplot
+scatterPlot <- function(
+    simMatrix, reducedTerms, size = "score", addLabel = TRUE,
+    labelSize = 3) {
+  if (!all(sapply(c("ggplot2", "ggrepel"), requireNamespace,
+                  quietly = TRUE
+  ))) {
+    stop("Packages ggplot2, ggrepel and/or its dependencies not available. ",
+         "Consider installing them before using this function.",
+         call. = FALSE
+    )
+  }
+  x <- cmdscale(as.matrix(as.dist(1 - simMatrix)),
+                eig = TRUE,
+                k = 2
+  )
+  df <- cbind(as.data.frame(x$points), reducedTerms[match(
+    rownames(x$points),
+    reducedTerms$go
+  ), c("term", "parent", "parentTerm", "size")])
+  p <- ggplot2::ggplot(df, ggplot2::aes(x = "V1", y = "V2", color = "parentTerm")) +
+    ggplot2::geom_point(ggplot2::aes(size = size), alpha = 0.5) +
+    ggplot2::scale_color_discrete(guide = "none") +
+    ggplot2::scale_size_continuous(
+      guide = "none",
+      range = c(0, 25)
+    ) +
+    ggplot2::scale_x_continuous(name = "") +
+    ggplot2::scale_y_continuous(name = "") +
+    ggplot2::theme_minimal() +
+    ggplot2::theme(
+      axis.text.x = ggplot2::element_blank(),
+      axis.text.y = ggplot2::element_blank()
+    )
+  if (addLabel) {
+    p + ggrepel::geom_label_repel(aes(label = "parentTerm"),
+                                  data = subset(df, parent == rownames(df)), box.padding = grid::unit(
+                                    0.5,
+                                    "lines"
+                                  ), size = labelSize, max.overlaps = 20
+    )
+  } else {
+    p
+  }
+}
+
 # Function-define-pK
 define_pK <- function(sample){
   sweep_res_list <- paramSweep_v3(sample, PCs = 1:30, sct = FALSE)
