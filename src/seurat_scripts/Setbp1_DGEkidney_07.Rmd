@@ -979,22 +979,29 @@ head(pericytes_data, n = 5)
 
 ```{r}
 # plotting just the DEG from Het:
-pericytes_het <- pericytes_data[pericytes_data$p_val < 0.5 & pericytes_data$avg_log2FC > 0.1 | pericytes_data$avg_log2FC < -0.1, ]
+pericytes_het <- pericytes_data[pericytes_data$p_val < 0.5 & 
+                                  pericytes_data$avg_log2FC > 0.1 | 
+                                  pericytes_data$avg_log2FC < -0.1, ]
 pericytes_het <- pericytes_het[pericytes_het$cluster == "heterozygous", ]
 
 p <- ggplot(data = pericytes_het, aes(x = avg_log2FC, y = -log10(p_val))) +
   geom_point() +
   theme_minimal()
-p2 <- p + geom_vline(xintercept = c(-0.1, 0.1), col = "red") + geom_hline(yintercept = -log10(0.05), col = "red")
+p2 <- p + geom_vline(xintercept = c(-0.1, 0.1), col = "red") + 
+  geom_hline(yintercept = -log10(0.05), col = "red")
 p2
+
 # add column to data to indicate if DE or not:
 pericytes_het$diffexpressed <- "NO"
 # if log2Foldchange > 0.1 and pvalue < 0.05, set as "UP"
-pericytes_het$diffexpressed[pericytes_het$avg_log2FC > 0.1 & pericytes_het$p_val < 0.05] <- "UP"
+pericytes_het$diffexpressed[pericytes_het$avg_log2FC > 0.1 & 
+                              pericytes_het$p_val < 0.05] <- "UP"
 # if log2Foldchange < -0.1 and pvalue < 0.05, set as "DOWN"
-pericytes_het$diffexpressed[pericytes_het$avg_log2FC < -0.1 & pericytes_het$p_val < 0.05] <- "DOWN"
+pericytes_het$diffexpressed[pericytes_het$avg_log2FC < -0.1 & 
+                              pericytes_het$p_val < 0.05] <- "DOWN"
 # Re-plot but this time color the points with "diffexpressed"
-p <- ggplot(data = pericytes_het, aes(x = avg_log2FC, y = -log10(p_val), col = diffexpressed)) +
+p <- ggplot(data = pericytes_het, 
+            aes(x = avg_log2FC, y = -log10(p_val), col = diffexpressed)) +
   geom_point() +
   theme_minimal()
 # Add lines as before...
@@ -1007,15 +1014,17 @@ p4
 ## Change point color
 # 1. by default, it is assigned to the categories in an alphabetical order):
 p3 <- p2 + scale_color_manual(values = c("blue", "black", "red"))
-# 2. to automate a bit: ceate a named vector: the values are the colors to be used, the names are the categories they will be assigned to:
+# 2. to automate a bit: create a named vector: the values are the colors to be used, the names are the categories they will be assigned to:
 mycolors <- c("blue", "red", "black")
 names(mycolors) <- c("DOWN", "UP", "NO")
 p3 <- p2 + scale_colour_manual(values = mycolors)
 p3
-# label poitns:
+# label points:
 pericytes_het$delabel <- NA
 pericytes_het$delabel[pericytes_het$diffexpressed != "NO"] <- pericytes_het$gene[pericytes_het$diffexpressed != "NO"]
-ggplot(data = pericytes_het, aes(x = avg_log2FC, y = -log10(p_val), col = diffexpressed, label = delabel)) +
+ggplot(data = pericytes_het, 
+       aes(x = avg_log2FC, y = -log10(p_val), 
+           col = diffexpressed, label = delabel)) +
   geom_point() +
   geom_point() +
   theme_minimal()
