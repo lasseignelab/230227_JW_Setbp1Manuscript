@@ -1148,12 +1148,12 @@ write.csv(DEGs_kidneycells, file = here("results/ts_results/seurat/DEGs_kidneyce
 #### Heatmap of expression of regulators and targets of Setbp1 across cell types:
 Setbp1 target gene list was constructed in 'Setbp1_target_list_construction.Rmd' 
 ```{r}
-setbp1_genes <- read.csv(here("data/processed/setbp1_targets.csv"))
+setbp1_genes <- read.csv(here("results/seurat/setbp1_targets.csv"))
 setbp1_genes <- setbp1_genes[, -1]
 setbp1_genes <- append(setbp1_genes, "Setbp1")
 ```
 
-#generating seurat input for complex heatmap from DGE data
+# generating seurat input for complex heatmap from DGE data
 ```{r}
 # filter DEG list for just setbp1 targets
 kidney_subset <- DEGs_kidneycells[DEGs_kidneycells$gene %in% setbp1_genes, ]
