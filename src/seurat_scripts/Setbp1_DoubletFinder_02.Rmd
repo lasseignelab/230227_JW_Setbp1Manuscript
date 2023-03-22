@@ -132,9 +132,19 @@ split_sample$K6 <- no_doublets
 
 # Merge seurat object that has no doublets now:
 ```{r}
-kidney_seurat_filtered <- merge(x = split_sample$K1, y = c(split_sample$K2, split_sample$K3, split_sample$K4, split_sample$K5, split_sample$K6))
+kidney_seurat_filtered <- merge(
+  x = split_sample$K1,
+  y = c(
+    split_sample$K2, 
+    split_sample$K3, 
+    split_sample$K4, 
+    split_sample$K5, 
+    split_sample$K6
+  )
+)
 
-save(kidney_seurat_filtered, file = here("data/nodoublet_setbp1_kidney_seurat.Rdata"))
+save(kidney_seurat_filtered, 
+     file = here("data/nodoublet_setbp1_kidney_seurat.Rdata"))
 ```
 
 -------------------------------------------------------------------
@@ -210,9 +220,20 @@ split_sample$J15 <- no_doublets
 
 # Merge seurat object that has no doublets now:
 ```{r}
-cerebral_seurat_filtered <- merge(x = split_sample$J1, y = c(split_sample$J2, split_sample$J3, split_sample$J4, split_sample$J13, split_sample$J15))
+cerebral_seurat_filtered <- merge(
+  x = split_sample$J1, 
+  y = c(
+    split_sample$J2, 
+    split_sample$J3, 
+    split_sample$J4, 
+    split_sample$J13, 
+    split_sample$J15
+  )
+)
 
-save(cerebral_seurat_filtered, file = here("data/nodoublet_setbp1_cerebral_seurat.Rdata"))
+save(cerebral_seurat_filtered, 
+     file = here("data/nodoublet_setbp1_cerebral_seurat.Rdata")
+)
 ```
 
 ```{r}
