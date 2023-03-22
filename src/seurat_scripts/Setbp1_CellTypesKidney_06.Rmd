@@ -553,7 +553,7 @@ save(kidney_int_celltypes, file = here("data/kidney_integrated_celltypes.Rdata")
 ```{r plotting-UMAP-celltypes}
 p1 <- DimPlot(kidney_int_celltypes, reduction = "umap_harmony", group.by = "type", cols = c("control" = "#FE6100", "heterozygous" = "#FFB000")) + theme(text = element_text(size = 20), legend.title = element_text(face = "bold")) + labs(color = "Condition", title = NULL)
 p2 <- DimPlot(kidney_int_celltypes, reduction = "umap_harmony", group.by = "orig.ident")
-p3 <- DimPlot(kidney_int_celltypes, reduction = "umap_harmony", group.by = "cell_type", cols = c("B.lymphocytes" = "#FFBE1D", "CD.IC.typeA" = "#4E3801", "CD.IC.typeB" = "#EEDF37", "CD.PC" = "#F03F00", "DCT" = "#6D0404", "DLH" = "#AA6320", "endothelial" = "#CF9400", "fibroblasts" = "#FFC8C4", "LOH" = "#AA937E", "macrophages" = "#C70F0F", "PCT.S1" = "#A85A5A", "PCT.S2" = "#F8766D", "podocytes" = "#BD085E", "PST" = "#948802")) + theme(text = element_text(size = 20), legend.title = element_text(face = "bold")) + labs(color = "kidney cell type", title = NULL)
+p3 <- DimPlot(kidney_int_celltypes, reduction = "umap_harmony", group.by = "cell_type", cols = c("B.lymphocytes" = "#FFBE1D", "CD.IC.typeA" = "#4E3801", "CD.IC.typeB" = "#EEDF37", "CD.PC" = "#F03F00", "DCT" = "#6D0404", "DLH" = "#AA6320", "endothelial" = "#CF9400", "fibroblasts" = "#FFC8C4", "LOH" = "#AA937E", "macrophages" = "#C70F0F", "PCT.S1" = "#A85A5A", "podocytes" = "#BD085E", "PST" = "#948802", "pericytes" = "#FFE196")) + theme(text = element_text(size = 20), legend.title = element_text(face = "bold")) + labs(color = "kidney cell type", title = NULL)
 p0 <- DimPlot(kidney_int_celltypes, reduction = "umap_harmony", group.by = "RNA_snn_res.0.9", label = TRUE, repel = TRUE)
 
 
@@ -622,7 +622,7 @@ yy <- VlnPlot(kidney_int_celltypes,
   assay = "RNA",
   group.by = "cell_type",
   fill.by = "ident",
-  cols = c("B.lymphocytes" = "#FFBE1D", "CD.IC.typeA" = "#4E3801", "CD.IC.typeB" = "#EEDF37", "CD.PC" = "#F03F00", "DCT" = "#6D0404", "DLH" = "#AA6320", "endothelial" = "#CF9400", "fibroblasts" = "#FFC8C4", "LOH" = "#AA937E", "macrophages" = "#C70F0F", "PCT.S1" = "#A85A5A", "PCT.S2" = "#F8766D", "podocytes" = "#BD085E", "PST" = "#948802")
+  cols = c("B.lymphocytes" = "#FFBE1D", "CD.IC.typeA" = "#4E3801", "CD.IC.typeB" = "#EEDF37", "CD.PC" = "#F03F00", "DCT" = "#6D0404", "DLH" = "#AA6320", "endothelial" = "#CF9400", "fibroblasts" = "#FFC8C4", "LOH" = "#AA937E", "macrophages" = "#C70F0F", "PCT.S1" = "#A85A5A", "podocytes" = "#BD085E", "PST" = "#948802", "pericytes" = "#FFE196")
 ) +
   labs(fill = "Cell Type") +
   theme_bw() +
