@@ -335,7 +335,6 @@ save(cerebral_int, file = here("data/integrated_setbp1_cerebral.Rdata"))
 sessionInfo()
 ```
 
-
 ```{r}
 # run style
 style_file(here("src/seurat_scripts/Setbp1_Integration_03.Rmd"))
