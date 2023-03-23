@@ -56,11 +56,12 @@ VlnPlot(kidney_int_celltypes, features = "Setbp1", split.by = "type")
 #### split violin plotting of setbp1 across celltypes
 ```{r}
 # grabbing the Setbp1 expression data and moving from S4 to a dataframe
-setbp1_exp <- FetchData(kidney_int_celltypes, vars = c("Setbp1", "cell_type", "type"))
+setbp1_exp <- FetchData(kidney_int_celltypes, 
+                        vars = c("Setbp1", "cell_type", "type"))
 colnames(setbp1_exp) <- c("Expression", "cell_type", "type")
 
 png(
-  filename = here("results/figures/kidney_setbp1_UMAP.png"),
+  filename = here("results/figures/kidney_setbp1_splitviolin.png"),
   width = 1500,
   height = 1000
 )
@@ -75,7 +76,7 @@ dev.off()
 
 
 
-#### Calculating DGE by cell type: log2FC of 0.1 (previously ran with 0.25 and outputs are saved below)
+#### Calculating DGE by cell type: log2FC of 0.1
 
 ---B.lymphocytes---
 ```{r}
@@ -94,7 +95,9 @@ head(blymph_data, n = 5)
 
 ```{r}
 # plotting just the DEG from Het:
-blymph_het <- blymph_data[blymph_data$p_val < 0.5 & blymph_data$avg_log2FC > 0.1 | blymph_data$avg_log2FC < -0.1, ]
+blymph_het <- blymph_data[blymph_data$p_val < 0.5 & 
+                            blymph_data$avg_log2FC > 0.1 | 
+                            blymph_data$avg_log2FC < -0.1, ]
 blymph_het <- blymph_het[blymph_het$cluster == "heterozygous", ]
 
 p <- ggplot(data = blymph_het, aes(x = avg_log2FC, y = -log10(p_val))) +
@@ -103,14 +106,18 @@ p <- ggplot(data = blymph_het, aes(x = avg_log2FC, y = -log10(p_val))) +
 p2 <- p + geom_vline(xintercept = c(-0.1, 0.1), col = "red") +
   geom_hline(yintercept = -log10(0.05), col = "red")
 p2
+
 # add column to data to indicate if DE or not:
 blymph_het$diffexpressed <- "NO"
 # if log2Foldchange > 0.1 and pvalue < 0.05, set as "UP"
-blymph_het$diffexpressed[blymph_het$avg_log2FC > 0.1 & blymph_het$p_val < 0.05] <- "UP"
+blymph_het$diffexpressed[blymph_het$avg_log2FC > 0.1 & 
+                           blymph_het$p_val < 0.05] <- "UP"
 # if log2Foldchange < -0.1 and pvalue < 0.05, set as "DOWN"
-blymph_het$diffexpressed[blymph_het$avg_log2FC < -0.1 & blymph_het$p_val < 0.05] <- "DOWN"
+blymph_het$diffexpressed[blymph_het$avg_log2FC < -0.1 & 
+                           blymph_het$p_val < 0.05] <- "DOWN"
 # Re-plot but this time color the points with "diffexpressed"
-p <- ggplot(data = blymph_het, aes(x = avg_log2FC, y = -log10(p_val), col = diffexpressed)) +
+p <- ggplot(data = blymph_het, 
+            aes(x = avg_log2FC, y = -log10(p_val), col = diffexpressed)) +
   geom_point() +
   theme_minimal()
 # Add lines as before...
@@ -123,15 +130,17 @@ p4
 ## Change point color
 # 1. by default, it is assigned to the categories in an alphabetical order):
 p3 <- p2 + scale_color_manual(values = c("blue", "black", "red"))
-# 2. to automate a bit: ceate a named vector: the values are the colors to be used, the names are the categories they will be assigned to:
+# 2. to automate a bit: create a named vector: the values are the colors to be used, the names are the categories they will be assigned to:
 mycolors <- c("blue", "red", "black")
 names(mycolors) <- c("DOWN", "UP", "NO")
 p3 <- p2 + scale_colour_manual(values = mycolors)
 p3
-# label poitns:
+# label points:
 blymph_het$delabel <- NA
 blymph_het$delabel[blymph_het$diffexpressed != "NO"] <- blymph_het$gene[blymph_het$diffexpressed != "NO"]
-ggplot(data = blymph_het, aes(x = avg_log2FC, y = -log10(p_val), col = diffexpressed, label = delabel)) +
+ggplot(data = blymph_het, 
+       aes(x = avg_log2FC,y = -log10(p_val), 
+           col = diffexpressed, label = delabel)) +
   geom_point() +
   geom_point() +
   theme_minimal()
@@ -154,7 +163,9 @@ head(CDIC.A_data, n = 5)
 
 ```{r}
 # plotting just the DEG from Het:
-CDIC.A_het <- CDIC.A_data[CDIC.A_data$p_val < 0.5 & CDIC.A_data$avg_log2FC > 0.1 | CDIC.A_data$avg_log2FC < -0.1, ]
+CDIC.A_het <- CDIC.A_data[CDIC.A_data$p_val < 0.5 & 
+                            CDIC.A_data$avg_log2FC > 0.1 | 
+                            CDIC.A_data$avg_log2FC < -0.1, ]
 CDIC.A_het <- CDIC.A_het[CDIC.A_het$cluster == "heterozygous", ]
 
 p <- ggplot(data = CDIC.A_het, aes(x = avg_log2FC, y = -log10(p_val))) +
@@ -163,14 +174,18 @@ p <- ggplot(data = CDIC.A_het, aes(x = avg_log2FC, y = -log10(p_val))) +
 p2 <- p + geom_vline(xintercept = c(-0.1, 0.1), col = "red") +
   geom_hline(yintercept = -log10(0.05), col = "red")
 p2
+
 # add column to data to indicate if DE or not:
 CDIC.A_het$diffexpressed <- "NO"
 # if log2Foldchange > 0.1 and pvalue < 0.05, set as "UP"
-CDIC.A_het$diffexpressed[CDIC.A_het$avg_log2FC > 0.1 & CDIC.A_het$p_val < 0.05] <- "UP"
+CDIC.A_het$diffexpressed[CDIC.A_het$avg_log2FC > 0.1 & 
+                           CDIC.A_het$p_val < 0.05] <- "UP"
 # if log2Foldchange < -0.1 and pvalue < 0.05, set as "DOWN"
-CDIC.A_het$diffexpressed[CDIC.A_het$avg_log2FC < -0.1 & CDIC.A_het$p_val < 0.05] <- "DOWN"
+CDIC.A_het$diffexpressed[CDIC.A_het$avg_log2FC < -0.1 & 
+                           CDIC.A_het$p_val < 0.05] <- "DOWN"
 # Re-plot but this time color the points with "diffexpressed"
-p <- ggplot(data = CDIC.A_het, aes(x = avg_log2FC, y = -log10(p_val), col = diffexpressed)) +
+p <- ggplot(data = CDIC.A_het, 
+            aes(x = avg_log2FC, y = -log10(p_val), col = diffexpressed)) +
   geom_point() +
   theme_minimal()
 # Add lines as before...
@@ -183,15 +198,17 @@ p4
 ## Change point color
 # 1. by default, it is assigned to the categories in an alphabetical order):
 p3 <- p2 + scale_color_manual(values = c("blue", "black", "red"))
-# 2. to automate a bit: ceate a named vector: the values are the colors to be used, the names are the categories they will be assigned to:
+# 2. to automate a bit: create a named vector: the values are the colors to be used, the names are the categories they will be assigned to:
 mycolors <- c("blue", "red", "black")
 names(mycolors) <- c("DOWN", "UP", "NO")
 p3 <- p2 + scale_colour_manual(values = mycolors)
 p3
-# label poitns:
+# label points:
 CDIC.A_het$delabel <- NA
 CDIC.A_het$delabel[CDIC.A_het$diffexpressed != "NO"] <- CDIC.A_het$gene[CDIC.A_het$diffexpressed != "NO"]
-ggplot(data = CDIC.A_het, aes(x = avg_log2FC, y = -log10(p_val), col = diffexpressed, label = delabel)) +
+ggplot(data = CDIC.A_het, 
+       aes(x = avg_log2FC, y = -log10(p_val), 
+           col = diffexpressed, label = delabel)) +
   geom_point() +
   geom_point() +
   theme_minimal()
@@ -214,22 +231,29 @@ head(CDIC.B_data, n = 5)
 
 
 ```{r}
-CDIC.B_het <- CDIC.B_data[CDIC.B_data$p_val < 0.5 & CDIC.B_data$avg_log2FC > 0.1 | CDIC.B_data$avg_log2FC < -0.1, ]
+CDIC.B_het <- CDIC.B_data[CDIC.B_data$p_val < 0.5 & 
+                            CDIC.B_data$avg_log2FC > 0.1 | 
+                            CDIC.B_data$avg_log2FC < -0.1, ]
 CDIC.B_het <- CDIC.B_het[CDIC.B_het$cluster == "heterozygous", ]
 
 p <- ggplot(data = CDIC.B_het, aes(x = avg_log2FC, y = -log10(p_val))) +
   geom_point() +
   theme_minimal()
-p2 <- p + geom_vline(xintercept = c(-0.1, 0.1), col = "red") + geom_hline(yintercept = -log10(0.05), col = "red")
+p2 <- p + geom_vline(xintercept = c(-0.1, 0.1), col = "red") + 
+  geom_hline(yintercept = -log10(0.05), col = "red")
 p2
+
 # add column to data to indicate if DE or not:
 CDIC.B_het$diffexpressed <- "NO"
 # if log2Foldchange > 0.1 and pvalue < 0.05, set as "UP"
-CDIC.B_het$diffexpressed[CDIC.B_het$avg_log2FC > 0.1 & CDIC.B_het$p_val < 0.05] <- "UP"
+CDIC.B_het$diffexpressed[CDIC.B_het$avg_log2FC > 0.1 & 
+                           CDIC.B_het$p_val < 0.05] <- "UP"
 # if log2Foldchange < -0.1 and pvalue < 0.05, set as "DOWN"
-CDIC.B_het$diffexpressed[CDIC.B_het$avg_log2FC < -0.1 & CDIC.B_het$p_val < 0.05] <- "DOWN"
+CDIC.B_het$diffexpressed[CDIC.B_het$avg_log2FC < -0.1 & 
+                           CDIC.B_het$p_val < 0.05] <- "DOWN"
 # Re-plot but this time color the points with "diffexpressed"
-p <- ggplot(data = CDIC.B_het, aes(x = avg_log2FC, y = -log10(p_val), col = diffexpressed)) +
+p <- ggplot(data = CDIC.B_het, 
+            aes(x = avg_log2FC, y = -log10(p_val), col = diffexpressed)) +
   geom_point() +
   theme_minimal()
 # Add lines as before...
@@ -242,15 +266,17 @@ p4
 ## Change point color
 # 1. by default, it is assigned to the categories in an alphabetical order):
 p3 <- p2 + scale_color_manual(values = c("blue", "black", "red"))
-# 2. to automate a bit: ceate a named vector: the values are the colors to be used, the names are the categories they will be assigned to:
+# 2. to automate a bit: create a named vector: the values are the colors to be used, the names are the categories they will be assigned to:
 mycolors <- c("blue", "red", "black")
 names(mycolors) <- c("DOWN", "UP", "NO")
 p3 <- p2 + scale_colour_manual(values = mycolors)
 p3
-# label poitns:
+# label points:
 CDIC.B_het$delabel <- NA
 CDIC.B_het$delabel[CDIC.B_het$diffexpressed != "NO"] <- CDIC.B_het$gene[CDIC.B_het$diffexpressed != "NO"]
-ggplot(data = CDIC.B_het, aes(x = avg_log2FC, y = -log10(p_val), col = diffexpressed, label = delabel)) +
+ggplot(data = CDIC.B_het, 
+       aes(x = avg_log2FC, y = -log10(p_val), 
+           col = diffexpressed, label = delabel)) +
   geom_point() +
   geom_point() +
   theme_minimal()
@@ -274,23 +300,29 @@ head(CD.PC_data, n = 5)
 
 
 ```{r}
-CD.PC_het <- CD.PC_data[CD.PC_data$p_val < 0.5 & CD.PC_data$avg_log2FC > 0.1 | CD.PC_data$avg_log2FC < -0.1, ]
+CD.PC_het <- CD.PC_data[CD.PC_data$p_val < 0.5 & 
+                          CD.PC_data$avg_log2FC > 0.1 | 
+                          CD.PC_data$avg_log2FC < -0.1, ]
 CD.PC_het <- CD.PC_het[CD.PC_het$cluster == "heterozygous", ]
-
 
 p <- ggplot(data = CD.PC_het, aes(x = avg_log2FC, y = -log10(p_val))) +
   geom_point() +
   theme_minimal()
-p2 <- p + geom_vline(xintercept = c(-0.1, 0.1), col = "red") + geom_hline(yintercept = -log10(0.05), col = "red")
+p2 <- p + geom_vline(xintercept = c(-0.1, 0.1), col = "red") + 
+  geom_hline(yintercept = -log10(0.05), col = "red")
 p2
+
 # add column to data to indicate if DE or not:
 CD.PC_het$diffexpressed <- "NO"
 # if log2Foldchange > 0.1 and pvalue < 0.05, set as "UP"
-CD.PC_het$diffexpressed[CD.PC_het$avg_log2FC > 0.1 & CD.PC_het$p_val < 0.05] <- "UP"
+CD.PC_het$diffexpressed[CD.PC_het$avg_log2FC > 0.1 & 
+                          CD.PC_het$p_val < 0.05] <- "UP"
 # if log2Foldchange < -0.1 and pvalue < 0.05, set as "DOWN"
-CD.PC_het$diffexpressed[CD.PC_het$avg_log2FC < -0.1 & CD.PC_het$p_val < 0.05] <- "DOWN"
+CD.PC_het$diffexpressed[CD.PC_het$avg_log2FC < -0.1 & 
+                          CD.PC_het$p_val < 0.05] <- "DOWN"
 # Re-plot but this time color the points with "diffexpressed"
-p <- ggplot(data = CD.PC_het, aes(x = avg_log2FC, y = -log10(p_val), col = diffexpressed)) +
+p <- ggplot(data = CD.PC_het, 
+            aes(x = avg_log2FC, y = -log10(p_val), col = diffexpressed)) +
   geom_point() +
   theme_minimal()
 # Add lines as before...
@@ -303,15 +335,17 @@ p4
 ## Change point color
 # 1. by default, it is assigned to the categories in an alphabetical order):
 p3 <- p2 + scale_color_manual(values = c("blue", "black", "red"))
-# 2. to automate a bit: ceate a named vector: the values are the colors to be used, the names are the categories they will be assigned to:
+# 2. to automate a bit: create a named vector: the values are the colors to be used, the names are the categories they will be assigned to:
 mycolors <- c("blue", "red", "black")
 names(mycolors) <- c("DOWN", "UP", "NO")
 p3 <- p2 + scale_colour_manual(values = mycolors)
 p3
-# label poitns:
+# label points:
 CD.PC_het$delabel <- NA
 CD.PC_het$delabel[CD.PC_het$diffexpressed != "NO"] <- CD.PC_het$gene[CD.PC_het$diffexpressed != "NO"]
-ggplot(data = CD.PC_het, aes(x = avg_log2FC, y = -log10(p_val), col = diffexpressed, label = delabel)) +
+ggplot(data = CD.PC_het, 
+       aes(x = avg_log2FC, y = -log10(p_val), 
+           col = diffexpressed, label = delabel)) +
   geom_point() +
   geom_point() +
   theme_minimal()
@@ -336,14 +370,17 @@ head(DCT_data, n = 5)
 
 ```{r}
 # plotting just the DEG from Het:
-DCT_het <- DCT_data[DCT_data$p_val < 0.5 & DCT_data$avg_log2FC > 0.1 | DCT_data$avg_log2FC < -0.1, ]
+DCT_het <- DCT_data[DCT_data$p_val < 0.5 & 
+                      DCT_data$avg_log2FC > 0.1 | DCT_data$avg_log2FC < -0.1, ]
 DCT_het <- DCT_het[DCT_het$cluster == "heterozygous", ]
 
 p <- ggplot(data = DCT_het, aes(x = avg_log2FC, y = -log10(p_val))) +
   geom_point() +
   theme_minimal()
-p2 <- p + geom_vline(xintercept = c(-0.1, 0.1), col = "red") + geom_hline(yintercept = -log10(0.05), col = "red")
+p2 <- p + geom_vline(xintercept = c(-0.1, 0.1), col = "red") + 
+  geom_hline(yintercept = -log10(0.05), col = "red")
 p2
+
 # add column to data to indicate if DE or not:
 DCT_het$diffexpressed <- "NO"
 # if log2Foldchange > 0.1 and pvalue < 0.05, set as "UP"
@@ -351,7 +388,8 @@ DCT_het$diffexpressed[DCT_het$avg_log2FC > 0.1 & DCT_het$p_val < 0.05] <- "UP"
 # if log2Foldchange < -0.1 and pvalue < 0.05, set as "DOWN"
 DCT_het$diffexpressed[DCT_het$avg_log2FC < -0.1 & DCT_het$p_val < 0.05] <- "DOWN"
 # Re-plot but this time color the points with "diffexpressed"
-p <- ggplot(data = DCT_het, aes(x = avg_log2FC, y = -log10(p_val), col = diffexpressed)) +
+p <- ggplot(data = DCT_het, 
+            aes(x = avg_log2FC, y = -log10(p_val), col = diffexpressed)) +
   geom_point() +
   theme_minimal()
 # Add lines as before...
@@ -364,12 +402,12 @@ p4
 ## Change point color
 # 1. by default, it is assigned to the categories in an alphabetical order):
 p3 <- p2 + scale_color_manual(values = c("blue", "black", "red"))
-# 2. to automate a bit: ceate a named vector: the values are the colors to be used, the names are the categories they will be assigned to:
+# 2. to automate a bit: create a named vector: the values are the colors to be used, the names are the categories they will be assigned to:
 mycolors <- c("blue", "red", "black")
 names(mycolors) <- c("DOWN", "UP", "NO")
 p3 <- p2 + scale_colour_manual(values = mycolors)
 p3
-# label poitns:
+# label points:
 DCT_het$delabel <- NA
 DCT_het$delabel[DCT_het$diffexpressed != "NO"] <- DCT_het$gene[DCT_het$diffexpressed != "NO"]
 ggplot(data = DCT_het, aes(x = avg_log2FC, y = -log10(p_val), col = diffexpressed, label = delabel)) +
@@ -396,14 +434,17 @@ head(DLH_data, n = 5)
 
 ```{r}
 # plotting just the DEG from Het:
-DLH_het <- DLH_data[DLH_data$p_val < 0.5 & DLH_data$avg_log2FC > 0.1 | DLH_data$avg_log2FC < -0.1, ]
+DLH_het <- DLH_data[DLH_data$p_val < 0.5 & 
+                      DLH_data$avg_log2FC > 0.1 | DLH_data$avg_log2FC < -0.1, ]
 DLH_het <- DLH_het[DLH_het$cluster == "heterozygous", ]
 
 p <- ggplot(data = DLH_het, aes(x = avg_log2FC, y = -log10(p_val))) +
   geom_point() +
   theme_minimal()
-p2 <- p + geom_vline(xintercept = c(-0.1, 0.1), col = "red") + geom_hline(yintercept = -log10(0.05), col = "red")
+p2 <- p + geom_vline(xintercept = c(-0.1, 0.1), col = "red") + 
+  geom_hline(yintercept = -log10(0.05), col = "red")
 p2
+
 # add column to data to indicate if DE or not:
 DLH_het$diffexpressed <- "NO"
 # if log2Foldchange > 0.1 and pvalue < 0.05, set as "UP"
@@ -411,7 +452,8 @@ DLH_het$diffexpressed[DLH_het$avg_log2FC > 0.1 & DLH_het$p_val < 0.05] <- "UP"
 # if log2Foldchange < -0.1 and pvalue < 0.05, set as "DOWN"
 DLH_het$diffexpressed[DLH_het$avg_log2FC < -0.1 & DLH_het$p_val < 0.05] <- "DOWN"
 # Re-plot but this time color the points with "diffexpressed"
-p <- ggplot(data = DLH_het, aes(x = avg_log2FC, y = -log10(p_val), col = diffexpressed)) +
+p <- ggplot(data = DLH_het, 
+            aes(x = avg_log2FC, y = -log10(p_val), col = diffexpressed)) +
   geom_point() +
   theme_minimal()
 # Add lines as before...
@@ -424,15 +466,16 @@ p4
 ## Change point color
 # 1. by default, it is assigned to the categories in an alphabetical order):
 p3 <- p2 + scale_color_manual(values = c("blue", "black", "red"))
-# 2. to automate a bit: ceate a named vector: the values are the colors to be used, the names are the categories they will be assigned to:
+# 2. to automate a bit: create a named vector: the values are the colors to be used, the names are the categories they will be assigned to:
 mycolors <- c("blue", "red", "black")
 names(mycolors) <- c("DOWN", "UP", "NO")
 p3 <- p2 + scale_colour_manual(values = mycolors)
 p3
-# label poitns:
+# label points:
 DLH_het$delabel <- NA
 DLH_het$delabel[DLH_het$diffexpressed != "NO"] <- DLH_het$gene[DLH_het$diffexpressed != "NO"]
-ggplot(data = DLH_het, aes(x = avg_log2FC, y = -log10(p_val), col = diffexpressed, label = delabel)) +
+ggplot(data = DLH_het, aes(x = avg_log2FC, y = -log10(p_val), 
+                           col = diffexpressed, label = delabel)) +
   geom_point() +
   geom_point() +
   theme_minimal()
@@ -457,22 +500,28 @@ head(endo_data, n = 5)
 
 ```{r}
 # plotting just the DEG from Het:
-endo_het <- endo_data[endo_data$p_val < 0.5 & endo_data$avg_log2FC > 0.1 | endo_data$avg_log2FC < -0.1, ]
+endo_het <- endo_data[endo_data$p_val < 0.5 & 
+                        endo_data$avg_log2FC > 0.1 | endo_data$avg_log2FC < -0.1, ]
 endo_het <- endo_het[endo_het$cluster == "heterozygous", ]
 
 p <- ggplot(data = endo_het, aes(x = avg_log2FC, y = -log10(p_val))) +
   geom_point() +
   theme_minimal()
-p2 <- p + geom_vline(xintercept = c(-0.1, 0.1), col = "red") + geom_hline(yintercept = -log10(0.05), col = "red")
+p2 <- p + geom_vline(xintercept = c(-0.1, 0.1), col = "red") + 
+  geom_hline(yintercept = -log10(0.05), col = "red")
 p2
+
 # add column to data to indicate if DE or not:
 endo_het$diffexpressed <- "NO"
 # if log2Foldchange > 0.1 and pvalue < 0.05, set as "UP"
-endo_het$diffexpressed[endo_het$avg_log2FC > 0.1 & endo_het$p_val < 0.05] <- "UP"
+endo_het$diffexpressed[endo_het$avg_log2FC > 0.1 & 
+                         endo_het$p_val < 0.05] <- "UP"
 # if log2Foldchange < -0.1 and pvalue < 0.05, set as "DOWN"
-endo_het$diffexpressed[endo_het$avg_log2FC < -0.1 & endo_het$p_val < 0.05] <- "DOWN"
+endo_het$diffexpressed[endo_het$avg_log2FC < -0.1 & 
+                         endo_het$p_val < 0.05] <- "DOWN"
 # Re-plot but this time color the points with "diffexpressed"
-p <- ggplot(data = endo_het, aes(x = avg_log2FC, y = -log10(p_val), col = diffexpressed)) +
+p <- ggplot(data = endo_het, 
+            aes(x = avg_log2FC, y = -log10(p_val), col = diffexpressed)) +
   geom_point() +
   theme_minimal()
 # Add lines as before...
@@ -485,15 +534,17 @@ p4
 ## Change point color
 # 1. by default, it is assigned to the categories in an alphabetical order):
 p3 <- p2 + scale_color_manual(values = c("blue", "black", "red"))
-# 2. to automate a bit: ceate a named vector: the values are the colors to be used, the names are the categories they will be assigned to:
+# 2. to automate a bit: create a named vector: the values are the colors to be used, the names are the categories they will be assigned to:
 mycolors <- c("blue", "red", "black")
 names(mycolors) <- c("DOWN", "UP", "NO")
 p3 <- p2 + scale_colour_manual(values = mycolors)
 p3
-# label poitns:
+# label points:
 endo_het$delabel <- NA
 endo_het$delabel[endo_het$diffexpressed != "NO"] <- endo_het$gene[endo_het$diffexpressed != "NO"]
-ggplot(data = endo_het, aes(x = avg_log2FC, y = -log10(p_val), col = diffexpressed, label = delabel)) +
+ggplot(data = endo_het, 
+       aes(x = avg_log2FC, y = -log10(p_val), 
+           col = diffexpressed, label = delabel)) +
   geom_point() +
   geom_point() +
   theme_minimal()
@@ -518,22 +569,29 @@ head(fibro_data, n = 5)
 
 ```{r}
 # plotting just the DEG from Het:
-fibro_het <- fibro_data[fibro_data$p_val < 0.5 & fibro_data$avg_log2FC > 0.1 | fibro_data$avg_log2FC < -0.1, ]
+fibro_het <- fibro_data[fibro_data$p_val < 0.5 & 
+                          fibro_data$avg_log2FC > 0.1 | 
+                          fibro_data$avg_log2FC < -0.1, ]
 fibro_het <- fibro_het[fibro_het$cluster == "heterozygous", ]
 
 p <- ggplot(data = fibro_het, aes(x = avg_log2FC, y = -log10(p_val))) +
   geom_point() +
   theme_minimal()
-p2 <- p + geom_vline(xintercept = c(-0.1, 0.1), col = "red") + geom_hline(yintercept = -log10(0.05), col = "red")
+p2 <- p + geom_vline(xintercept = c(-0.1, 0.1), col = "red") + 
+  geom_hline(yintercept = -log10(0.05), col = "red")
 p2
+
 # add column to data to indicate if DE or not:
 fibro_het$diffexpressed <- "NO"
 # if log2Foldchange > 0.1 and pvalue < 0.05, set as "UP"
-fibro_het$diffexpressed[fibro_het$avg_log2FC > 0.1 & fibro_het$p_val < 0.05] <- "UP"
+fibro_het$diffexpressed[fibro_het$avg_log2FC > 0.1 & 
+                          fibro_het$p_val < 0.05] <- "UP"
 # if log2Foldchange < -0.1 and pvalue < 0.05, set as "DOWN"
-fibro_het$diffexpressed[fibro_het$avg_log2FC < -0.1 & fibro_het$p_val < 0.05] <- "DOWN"
+fibro_het$diffexpressed[fibro_het$avg_log2FC < -0.1 & 
+                          fibro_het$p_val < 0.05] <- "DOWN"
 # Re-plot but this time color the points with "diffexpressed"
-p <- ggplot(data = fibro_het, aes(x = avg_log2FC, y = -log10(p_val), col = diffexpressed)) +
+p <- ggplot(data = fibro_het, 
+            aes(x = avg_log2FC, y = -log10(p_val), col = diffexpressed)) +
   geom_point() +
   theme_minimal()
 # Add lines as before...
@@ -546,15 +604,17 @@ p4
 ## Change point color
 # 1. by default, it is assigned to the categories in an alphabetical order):
 p3 <- p2 + scale_color_manual(values = c("blue", "black", "red"))
-# 2. to automate a bit: ceate a named vector: the values are the colors to be used, the names are the categories they will be assigned to:
+# 2. to automate a bit: create a named vector: the values are the colors to be used, the names are the categories they will be assigned to:
 mycolors <- c("blue", "red", "black")
 names(mycolors) <- c("DOWN", "UP", "NO")
 p3 <- p2 + scale_colour_manual(values = mycolors)
 p3
-# label poitns:
+# label points:
 fibro_het$delabel <- NA
 fibro_het$delabel[fibro_het$diffexpressed != "NO"] <- fibro_het$gene[fibro_het$diffexpressed != "NO"]
-ggplot(data = fibro_het, aes(x = avg_log2FC, y = -log10(p_val), col = diffexpressed, label = delabel)) +
+ggplot(data = fibro_het, 
+       aes(x = avg_log2FC, y = -log10(p_val), 
+           col = diffexpressed, label = delabel)) +
   geom_point() +
   geom_point() +
   theme_minimal()
@@ -578,14 +638,17 @@ head(LOH_data, n = 5)
 
 ```{r}
 # plotting just the DEG from Het:
-LOH_het <- LOH_data[LOH_data$p_val < 0.5 & LOH_data$avg_log2FC > 0.1 | LOH_data$avg_log2FC < -0.1, ]
+LOH_het <- LOH_data[LOH_data$p_val < 0.5 & 
+                      LOH_data$avg_log2FC > 0.1 | LOH_data$avg_log2FC < -0.1, ]
 LOH_het <- LOH_het[LOH_het$cluster == "heterozygous", ]
 
 p <- ggplot(data = LOH_het, aes(x = avg_log2FC, y = -log10(p_val))) +
   geom_point() +
   theme_minimal()
-p2 <- p + geom_vline(xintercept = c(-0.1, 0.1), col = "red") + geom_hline(yintercept = -log10(0.05), col = "red")
+p2 <- p + geom_vline(xintercept = c(-0.1, 0.1), col = "red") + 
+  geom_hline(yintercept = -log10(0.05), col = "red")
 p2
+
 # add column to data to indicate if DE or not:
 LOH_het$diffexpressed <- "NO"
 # if log2Foldchange > 0.1 and pvalue < 0.05, set as "UP"
@@ -593,7 +656,8 @@ LOH_het$diffexpressed[LOH_het$avg_log2FC > 0.1 & LOH_het$p_val < 0.05] <- "UP"
 # if log2Foldchange < -0.1 and pvalue < 0.05, set as "DOWN"
 LOH_het$diffexpressed[LOH_het$avg_log2FC < -0.1 & LOH_het$p_val < 0.05] <- "DOWN"
 # Re-plot but this time color the points with "diffexpressed"
-p <- ggplot(data = LOH_het, aes(x = avg_log2FC, y = -log10(p_val), col = diffexpressed)) +
+p <- ggplot(data = LOH_het, 
+            aes(x = avg_log2FC, y = -log10(p_val), col = diffexpressed)) +
   geom_point() +
   theme_minimal()
 # Add lines as before...
@@ -606,15 +670,17 @@ p4
 ## Change point color
 # 1. by default, it is assigned to the categories in an alphabetical order):
 p3 <- p2 + scale_color_manual(values = c("blue", "black", "red"))
-# 2. to automate a bit: ceate a named vector: the values are the colors to be used, the names are the categories they will be assigned to:
+# 2. to automate a bit: create a named vector: the values are the colors to be used, the names are the categories they will be assigned to:
 mycolors <- c("blue", "red", "black")
 names(mycolors) <- c("DOWN", "UP", "NO")
 p3 <- p2 + scale_colour_manual(values = mycolors)
 p3
-# label poitns:
+# label points:
 LOH_het$delabel <- NA
 LOH_het$delabel[LOH_het$diffexpressed != "NO"] <- LOH_het$gene[LOH_het$diffexpressed != "NO"]
-ggplot(data = LOH_het, aes(x = avg_log2FC, y = -log10(p_val), col = diffexpressed, label = delabel)) +
+ggplot(data = LOH_het, 
+       aes(x = avg_log2FC, y = -log10(p_val), 
+           col = diffexpressed, label = delabel)) +
   geom_point() +
   geom_point() +
   theme_minimal()
@@ -638,22 +704,29 @@ head(macro_data, n = 5)
 
 ```{r}
 # plotting just the DEG from Het:
-macro_het <- macro_data[macro_data$p_val < 0.5 & macro_data$avg_log2FC > 0.1 | macro_data$avg_log2FC < -0.1, ]
+macro_het <- macro_data[macro_data$p_val < 0.5 & 
+                          macro_data$avg_log2FC > 0.1 | 
+                          macro_data$avg_log2FC < -0.1, ]
 macro_het <- macro_het[macro_het$cluster == "heterozygous", ]
 
 p <- ggplot(data = macro_het, aes(x = avg_log2FC, y = -log10(p_val))) +
   geom_point() +
   theme_minimal()
-p2 <- p + geom_vline(xintercept = c(-0.1, 0.1), col = "red") + geom_hline(yintercept = -log10(0.05), col = "red")
+p2 <- p + geom_vline(xintercept = c(-0.1, 0.1), col = "red") + 
+  geom_hline(yintercept = -log10(0.05), col = "red")
 p2
+
 # add column to data to indicate if DE or not:
 macro_het$diffexpressed <- "NO"
 # if log2Foldchange > 0.1 and pvalue < 0.05, set as "UP"
-macro_het$diffexpressed[macro_het$avg_log2FC > 0.1 & macro_het$p_val < 0.05] <- "UP"
+macro_het$diffexpressed[macro_het$avg_log2FC > 0.1 & 
+                          macro_het$p_val < 0.05] <- "UP"
 # if log2Foldchange < -0.1 and pvalue < 0.05, set as "DOWN"
-macro_het$diffexpressed[macro_het$avg_log2FC < -0.1 & macro_het$p_val < 0.05] <- "DOWN"
+macro_het$diffexpressed[macro_het$avg_log2FC < -0.1 & 
+                          macro_het$p_val < 0.05] <- "DOWN"
 # Re-plot but this time color the points with "diffexpressed"
-p <- ggplot(data = macro_het, aes(x = avg_log2FC, y = -log10(p_val), col = diffexpressed)) +
+p <- ggplot(data = macro_het, 
+            aes(x = avg_log2FC, y = -log10(p_val), col = diffexpressed)) +
   geom_point() +
   theme_minimal()
 # Add lines as before...
@@ -666,15 +739,17 @@ p4
 ## Change point color
 # 1. by default, it is assigned to the categories in an alphabetical order):
 p3 <- p2 + scale_color_manual(values = c("blue", "black", "red"))
-# 2. to automate a bit: ceate a named vector: the values are the colors to be used, the names are the categories they will be assigned to:
+# 2. to automate a bit: create a named vector: the values are the colors to be used, the names are the categories they will be assigned to:
 mycolors <- c("blue", "red", "black")
 names(mycolors) <- c("DOWN", "UP", "NO")
 p3 <- p2 + scale_colour_manual(values = mycolors)
 p3
-# label poitns:
+# label points:
 macro_het$delabel <- NA
 macro_het$delabel[macro_het$diffexpressed != "NO"] <- macro_het$gene[macro_het$diffexpressed != "NO"]
-ggplot(data = macro_het, aes(x = avg_log2FC, y = -log10(p_val), col = diffexpressed, label = delabel)) +
+ggplot(data = macro_het, 
+       aes(x = avg_log2FC, y = -log10(p_val), 
+           col = diffexpressed, label = delabel)) +
   geom_point() +
   geom_point() +
   theme_minimal()
@@ -699,22 +774,29 @@ head(PCT.S1_data, n = 5)
 
 ```{r}
 # plotting just the DEG from Het:
-PCT.S1_het <- PCT.S1_data[PCT.S1_data$p_val < 0.5 & PCT.S1_data$avg_log2FC > 0.1 | PCT.S1_data$avg_log2FC < -0.1, ]
+PCT.S1_het <- PCT.S1_data[PCT.S1_data$p_val < 0.5 & 
+                            PCT.S1_data$avg_log2FC > 0.1 | 
+                            PCT.S1_data$avg_log2FC < -0.1, ]
 PCT.S1_het <- PCT.S1_het[PCT.S1_het$cluster == "heterozygous", ]
 
 p <- ggplot(data = PCT.S1_het, aes(x = avg_log2FC, y = -log10(p_val))) +
   geom_point() +
   theme_minimal()
-p2 <- p + geom_vline(xintercept = c(-0.1, 0.1), col = "red") + geom_hline(yintercept = -log10(0.05), col = "red")
+p2 <- p + geom_vline(xintercept = c(-0.1, 0.1), col = "red") + 
+  geom_hline(yintercept = -log10(0.05), col = "red")
 p2
+
 # add column to data to indicate if DE or not:
 PCT.S1_het$diffexpressed <- "NO"
 # if log2Foldchange > 0.1 and pvalue < 0.05, set as "UP"
-PCT.S1_het$diffexpressed[PCT.S1_het$avg_log2FC > 0.1 & PCT.S1_het$p_val < 0.05] <- "UP"
+PCT.S1_het$diffexpressed[PCT.S1_het$avg_log2FC > 0.1 & 
+                           PCT.S1_het$p_val < 0.05] <- "UP"
 # if log2Foldchange < -0.1 and pvalue < 0.05, set as "DOWN"
-PCT.S1_het$diffexpressed[PCT.S1_het$avg_log2FC < -0.1 & PCT.S1_het$p_val < 0.05] <- "DOWN"
+PCT.S1_het$diffexpressed[PCT.S1_het$avg_log2FC < -0.1 & 
+                           PCT.S1_het$p_val < 0.05] <- "DOWN"
 # Re-plot but this time color the points with "diffexpressed"
-p <- ggplot(data = PCT.S1_het, aes(x = avg_log2FC, y = -log10(p_val), col = diffexpressed)) +
+p <- ggplot(data = PCT.S1_het, 
+            aes(x = avg_log2FC, y = -log10(p_val), col = diffexpressed)) +
   geom_point() +
   theme_minimal()
 # Add lines as before...
@@ -727,15 +809,17 @@ p4
 ## Change point color
 # 1. by default, it is assigned to the categories in an alphabetical order):
 p3 <- p2 + scale_color_manual(values = c("blue", "black", "red"))
-# 2. to automate a bit: ceate a named vector: the values are the colors to be used, the names are the categories they will be assigned to:
+# 2. to automate a bit: create a named vector: the values are the colors to be used, the names are the categories they will be assigned to:
 mycolors <- c("blue", "red", "black")
 names(mycolors) <- c("DOWN", "UP", "NO")
 p3 <- p2 + scale_colour_manual(values = mycolors)
 p3
-# label poitns:
+# label points:
 PCT.S1_het$delabel <- NA
 PCT.S1_het$delabel[PCT.S1_het$diffexpressed != "NO"] <- PCT.S1_het$gene[PCT.S1_het$diffexpressed != "NO"]
-ggplot(data = PCT.S1_het, aes(x = avg_log2FC, y = -log10(p_val), col = diffexpressed, label = delabel)) +
+ggplot(data = PCT.S1_het, 
+       aes(x = avg_log2FC, y = -log10(p_val), 
+           col = diffexpressed, label = delabel)) +
   geom_point() +
   geom_point() +
   theme_minimal()
@@ -759,22 +843,29 @@ head(podo_data, n = 5)
 
 ```{r}
 # plotting just the DEG from Het:
-podo_het <- podo_data[podo_data$p_val < 0.5 & podo_data$avg_log2FC > 0.1 | podo_data$avg_log2FC < -0.1, ]
+podo_het <- podo_data[podo_data$p_val < 0.5 & 
+                        podo_data$avg_log2FC > 0.1 | 
+                        podo_data$avg_log2FC < -0.1, ]
 podo_het <- podo_het[podo_het$cluster == "heterozygous", ]
 
 p <- ggplot(data = podo_het, aes(x = avg_log2FC, y = -log10(p_val))) +
   geom_point() +
   theme_minimal()
-p2 <- p + geom_vline(xintercept = c(-0.1, 0.1), col = "red") + geom_hline(yintercept = -log10(0.05), col = "red")
+p2 <- p + geom_vline(xintercept = c(-0.1, 0.1), col = "red") + 
+  geom_hline(yintercept = -log10(0.05), col = "red")
 p2
+
 # add column to data to indicate if DE or not:
 podo_het$diffexpressed <- "NO"
 # if log2Foldchange > 0.1 and pvalue < 0.05, set as "UP"
-podo_het$diffexpressed[podo_het$avg_log2FC > 0.1 & podo_het$p_val < 0.05] <- "UP"
+podo_het$diffexpressed[podo_het$avg_log2FC > 0.1 & 
+                         podo_het$p_val < 0.05] <- "UP"
 # if log2Foldchange < -0.1 and pvalue < 0.05, set as "DOWN"
-podo_het$diffexpressed[podo_het$avg_log2FC < -0.1 & podo_het$p_val < 0.05] <- "DOWN"
+podo_het$diffexpressed[podo_het$avg_log2FC < -0.1 & 
+                         podo_het$p_val < 0.05] <- "DOWN"
 # Re-plot but this time color the points with "diffexpressed"
-p <- ggplot(data = podo_het, aes(x = avg_log2FC, y = -log10(p_val), col = diffexpressed)) +
+p <- ggplot(data = podo_het, 
+            aes(x = avg_log2FC, y = -log10(p_val), col = diffexpressed)) +
   geom_point() +
   theme_minimal()
 # Add lines as before...
@@ -787,15 +878,17 @@ p4
 ## Change point color
 # 1. by default, it is assigned to the categories in an alphabetical order):
 p3 <- p2 + scale_color_manual(values = c("blue", "black", "red"))
-# 2. to automate a bit: ceate a named vector: the values are the colors to be used, the names are the categories they will be assigned to:
+# 2. to automate a bit: create a named vector: the values are the colors to be used, the names are the categories they will be assigned to:
 mycolors <- c("blue", "red", "black")
 names(mycolors) <- c("DOWN", "UP", "NO")
 p3 <- p2 + scale_colour_manual(values = mycolors)
 p3
-# label poitns:
+# label points:
 podo_het$delabel <- NA
 podo_het$delabel[podo_het$diffexpressed != "NO"] <- podo_het$gene[podo_het$diffexpressed != "NO"]
-ggplot(data = podo_het, aes(x = avg_log2FC, y = -log10(p_val), col = diffexpressed, label = delabel)) +
+ggplot(data = podo_het, 
+       aes(x = avg_log2FC, y = -log10(p_val), 
+           col = diffexpressed, label = delabel)) +
   geom_point() +
   geom_point() +
   theme_minimal()
@@ -819,14 +912,17 @@ head(PST_data, n = 5)
 
 ```{r}
 # plotting just the DEG from Het:
-PST_het <- PST_data[PST_data$p_val < 0.5 & PST_data$avg_log2FC > 0.1 | PST_data$avg_log2FC < -0.1, ]
+PST_het <- PST_data[PST_data$p_val < 0.5 & PST_data$avg_log2FC > 0.1 | 
+                      PST_data$avg_log2FC < -0.1, ]
 PST_het <- PST_het[PST_het$cluster == "heterozygous", ]
 
 p <- ggplot(data = PST_het, aes(x = avg_log2FC, y = -log10(p_val))) +
   geom_point() +
   theme_minimal()
-p2 <- p + geom_vline(xintercept = c(-0.1, 0.1), col = "red") + geom_hline(yintercept = -log10(0.05), col = "red")
+p2 <- p + geom_vline(xintercept = c(-0.1, 0.1), col = "red") + 
+  geom_hline(yintercept = -log10(0.05), col = "red")
 p2
+
 # add column to data to indicate if DE or not:
 PST_het$diffexpressed <- "NO"
 # if log2Foldchange > 0.1 and pvalue < 0.05, set as "UP"
@@ -834,7 +930,8 @@ PST_het$diffexpressed[PST_het$avg_log2FC > 0.1 & PST_het$p_val < 0.05] <- "UP"
 # if log2Foldchange < -0.1 and pvalue < 0.05, set as "DOWN"
 PST_het$diffexpressed[PST_het$avg_log2FC < -0.1 & PST_het$p_val < 0.05] <- "DOWN"
 # Re-plot but this time color the points with "diffexpressed"
-p <- ggplot(data = PST_het, aes(x = avg_log2FC, y = -log10(p_val), col = diffexpressed)) +
+p <- ggplot(data = PST_het, 
+            aes(x = avg_log2FC, y = -log10(p_val), col = diffexpressed)) +
   geom_point() +
   theme_minimal()
 # Add lines as before...
@@ -847,15 +944,17 @@ p4
 ## Change point color
 # 1. by default, it is assigned to the categories in an alphabetical order):
 p3 <- p2 + scale_color_manual(values = c("blue", "black", "red"))
-# 2. to automate a bit: ceate a named vector: the values are the colors to be used, the names are the categories they will be assigned to:
+# 2. to automate a bit: create a named vector: the values are the colors to be used, the names are the categories they will be assigned to:
 mycolors <- c("blue", "red", "black")
 names(mycolors) <- c("DOWN", "UP", "NO")
 p3 <- p2 + scale_colour_manual(values = mycolors)
 p3
-# label poitns:
+# label points:
 PST_het$delabel <- NA
 PST_het$delabel[PST_het$diffexpressed != "NO"] <- PST_het$gene[PST_het$diffexpressed != "NO"]
-ggplot(data = PST_het, aes(x = avg_log2FC, y = -log10(p_val), col = diffexpressed, label = delabel)) +
+ggplot(data = PST_het, 
+       aes(x = avg_log2FC, y = -log10(p_val), 
+           col = diffexpressed, label = delabel)) +
   geom_point() +
   geom_point() +
   theme_minimal()
@@ -880,22 +979,29 @@ head(pericytes_data, n = 5)
 
 ```{r}
 # plotting just the DEG from Het:
-pericytes_het <- pericytes_data[pericytes_data$p_val < 0.5 & pericytes_data$avg_log2FC > 0.1 | pericytes_data$avg_log2FC < -0.1, ]
+pericytes_het <- pericytes_data[pericytes_data$p_val < 0.5 & 
+                                  pericytes_data$avg_log2FC > 0.1 | 
+                                  pericytes_data$avg_log2FC < -0.1, ]
 pericytes_het <- pericytes_het[pericytes_het$cluster == "heterozygous", ]
 
 p <- ggplot(data = pericytes_het, aes(x = avg_log2FC, y = -log10(p_val))) +
   geom_point() +
   theme_minimal()
-p2 <- p + geom_vline(xintercept = c(-0.1, 0.1), col = "red") + geom_hline(yintercept = -log10(0.05), col = "red")
+p2 <- p + geom_vline(xintercept = c(-0.1, 0.1), col = "red") + 
+  geom_hline(yintercept = -log10(0.05), col = "red")
 p2
+
 # add column to data to indicate if DE or not:
 pericytes_het$diffexpressed <- "NO"
 # if log2Foldchange > 0.1 and pvalue < 0.05, set as "UP"
-pericytes_het$diffexpressed[pericytes_het$avg_log2FC > 0.1 & pericytes_het$p_val < 0.05] <- "UP"
+pericytes_het$diffexpressed[pericytes_het$avg_log2FC > 0.1 & 
+                              pericytes_het$p_val < 0.05] <- "UP"
 # if log2Foldchange < -0.1 and pvalue < 0.05, set as "DOWN"
-pericytes_het$diffexpressed[pericytes_het$avg_log2FC < -0.1 & pericytes_het$p_val < 0.05] <- "DOWN"
+pericytes_het$diffexpressed[pericytes_het$avg_log2FC < -0.1 & 
+                              pericytes_het$p_val < 0.05] <- "DOWN"
 # Re-plot but this time color the points with "diffexpressed"
-p <- ggplot(data = pericytes_het, aes(x = avg_log2FC, y = -log10(p_val), col = diffexpressed)) +
+p <- ggplot(data = pericytes_het, 
+            aes(x = avg_log2FC, y = -log10(p_val), col = diffexpressed)) +
   geom_point() +
   theme_minimal()
 # Add lines as before...
@@ -908,15 +1014,17 @@ p4
 ## Change point color
 # 1. by default, it is assigned to the categories in an alphabetical order):
 p3 <- p2 + scale_color_manual(values = c("blue", "black", "red"))
-# 2. to automate a bit: ceate a named vector: the values are the colors to be used, the names are the categories they will be assigned to:
+# 2. to automate a bit: create a named vector: the values are the colors to be used, the names are the categories they will be assigned to:
 mycolors <- c("blue", "red", "black")
 names(mycolors) <- c("DOWN", "UP", "NO")
 p3 <- p2 + scale_colour_manual(values = mycolors)
 p3
-# label poitns:
+# label points:
 pericytes_het$delabel <- NA
 pericytes_het$delabel[pericytes_het$diffexpressed != "NO"] <- pericytes_het$gene[pericytes_het$diffexpressed != "NO"]
-ggplot(data = pericytes_het, aes(x = avg_log2FC, y = -log10(p_val), col = diffexpressed, label = delabel)) +
+ggplot(data = pericytes_het, 
+       aes(x = avg_log2FC, y = -log10(p_val), 
+           col = diffexpressed, label = delabel)) +
   geom_point() +
   geom_point() +
   theme_minimal()
@@ -1013,7 +1121,7 @@ celltypes <- levels(kidney_int_celltypes)
 # create empty dataframe to store the loop outputs within
 DEGs_kidneycells <- data.frame()
 
-# for loop, loops through each of the 'celltypes' in kidney and calulates the DEG between conditions (heterozygous and control)
+# for loop, loops through each of the 'celltypes' in kidney and calculates the DEG between conditions (heterozygous and control)
 for (i in celltypes) {
   # subset seurat data for each kidney cell type ----------
   celltype <- subset(kidney_int_celltypes, idents = i)
@@ -1040,12 +1148,12 @@ write.csv(DEGs_kidneycells, file = here("results/seurat/DEGs_kidneycells.csv")) 
 #### Heatmap of expression of regulators and targets of Setbp1 across cell types:
 Setbp1 target gene list was constructed in 'Setbp1_target_list_construction.Rmd' 
 ```{r}
-setbp1_genes <- read.csv(here("data/processed/setbp1_targets.csv"))
+setbp1_genes <- read.csv(here("results/seurat/setbp1_targets.csv"))
 setbp1_genes <- setbp1_genes[, -1]
 setbp1_genes <- append(setbp1_genes, "Setbp1")
 ```
 
-#generating seurat input for complex heatmap from DGE data
+# generating seurat input for complex heatmap from DGE data
 ```{r}
 # filter DEG list for just setbp1 targets
 kidney_subset <- DEGs_kidneycells[DEGs_kidneycells$gene %in% setbp1_genes, ]
@@ -1076,24 +1184,24 @@ ordered.meta.data <- meta.data[order(rownames(meta.data)), ] # order by cell typ
 
 
 annotation_colors <- list(
-  "condition" = c("control" = "#FE6100", "heterozygous" = "#FFB000"),
-  "cell_type" = c(
-    "endothelial" = "#CF9400",
-    "PST" = "#948802",
-    "PCT.S1" = "#A85A5A",
-    "LOH" = "#AA937E",
-    "DCT" = "#6D0404",
-    "CD.PC" = "#F03F00",
-    "macrophages" = "#C70F0F",
-    "fibroblasts" = "#FFC8C4",
-    "DLH" = "#AA6320",
-    "CD.IC.typeA" = "#4E3801",
-    "CD.IC.typeB" = "#EEDF37",
-    "podocytes" = "#BD085E",
-    "pericytes" = "#FFE196",
-    "B.lymphocytes" = "#FFBE1D"
+  "condition" = c("control" = "#FE6100", 
+                  "heterozygous" = "#FFB000"),
+  "cell_type" = c("endothelial" = "#CF9400",
+                  "PST" = "#948802",
+                  "PCT.S1" = "#A85A5A",
+                  "LOH" = "#AA937E",
+                  "DCT" = "#6D0404",
+                  "CD.PC" = "#F03F00",
+                  "macrophages" = "#C70F0F",
+                  "fibroblasts" = "#FFC8C4",
+                  "DLH" = "#AA6320",
+                  "CD.IC.typeA" = "#4E3801",
+                  "CD.IC.typeB" = "#EEDF37",
+                  "podocytes" = "#BD085E",
+                  "pericytes" = "#FFE196",
+                  "B.lymphocytes" = "#FFBE1D"
+                  )
   )
-)
 
 # set heatmap annotations:
 heat.anno <- HeatmapAnnotation(
@@ -1107,7 +1215,7 @@ heat.anno <- HeatmapAnnotation(
 genes_pivot <- genes_pivot[, rownames(ordered.meta.data), drop = FALSE]
 rownames(genes_pivot) <- rownames
 
-# convert datframe to matrix
+# convert dataframe to matrix
 mat <- as.matrix(genes_pivot)
 
 # plot heatmap
