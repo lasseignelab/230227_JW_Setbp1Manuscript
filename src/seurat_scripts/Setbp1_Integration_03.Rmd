@@ -330,7 +330,6 @@ save(cerebral_hvgs_per_dataset, file = here("data/cerebral_hvgs.Rdata"))
 sessionInfo()
 ```
 
-
 ```{r}
 # run style
 style_file(here("src/seurat_scripts/Setbp1_Integration_03.Rmd"))
