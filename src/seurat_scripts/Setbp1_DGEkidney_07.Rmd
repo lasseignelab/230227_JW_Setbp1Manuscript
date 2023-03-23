@@ -1121,7 +1121,7 @@ celltypes <- levels(kidney_int_celltypes)
 # create empty dataframe to store the loop outputs within
 DEGs_kidneycells <- data.frame()
 
-# for loop, loops through each of the 'celltypes' in kidney and calulates the DEG between conditions (heterozygous and control)
+# for loop, loops through each of the 'celltypes' in kidney and calculates the DEG between conditions (heterozygous and control)
 for (i in celltypes) {
   # subset seurat data for each kidney cell type ----------
   celltype <- subset(kidney_int_celltypes, idents = i)
@@ -1140,7 +1140,7 @@ for (i in celltypes) {
   DEGs_kidneycells <- rbind(DEGs_kidneycells, DEGs)
 }
 
-write.csv(DEGs_kidneycells, file = here("results/ts_results/seurat/DEGs_kidneycells.csv")) # written out once then commented out
+write.csv(DEGs_kidneycells, file = here("results/seurat/DEGs_kidneycells.csv")) # written out once then commented out
 # DEGs_kidneycells <- read.csv(here("results/seurat/DEGs_kidneycells.csv"))
 ```
 
