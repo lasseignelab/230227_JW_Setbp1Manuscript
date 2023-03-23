@@ -281,13 +281,23 @@ Here we use all PCs computed from Harmony for UMAP calculation
 ```{r visualize-harmony-UMAP-kidney}
 kidney_int <- kidney_seurat_filtered
 kidney_int[["harmony"]] <- kidney_harmony[["harmony"]]
-kidney_int <- RunUMAP(kidney_int, dims = 1:30, reduction = "harmony", reduction.name = "umap_harmony")
+kidney_int <- RunUMAP(
+  kidney_int, 
+  dims = 1:30, 
+  reduction = "harmony", 
+  reduction.name = "umap_harmony"
+)
 ```
 
 ```{r visualize-harmony-UMAP-cortex}
 cerebral_int <- cerebral_seurat_filtered
 cerebral_int[["harmony"]] <- cerebral_harmony[["harmony"]]
-cerebral_int <- RunUMAP(cerebral_int, dims = 1:30, reduction = "harmony", reduction.name = "umap_harmony")
+cerebral_int <- RunUMAP(
+  cerebral_int, 
+  dims = 1:30, 
+  reduction = "harmony", 
+  reduction.name = "umap_harmony"
+)
 ```
 
 
@@ -296,8 +306,16 @@ cerebral_int <- RunUMAP(cerebral_int, dims = 1:30, reduction = "harmony", reduct
 Visualizing the post-harmony integration UMAP compared to raw:
 ```{r compare-pre-postint-cortex}
 # cerebral
-p1 <- DimPlot(cerebral_seurat_filtered, reduction = "umap", group.by = "orig.ident") + ggtitle("Cerebral UMAP raw_data")
-p2 <- DimPlot(cerebral_int, reduction = "umap_harmony", group.by = "orig.ident") + ggtitle("Cerebral UMAP Harmony")
+p1 <- DimPlot(
+  cerebral_seurat_filtered, 
+  reduction = "umap", 
+  group.by = "orig.ident"
+) + ggtitle("Cerebral UMAP raw_data")
+p2 <- DimPlot(
+  cerebral_int, 
+  reduction = "umap_harmony", 
+  group.by = "orig.ident"
+) + ggtitle("Cerebral UMAP Harmony")
 leg <- get_legend(p1)
 gridExtra::grid.arrange(
   gridExtra::arrangeGrob(p1 + NoLegend() + NoAxes(), p2 + NoLegend() +
@@ -309,9 +327,17 @@ gridExtra::grid.arrange(
 
 ```{r compare-pre-postint-kidney}
 # kidney
-p3 <- DimPlot(kidney_seurat_filtered, reduction = "umap", group.by = "orig.ident") +
+p3 <- DimPlot(
+  kidney_seurat_filtered, 
+  reduction = "umap", 
+  group.by = "orig.ident"
+) +
   ggtitle("Kidney UMAP raw data")
-p4 <- DimPlot(kidney_int, reduction = "umap_harmony", group.by = "orig.ident") +
+p4 <- DimPlot(
+  kidney_int, 
+  reduction = "umap_harmony", 
+  group.by = "orig.ident"
+) +
   ggtitle("Kidney UMAP Harmony")
 leg <- get_legend(p3)
 gridExtra::grid.arrange(
