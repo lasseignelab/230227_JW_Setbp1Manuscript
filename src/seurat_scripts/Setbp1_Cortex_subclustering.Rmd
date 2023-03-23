@@ -4,7 +4,7 @@ output: html_document
 date: '2023-02-23'
 ---
 
-While performing gene targeting score analysis looking across cell types (https://docs.google.com/document/d/17ZsaiF8XBK99MS7dLIxvIvWpC59OAmSlRszeSVskUgY/edit?usp=sharing), it was noted there is a bimodal presence of targeting scores in oligodendrocytes could suggest that there is a subcelltype in the oligodendrocytes in the disease condition comapred to control. Paper provided by Tabea, where she explained this is something that has been seen in AD with oligos (Single-cell RNA-sequencing identifies disease-associated oligodendrocytes in male APP NL-G-F and 5XFAD mice). With respect to gene targeting across cell type, I see an opposite shift where mural cells go from bimodal in controls to unimodal in S858R mice, suggesting there is some loss of nuclei or change in the genetic makeup of the nuclei population. In order to investigate this, I am looking at the potential presence of subclusters within the final, annotated cerebral cortex seurat object below.
+While performing gene targeting score analysis looking across cell types (https://docs.google.com/document/d/17ZsaiF8XBK99MS7dLIxvIvWpC59OAmSlRszeSVskUgY/edit?usp=sharing), it was noted there is a bimodal presence of targeting scores in oligodendrocytes could suggest that there is a subcelltype in the oligodendrocytes in the disease condition compared to control. Paper provided by Tabea, where she explained this is something that has been seen in AD with oligos (Single-cell RNA-sequencing identifies disease-associated oligodendrocytes in male APP NL-G-F and 5XFAD mice). With respect to gene targeting across cell type, I see an opposite shift where mural cells go from bimodal in controls to unimodal in S858R mice, suggesting there is some loss of nuclei or change in the genetic makeup of the nuclei population. In order to investigate this, I am looking at the potential presence of subclusters within the final, annotated cerebral cortex seurat object below.
 
 ```{r load-libraries}
 set.seed(2178)
@@ -18,9 +18,12 @@ library(lintr)
 ```{r load-object}
 load(here("data/setbp1_cerebralintcelltypes.Rdata"))
 select_resolution <- "RNA_snn_res.0.9"
-cerebral_int_celltypes <- SetIdent(cerebral_int_celltypes, value = select_resolution)
+cerebral_int_celltypes <- SetIdent(cerebral_int_celltypes, 
+                                   value = select_resolution)
 
-DimPlot(cerebral_int_celltypes, reduction = "umap_harmony", group.by = "cell_type")
+DimPlot(cerebral_int_celltypes, 
+        reduction = "umap_harmony", 
+        group.by = "cell_type")
 
 Idents(cerebral_int_celltypes) <- "cell_type"
 ```
@@ -30,12 +33,25 @@ Note: When prompted about miniconda, reply "N".
 # Subset data.int.celltypes cluster1 and sub-cluster
 subset <- subset(cerebral_int_celltypes, idents = "oligodendrocytes")
 
-p1 <- DimPlot(subset, reduction = "umap_harmony", group.by = "seurat_clusters", label = TRUE)
-p2 <- DimPlot(subset, reduction = "umap_harmony", group.by = "orig.ident", label = TRUE)
-p3 <- DimPlot(subset, reduction = "umap_harmony", group.by = "type", label = TRUE)
+p1 <- DimPlot(subset, 
+              reduction = "umap_harmony", 
+              group.by = "seurat_clusters", 
+              label = TRUE)
+p2 <- DimPlot(subset, 
+              reduction = "umap_harmony", 
+              group.by = "orig.ident", 
+              label = TRUE)
+p3 <- DimPlot(subset, 
+              reduction = "umap_harmony", 
+              group.by = "type", 
+              label = TRUE)
 
 subset <- FindNeighbors(subset, dims = 1:30, reduction = "harmony")
-subset <- FindClusters(subset, graph.name = "RNA_snn", resolution = 0.9, algorithm = 4, method = "igraph")
+subset <- FindClusters(subset, 
+                       graph.name = "RNA_snn", 
+                       resolution = 0.9, 
+                       algorithm = 4, 
+                       method = "igraph")
 
 clustree(subset@meta.data, prefix = "RNA_snn_res.")
 
@@ -46,9 +62,13 @@ cerebral_markers_genes <- FindAllMarkers(subset,
 )
 
 # visualize markers at 0.9 resolution
-p4 <- DimPlot(subset, reduction = "umap_harmony", group.by = "seurat_clusters", label = TRUE)
+p4 <- DimPlot(subset, 
+              reduction = "umap_harmony", 
+              group.by = "seurat_clusters", 
+              label = TRUE)
 
-png(here("results/figures/Setbp1_cortex_oligo_subcluster_UMAP.png"), width = 1000, height = 500)
+png(here("results/figures/Setbp1_cortex_oligo_subcluster_UMAP.png"), 
+    width = 1000, height = 500)
 (p1 + p2) / (p3 + p4)
 dev.off
 ```
@@ -58,21 +78,39 @@ dev.off
 # Subset data.int.celltypes cluster1 and sub-cluster
 subset <- subset(cerebral_int_celltypes, idents = "mural.cells")
 
-png(here("results/seurat/Setbp1_cortex_mural_subcluster_seuratclusterUMAP.png"), width = 1000, height = 500)
-p1 <- DimPlot(subset, reduction = "umap_harmony", group.by = "seurat_clusters", label = TRUE)
+png(here("results/seurat/Setbp1_cortex_mural_subcluster_seuratclusterUMAP.png"), 
+    width = 1000, height = 500)
+p1 <- DimPlot(subset, 
+              reduction = "umap_harmony", 
+              group.by = "seurat_clusters", 
+              label = TRUE)
 p1
 dev.off()
-png(here("results/seurat/Setbp1_cortex_mural_subcluster_identUMAP.png"), width = 1000, height = 500)
-p2 <- DimPlot(subset, reduction = "umap_harmony", group.by = "orig.ident", label = FALSE)
+
+png(here("results/seurat/Setbp1_cortex_mural_subcluster_identUMAP.png"), 
+    width = 1000, height = 500)
+p2 <- DimPlot(subset, 
+              reduction = "umap_harmony", 
+              group.by = "orig.ident", 
+              label = FALSE)
 p2
 dev.off()
-png(here("results/seurat/Setbp1_cortex_mural_subcluster_conditionUMAP.png"), width = 1000, height = 500)
-p3 <- DimPlot(subset, reduction = "umap_harmony", group.by = "type", label = FALSE)
+
+png(here("results/seurat/Setbp1_cortex_mural_subcluster_conditionUMAP.png"), 
+    width = 1000, height = 500)
+p3 <- DimPlot(subset, 
+              reduction = "umap_harmony", 
+              group.by = "type", 
+              label = FALSE)
 p3
 dev.off()
 
 subset <- FindNeighbors(subset, dims = 1:30, reduction = "harmony")
-subset <- FindClusters(subset, graph.name = "RNA_snn", resolution = 0.9, algorithm = 4, method = "igraph")
+subset <- FindClusters(subset, 
+                       graph.name = "RNA_snn", 
+                       resolution = 0.9, 
+                       algorithm = 4, 
+                       method = "igraph")
 
 clustree(subset@meta.data, prefix = "RNA_snn_res.")
 
@@ -83,8 +121,12 @@ cerebral_markers_genes <- FindAllMarkers(subset,
 )
 
 # visualize markers at 0.9 resolution
-png(here("results/seurat//Setbp1_cortex_mural_subcluster_UMAP.png"), width = 1000, height = 500)
-p4 <- DimPlot(subset, reduction = "umap_harmony", group.by = "seurat_clusters", label = FALSE)
+png(here("results/seurat/Setbp1_cortex_mural_subcluster_UMAP.png"), 
+    width = 1000, height = 500)
+p4 <- DimPlot(subset, 
+              reduction = "umap_harmony", 
+              group.by = "seurat_clusters", 
+              label = FALSE)
 p4
 dev.off()
 ```
