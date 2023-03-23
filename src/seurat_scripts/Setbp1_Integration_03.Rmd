@@ -331,65 +331,6 @@ save(kidney_int, file = here("data/integrated_setbp1_kidney.Rdata"))
 save(cerebral_int, file = here("data/integrated_setbp1_cerebral.Rdata"))
 ```
 
-
-#### highly variable genes:
-We find highly variable genes on the object not integrated with harmony.
-
-# Split objects by origin identity:
-```{r}
-# kidney
-kidney_list <- SplitObject(kidney_seurat_filtered, split.by = "orig.ident")
-# cerebral
-cerebral_list <- SplitObject(cerebral_seurat_filtered, split.by = "orig.ident")
-```
-
-# Identify hvgs for kidney
-```{r}
-for (i in 1:length(kidney_list)) {
-  kidney_list[[i]] <- NormalizeData(kidney_list[[i]], verbose = FALSE)
-  kidney_list[[i]] <- FindVariableFeatures(kidney_list[[i]],
-    selection.method = "vst",
-    nfeatures = 4000, verbose = FALSE
-  )
-}
-kidney_hvgs_per_dataset <- lapply(kidney_list, function(x) {
-  x@assays$RNA@var.features
-})
-# venn::venn(hvgs_per_dataset,opacity = .4,zcolor = scales::hue_pal()(3),cexsn
-# = 1,cexil = 1,lwd=1,col='white',frame=F,borders = NA)
-temp <- unique(unlist(kidney_hvgs_per_dataset))
-overlap <- sapply(kidney_hvgs_per_dataset, function(x) {
-  temp %in% x
-})
-pheatmap::pheatmap(t(overlap * 1), cluster_rows = FALSE, color = c("grey90", "grey20"))
-```
-
-# Identify hvgs for cerebral
-```{r}
-for (i in 1:length(cerebral_list)) {
-  cerebral_list[[i]] <- NormalizeData(cerebral_list[[i]], verbose = FALSE)
-  cerebral_list[[i]] <- FindVariableFeatures(cerebral_list[[i]],
-    selection.method = "vst",
-    nfeatures = 4000, verbose = FALSE
-  )
-}
-cerebral_hvgs_per_dataset <- lapply(cerebral_list, function(x) {
-  x@assays$RNA@var.features
-})
-# venn::venn(hvgs_per_dataset,opacity = .4,zcolor = scales::hue_pal()(3),cexsn
-# = 1,cexil = 1,lwd=1,col='white',frame=F,borders = NA)
-temp <- unique(unlist(cerebral_hvgs_per_dataset))
-overlap <- sapply(cerebral_hvgs_per_dataset, function(x) {
-  temp %in% x
-})
-pheatmap::pheatmap(t(overlap * 1), cluster_rows = FALSE, color = c("grey90", "grey20"))
-```
-# Save hvgs:
-```{r}
-save(kidney_hvgs_per_dataset, file = here("data/kidney_hvgs.Rdata"))
-save(cerebral_hvgs_per_dataset, file = here("data/cerebral_hvgs.Rdata"))
-```
-
 ```{r}
 sessionInfo()
 ```
