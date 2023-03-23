@@ -121,7 +121,7 @@ cerebral_markers_genes <- FindAllMarkers(subset,
 )
 
 # visualize markers at 0.9 resolution
-png(here("results/seurat//Setbp1_cortex_mural_subcluster_UMAP.png"), 
+png(here("results/seurat/Setbp1_cortex_mural_subcluster_UMAP.png"), 
     width = 1000, height = 500)
 p4 <- DimPlot(subset, 
               reduction = "umap_harmony", 
