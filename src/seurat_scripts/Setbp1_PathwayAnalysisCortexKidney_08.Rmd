@@ -309,7 +309,7 @@ for (i in cell_types) {
     fea_res <- combined_fea_set(genes = targets, organism = "mmusculus")
 
   # plot dotplot and add title based on input variable ----------
-    png(paste0(here("results/figures/"), "FEA_SETBP1targetspathways_", i, ".png"),
+    png(paste0(here("results/figures/"), "FEA_SETBP1targetspathways_kidney_", i, ".png"),
       width = 1000, height = 3000)
   plot <- ggplot(fea_res$combined, aes(x = direction,
                                        y = reorder(term_name, -p_value),
@@ -325,7 +325,7 @@ for (i in cell_types) {
   print(plot)
   dev.off()
   } else(print(paste("no DE targets in", i)))
-  }
+}
 ```
 
 
@@ -342,7 +342,7 @@ for (i in cell_types) {
   if(nrow(targets)>0){
     fea_res <- combined_fea_set(genes = targets, organism = "mmusculus")
   # set png to save plot to ----------
-  png(paste0(here("results/figures/"), "FEA_Setbp1targetspathways_", i, ".png"),
+  png(paste0(here("results/figures/"), "FEA_Setbp1targetspathways_cortex_", i, ".png"),
       width = 1000, height = 3000)
   # plot dotplot and add title based on input variable ----------
   plot <- ggplot(fea_res$combined, aes(x = direction,
