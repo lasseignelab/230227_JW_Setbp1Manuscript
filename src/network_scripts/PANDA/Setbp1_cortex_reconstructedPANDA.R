@@ -1,5 +1,9 @@
 #set up libPath. NOTE: THE USER MUST CHANGE TO THEIR USERNAME
+<<<<<<< Updated upstream
 ##set user for file path below
+=======
+##set user
+>>>>>>> Stashed changes
 username <- "jbarham3"
 
 ##give libpath
