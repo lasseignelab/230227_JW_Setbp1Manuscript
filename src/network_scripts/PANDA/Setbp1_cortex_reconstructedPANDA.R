@@ -1,5 +1,5 @@
 #set up libPath. NOTE: THE USER MUST CHANGE TO THEIR USERNAME
-##set user for file path
+##set user for file path below
 username <- "jbarham3"
 
 ##give libpath
