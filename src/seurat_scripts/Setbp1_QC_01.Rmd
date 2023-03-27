@@ -158,7 +158,7 @@ head(kidney_seurat)
 feats <- c("nFeature_RNA", "nCount_RNA", "percent_mito", "percent_ribo")
 # violin:
 png(
-  filename = here("results/seurat/preQC_metrics_VlnPlot_cortex.png"),
+  filename = here("results/seurat/QC_01/preQC_metrics_VlnPlot_cortex.png"),
   width = 1000,
   height = 1000
 )
@@ -171,7 +171,7 @@ VlnPlot(cerebral_seurat,
 dev.off()
 
 png(
-  filename = here("results/seurat/preQC_metrics_VlnPlot_kidney.png"),
+  filename = here("results/seurat/QC_01/preQC_metrics_VlnPlot_kidney.png"),
   width = 1000,
   height = 1000
 )
@@ -184,7 +184,7 @@ dev.off()
 
 # scatter:
 png(
-  filename = here("results/seurat/preQC_metrics_scatter_countsfeatures_cortex.png"),
+  filename = here("results/seurat/QC_01/preQC_metrics_scatter_countsfeatures_cortex.png"),
   width = 1000,
   height = 1000
 )
@@ -197,7 +197,7 @@ FeatureScatter(cerebral_seurat,
 dev.off()
 
 png(
-  filename = here("results/seurat/preQC_metrics_scatter_mitoribo_cortex.png"),
+  filename = here("results/seurat/QC_01/preQC_metrics_scatter_mitoribo_cortex.png"),
   width = 1000,
   height = 1000
 )
@@ -210,7 +210,7 @@ FeatureScatter(cerebral_seurat,
 dev.off()
 
 png(
-  filename = here("results/seurat/preQC_metrics_scatter_countsfeatures_kidney.png"),
+  filename = here("results/seurat/QC_01/preQC_metrics_scatter_countsfeatures_kidney.png"),
   width = 1000,
   height = 1000
 )
@@ -223,7 +223,7 @@ FeatureScatter(kidney_seurat,
 dev.off()
 
 png(
-  filename = here("results/seurat/preQC_metrics_scatter_mitoribo_kidney.png"),
+  filename = here("results/seurat/QC_01/preQC_metrics_scatter_mitoribo_kidney.png"),
   width = 1000,
   height = 1000
 )
@@ -244,7 +244,7 @@ kidney_seurat$log10GenesPerUMI <- log10(kidney_seurat$nFeature_RNA) / log10(kidn
 cerebral_seurat$log10GenesPerUMI <- log10(cerebral_seurat$nFeature_RNA) / log10(cerebral_seurat$nCount_RNA)
 
 png(
-  filename = here("results/seurat/preQC_metrics_nucleicount_bysample_kidney.png"),
+  filename = here("results/seurat/QC_01/preQC_metrics_nucleicount_bysample_kidney.png"),
   width = 1000,
   height = 1000
 )
@@ -258,7 +258,7 @@ kidney_seurat@meta.data %>%
 dev.off()
 
 png(
-  filename = here("results/seurat/preQC_metrics_nucleicount_bysample_cortex.png"),
+  filename = here("results/seurat/QC_01/preQC_metrics_nucleicount_bysample_cortex.png"),
   width = 1000,
   height = 1000
 )
@@ -272,7 +272,7 @@ cerebral_seurat@meta.data %>%
 dev.off()
 
 png(
-  filename = here("results/seurat/preQC_metrics_nucleicount_bytype_kidney.png"),
+  filename = here("results/seurat/QC_01/preQC_metrics_nucleicount_bytype_kidney.png"),
   width = 1000,
   height = 1000
 )
@@ -286,7 +286,7 @@ kidney_seurat@meta.data %>%
 dev.off()
 
 png(
-  filename = here("results/seurat/preQC_metrics_nucleicount_bytype_cortex.png"),
+  filename = here("results/seurat/QC_01/preQC_metrics_nucleicount_bytype_cortex.png"),
   width = 1000,
   height = 1000
 )
@@ -308,7 +308,7 @@ nGene = nFeature_RNA
 500 is the minimum threshold for number of UMI counts per cell.
 ```{r}
 png(
-  filename = here("results/seurat/preQC_metrics_nCount_bysample_kidney.png"),
+  filename = here("results/seurat/QC_01/preQC_metrics_nCount_bysample_kidney.png"),
   width = 1000,
   height = 1000
 )
@@ -322,7 +322,7 @@ kidney_seurat@meta.data %>%
 dev.off()
 
 png(
-  filename = here("results/seurat/preQC_metrics_nCount_bysample_cortex.png"),
+  filename = here("results/seurat/QC_01/preQC_metrics_nCount_bysample_cortex.png"),
   width = 1000,
   height = 1000
 )
@@ -336,7 +336,7 @@ cerebral_seurat@meta.data %>%
 dev.off()
 
 png(
-  filename = here("results/seurat/preQC_metrics_nCount_bytype_kidney.png"),
+  filename = here("results/seurat/QC_01/preQC_metrics_nCount_bytype_kidney.png"),
   width = 1000,
   height = 1000
 )
@@ -350,7 +350,7 @@ kidney_seurat@meta.data %>%
 dev.off()
 
 png(
-  filename = here("results/seurat/preQC_metrics_nCount_bytype_cortex.png"),
+  filename = here("results/seurat/QC_01/preQC_metrics_nCount_bytype_cortex.png"),
   width = 1000,
   height = 1000
 )
@@ -368,7 +368,7 @@ dev.off()
 ##### Visualize the distribution of nFeature_RNA (genes) detected per cell via density plot
 ```{r}
 png(
-  filename = here("results/seurat/preQC_metrics_nFeature_bysample_cortex.png"),
+  filename = here("results/seurat/QC_01/preQC_metrics_nFeature_bysample_cortex.png"),
   width = 1000,
   height = 1000
 )
@@ -381,7 +381,7 @@ cerebral_seurat@meta.data %>%
 dev.off()
 
 png(
-  filename = here("results/seurat/preQC_metrics_nFeature_bysample_kidney.png"),
+  filename = here("results/seurat/QC_01/preQC_metrics_nFeature_bysample_kidney.png"),
   width = 1000,
   height = 1000
 )
@@ -394,7 +394,7 @@ kidney_seurat@meta.data %>%
 dev.off()
 
 png(
-  filename = here("results/seurat/preQC_metrics_nFeature_bytype_cortex.png"),
+  filename = here("results/seurat/QC_01/preQC_metrics_nFeature_bytype_cortex.png"),
   width = 1000,
   height = 1000
 )
@@ -407,7 +407,7 @@ cerebral_seurat@meta.data %>%
 dev.off()
 
 png(
-  filename = here("results/seurat/preQC_metrics_nFeature_bytype_kidney.png"),
+  filename = here("results/seurat/QC_01/preQC_metrics_nFeature_bytype_kidney.png"),
   width = 1000,
   height = 1000
 )
@@ -424,7 +424,7 @@ dev.off()
 #### Visualize the distribution of genes detected per cell via boxplot
 ```{r}
 png(
-  filename = here("results/seurat/preQC_metrics_nCellvsnGenes_kidney.png"),
+  filename = here("results/seurat/QC_01/preQC_metrics_nCellvsnGenes_kidney.png"),
   width = 1000,
   height = 1000
 )
@@ -438,7 +438,7 @@ kidney_seurat@meta.data %>%
 dev.off()
 
 png(
-  filename = here("results/seurat/preQC_metrics_nCellvsnGenes_cortex.png"),
+  filename = here("results/seurat/QC_01/preQC_metrics_nCellvsnGenes_cortex.png"),
   width = 1000,
   height = 1000
 )
@@ -457,7 +457,7 @@ dev.off()
 ```{r}
 # determine whether strong presence of cells with low numbers of genes/UMIs
 png(
-  filename = here("results/seurat/preQC_metrics_nFeaturenCountCorrelation_kidney.png"),
+  filename = here("results/seurat/QC_01/preQC_metrics_nFeaturenCountCorrelation_kidney.png"),
   width = 1000,
   height = 1000
 )
@@ -475,7 +475,7 @@ kidney_seurat@meta.data %>%
 dev.off()
 
 png(
-  filename = here("results/seurat/preQC_metrics_nFeaturenCountCorrelation_cortex.png"),
+  filename = here("results/seurat/QC_01/preQC_metrics_nFeaturenCountCorrelation_cortex.png"),
   width = 1000,
   height = 1000
 )
@@ -511,7 +511,7 @@ cerebral_seurat_filtered <- subset(
 #### Plot genes contributing most to reads:
 ```{r}
 png(
-  filename = here("results/seurat/postfilt_feature_mito_contrib_genes_cortex.png"),
+  filename = here("results/seurat/QC_01/postfilt_feature_mito_contrib_genes_cortex.png"),
   width = 1000,
   height = 1000
 )
@@ -527,7 +527,7 @@ boxplot(t(as.matrix(C[most_expressed, ])),
 dev.off()
 
 png(
-  filename = here("results/seurat/postfilt_feature_mito_contrib_genes_kidney.png"),
+  filename = here("results/seurat/QC_01/postfilt_feature_mito_contrib_genes_kidney.png"),
   width = 1000,
   height = 1000
 )
@@ -586,7 +586,7 @@ kidney_seurat_filtered <- CellCycleScoring(
 )
 
 png(
-  filename = here("results/seurat/postfiltQC_cellcycle_genes_kidney.png"),
+  filename = here("results/seurat/QC_01/postfiltQC_cellcycle_genes_kidney.png"),
   width = 1000,
   height = 1000
 )
@@ -606,7 +606,7 @@ cerebral_seurat_filtered <- CellCycleScoring(
   s.features = mouse_cell_cycle_gene[55:97, ]
 )
 png(
-  filename = here("results/seurat/postfiltQC_cellcycle_genes_cortex.png"),
+  filename = here("results/seurat/QC_01/postfiltQC_cellcycle_genes_cortex.png"),
   width = 1000,
   height = 1000
 )
@@ -624,7 +624,7 @@ dev.off()
 feats <- c("nFeature_RNA", "nCount_RNA", "percent_mito", "percent_ribo")
 # violin:
 png(
-  filename = here("results/seurat/postQC_metrics_VlnPlot_cortex.png"),
+  filename = here("results/seurat/QC_01/postQC_metrics_VlnPlot_cortex.png"),
   width = 1000,
   height = 1000
 )
@@ -638,7 +638,7 @@ VlnPlot(
 dev.off()
 
 png(
-  filename = here("results/seurat/postQC_metrics_VlnPlot_kidney.png"),
+  filename = here("results/seurat/QC_01/postQC_metrics_VlnPlot_kidney.png"),
   width = 1000,
   height = 1000
 )
@@ -653,7 +653,7 @@ dev.off()
 
 # scatter:
 png(
-  filename = here("results/seurat/postQC_metrics_scatter_countsfeatures_cortex.png"),
+  filename = here("results/seurat/QC_01/postQC_metrics_scatter_countsfeatures_cortex.png"),
   width = 1000,
   height = 1000
 )
@@ -667,7 +667,7 @@ FeatureScatter(
 dev.off()
 
 png(
-  filename = here("results/seurat/postQC_metrics_scatter_mitoribo_cortex.png"),
+  filename = here("results/seurat/QC_01/postQC_metrics_scatter_mitoribo_cortex.png"),
   width = 1000,
   height = 1000
 )
@@ -681,7 +681,7 @@ FeatureScatter(
 dev.off()
 
 png(
-  filename = here("results/seurat/postQC_metrics_scatter_countsfeatures_kidney.png"),
+  filename = here("results/seurat/QC_01/postQC_metrics_scatter_countsfeatures_kidney.png"),
   width = 1000,
   height = 1000
 )
@@ -695,7 +695,7 @@ FeatureScatter(
 dev.off()
 
 png(
-  filename = here("results/seurat/postQC_metrics_scatter_mitribo_kidney.png"),
+  filename = here("results/seurat/QC_01/postQC_metrics_scatter_mitribo_kidney.png"),
   width = 1000,
   height = 1000
 )
@@ -716,7 +716,7 @@ kidney_seurat_filtered$log10GenesPerUMI <- log10(kidney_seurat_filtered$nFeature
 cerebral_seurat_filtered$log10GenesPerUMI <- log10(cerebral_seurat_filtered$nFeature_RNA) / log10(cerebral_seurat_filtered$nCount_RNA)
 
 png(
-  filename = here("results/seurat/postQC_metrics_nucleicount_bysample_kidney.png"),
+  filename = here("results/seurat/QC_01/postQC_metrics_nucleicount_bysample_kidney.png"),
   width = 1000,
   height = 1000
 )
@@ -730,7 +730,7 @@ kidney_seurat_filtered@meta.data %>%
 dev.off()
 
 png(
-  filename = here("results/seurat/postQC_metrics_nucleicount_bysample_cortex.png"),
+  filename = here("results/seurat/QC_01/postQC_metrics_nucleicount_bysample_cortex.png"),
   width = 1000,
   height = 1000
 )
@@ -744,7 +744,7 @@ cerebral_seurat_filtered@meta.data %>%
 dev.off()
 
 png(
-  filename = here("results/seurat/postQC_metrics_nucleicount_bytype_kidney.png"),
+  filename = here("results/seurat/QC_01/postQC_metrics_nucleicount_bytype_kidney.png"),
   width = 1000,
   height = 1000
 )
@@ -758,7 +758,7 @@ kidney_seurat_filtered@meta.data %>%
 dev.off()
 
 png(
-  filename = here("results/seurat/postQC_metrics_nucleicount_bytype_cortex.png"),
+  filename = here("results/seurat/QC_01/postQC_metrics_nucleicount_bytype_cortex.png"),
   width = 1000,
   height = 1000
 )
@@ -778,7 +778,7 @@ nGene = nFeature_RNA
 500 is the minimum threshold for number of UMI counts per cell.
 ```{r}
 png(
-  filename = here("results/seurat/postQC_metrics_nCount_bysample_kidney.png"),
+  filename = here("results/seurat/QC_01/postQC_metrics_nCount_bysample_kidney.png"),
   width = 1000,
   height = 1000
 )
@@ -792,7 +792,7 @@ kidney_seurat_filtered@meta.data %>%
 dev.off()
 
 png(
-  filename = here("results/seurat/postQC_metrics_nCount_bysample_cortex.png"),
+  filename = here("results/seurat/QC_01/postQC_metrics_nCount_bysample_cortex.png"),
   width = 1000,
   height = 1000
 )
@@ -806,7 +806,7 @@ cerebral_seurat_filtered@meta.data %>%
 dev.off()
 
 png(
-  filename = here("results/seurat/postQC_metrics_nCount_bytype_kidney.png"),
+  filename = here("results/seurat/QC_01/postQC_metrics_nCount_bytype_kidney.png"),
   width = 1000,
   height = 1000
 )
@@ -820,7 +820,7 @@ kidney_seurat_filtered@meta.data %>%
 dev.off()
 
 png(
-  filename = here("results/seurat/postQC_metrics_nCount_bytype_cortex.png"),
+  filename = here("results/seurat/QC_01/postQC_metrics_nCount_bytype_cortex.png"),
   width = 1000,
   height = 1000
 )
@@ -837,7 +837,7 @@ dev.off()
 ###### Visualize the distribution of nFeature_RNA (genes) detected per cell via density plot
 ```{r}
 png(
-  filename = here("results/seurat/postQC_metrics_nFeature_bysample_cortex.png"),
+  filename = here("results/seurat/QC_01/postQC_metrics_nFeature_bysample_cortex.png"),
   width = 1000,
   height = 1000
 )
@@ -850,7 +850,7 @@ cerebral_seurat_filtered@meta.data %>%
 dev.off()
 
 png(
-  filename = here("results/seurat/postQC_metrics_nFeature_bysample_kidney.png"),
+  filename = here("results/seurat/QC_01/postQC_metrics_nFeature_bysample_kidney.png"),
   width = 1000,
   height = 1000
 )
@@ -863,7 +863,7 @@ kidney_seurat_filtered@meta.data %>%
 dev.off()
 
 png(
-  filename = here("results/seurat/postQC_metrics_nFeature_bytype_cortex.png"),
+  filename = here("results/seurat/QC_01/postQC_metrics_nFeature_bytype_cortex.png"),
   width = 1000,
   height = 1000
 )
@@ -876,7 +876,7 @@ cerebral_seurat_filtered@meta.data %>%
 dev.off()
 
 png(
-  filename = here("results/seurat/postQC_metrics_nFeature_bytype_kidney.png"),
+  filename = here("results/seurat/QC_01/postQC_metrics_nFeature_bytype_kidney.png"),
   width = 1000,
   height = 1000
 )
@@ -911,7 +911,7 @@ cerebral_seurat_filtered@meta.data %>%
 ```{r}
 # determine whether strong presence of cells with low numbers of genes/UMIs
 png(
-  filename = here("results/seurat/postQC_metrics_nFeaturenCountCorrelation_kidney.png"),
+  filename = here("results/seurat/QC_01/postQC_metrics_nFeaturenCountCorrelation_kidney.png"),
   width = 1000,
   height = 1000
 )
@@ -929,7 +929,7 @@ kidney_seurat_filtered@meta.data %>%
 dev.off()
 
 png(
-  filename = here("results/seurat/postQC_metrics_nFeaturenCountCorrelation_cortex.png"),
+  filename = here("results/seurat/QC_01/postQC_metrics_nFeaturenCountCorrelation_cortex.png"),
   width = 1000,
   height = 1000
 )
@@ -953,6 +953,48 @@ Note: this object is just filtered for nCount_RNA, mitochondria, and Malat1. It 
 save(kidney_seurat_filtered, file = here("data/filtered_setbp1_kidney_seurat.Rdata"))
 save(cerebral_seurat_filtered, file = here("data/filtered_setbp1_cerebral_seurat.Rdata"))
 ```
+
+```{r}
+sessionInfo()
+```
+
+R version 4.1.3 (2022-03-10)
+Platform: x86_64-pc-linux-gnu (64-bit)
+Running under: Ubuntu 20.04.5 LTS
+
+Matrix products: default
+BLAS/LAPACK: /usr/lib/x86_64-linux-gnu/openblas-pthread/libopenblasp-r0.3.8.so
+
+locale:
+[1] C
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+ [1] lintr_3.0.2        styler_1.9.0       gprofiler2_0.2.1   lubridate_1.9.2    forcats_1.0.0      stringr_1.5.0      purrr_1.0.1        tidyr_1.3.0        tibble_3.1.8      
+[10] tidyverse_2.0.0    here_1.0.1         ggplot2_3.4.1      cowplot_1.1.1      SeuratObject_4.1.3 Seurat_4.3.0       Matrix_1.5-3       dplyr_1.1.0        readr_2.1.4       
+[19] magrittr_2.0.3     devtools_2.4.5     usethis_2.1.6     
+
+loaded via a namespace (and not attached):
+  [1] plyr_1.8.8             igraph_1.4.1           lazyeval_0.2.2         sp_1.6-0               splines_4.1.3          listenv_0.9.0          scattermore_0.8       
+  [8] digest_0.6.31          htmltools_0.5.4        fansi_1.0.4            memoise_2.0.1          tensor_1.5             cluster_2.1.2          ROCR_1.0-11           
+ [15] tzdb_0.3.0             remotes_2.4.2          globals_0.16.2         matrixStats_0.63.0     R.utils_2.12.2         timechange_0.2.0       spatstat.sparse_3.0-0 
+ [22] prettyunits_1.1.1      colorspace_2.1-0       ggrepel_0.9.3          xfun_0.37              callr_3.7.3            crayon_1.5.2           jsonlite_1.8.4        
+ [29] progressr_0.13.0       spatstat.data_3.0-0    survival_3.3-1         zoo_1.8-11             glue_1.6.2             polyclip_1.10-4        gtable_0.3.1          
+ [36] leiden_0.4.3           R.cache_0.16.0         pkgbuild_1.3.1         future.apply_1.10.0    abind_1.4-5            scales_1.2.1           spatstat.random_3.1-3 
+ [43] miniUI_0.1.1.1         Rcpp_1.0.10            viridisLite_0.4.1      xtable_1.8-4           reticulate_1.28        profvis_0.3.7          rex_1.2.1             
+ [50] htmlwidgets_1.6.1      httr_1.4.5             RColorBrewer_1.1-3     ellipsis_0.3.2         ica_1.0-3              R.methodsS3_1.8.2      urlchecker_1.0.1      
+ [57] pkgconfig_2.0.3        uwot_0.1.14            deldir_1.0-6           utf8_1.2.3             tidyselect_1.2.0       rlang_1.0.6            reshape2_1.4.4        
+ [64] later_1.3.0            munsell_0.5.0          tools_4.1.3            cachem_1.0.7           cli_3.6.0              generics_0.1.3         ggridges_0.5.4        
+ [71] evaluate_0.20          fastmap_1.1.1          yaml_2.3.7             goftest_1.2-3          processx_3.8.0         knitr_1.42             fs_1.6.1              
+ [78] fitdistrplus_1.1-8     RANN_2.6.1             pbapply_1.7-0          future_1.31.0          nlme_3.1-155           mime_0.12              R.oo_1.25.0           
+ [85] xml2_1.3.3             compiler_4.1.3         rstudioapi_0.14        plotly_4.10.1          png_0.1-8              spatstat.utils_3.0-1   stringi_1.7.12        
+ [92] cyclocomp_1.1.0        ps_1.7.2               desc_1.4.2             lattice_0.20-45        vctrs_0.5.2            pillar_1.8.1           lifecycle_1.0.3       
+ [99] spatstat.geom_3.0-6    lmtest_0.9-40          RcppAnnoy_0.0.20       data.table_1.14.8      irlba_2.3.5.1          httpuv_1.6.9           patchwork_1.1.2       
+[106] R6_2.5.1               promises_1.2.0.1       KernSmooth_2.23-20     gridExtra_2.3          parallelly_1.34.0      sessioninfo_1.2.2      codetools_0.2-18      
+[113] MASS_7.3-55            pkgload_1.3.2          rprojroot_2.0.3        withr_2.5.0            sctransform_0.3.5      parallel_4.1.3         hms_1.1.2             
+[120] grid_4.1.3             rmarkdown_2.20         Rtsne_0.16             spatstat.explore_3.0-6 shiny_1.7.4           
 
 ```{r}
 # run style

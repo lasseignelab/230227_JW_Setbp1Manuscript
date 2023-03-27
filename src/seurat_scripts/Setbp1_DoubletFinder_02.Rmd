@@ -237,6 +237,44 @@ save(cerebral_seurat_filtered,
 ```
 
 ```{r}
+sessionInfo()
+```
+R version 4.1.3 (2022-03-10)
+Platform: x86_64-pc-linux-gnu (64-bit)
+Running under: Ubuntu 20.04.5 LTS
+
+Matrix products: default
+BLAS/LAPACK: /usr/lib/x86_64-linux-gnu/openblas-pthread/libopenblasp-r0.3.8.so
+
+locale:
+[1] C
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+[1] ggplot2_3.4.1       lintr_3.0.2         styler_1.9.0        here_1.0.1          DoubletFinder_2.0.3 cowplot_1.1.1       SeuratObject_4.1.3  Seurat_4.3.0       
+
+loaded via a namespace (and not attached):
+  [1] Rtsne_0.16             colorspace_2.1-0       deldir_1.0-6           ellipsis_0.3.2         ggridges_0.5.4         rprojroot_2.0.3        rstudioapi_0.14       
+  [8] spatstat.data_3.0-0    leiden_0.4.3           listenv_0.9.0          remotes_2.4.2          ggrepel_0.9.3          fansi_1.0.4            xml2_1.3.3            
+ [15] R.methodsS3_1.8.2      codetools_0.2-18       splines_4.1.3          knitr_1.42             polyclip_1.10-4        jsonlite_1.8.4         ica_1.0-3             
+ [22] cluster_2.1.2          R.oo_1.25.0            png_0.1-8              uwot_0.1.14            shiny_1.7.4            sctransform_0.3.5      spatstat.sparse_3.0-0 
+ [29] compiler_4.1.3         httr_1.4.5             Matrix_1.5-3           fastmap_1.1.1          lazyeval_0.2.2         cli_3.6.0              later_1.3.0           
+ [36] htmltools_0.5.4        tools_4.1.3            igraph_1.4.1           gtable_0.3.1           glue_1.6.2             RANN_2.6.1             reshape2_1.4.4        
+ [43] dplyr_1.1.0            Rcpp_1.0.10            scattermore_0.8        vctrs_0.5.2            spatstat.explore_3.0-6 nlme_3.1-155           progressr_0.13.0      
+ [50] lmtest_0.9-40          spatstat.random_3.1-3  xfun_0.37              stringr_1.5.0          ps_1.7.2               globals_0.16.2         mime_0.12             
+ [57] miniUI_0.1.1.1         lifecycle_1.0.3        irlba_2.3.5.1          goftest_1.2-3          future_1.31.0          MASS_7.3-55            zoo_1.8-11            
+ [64] scales_1.2.1           promises_1.2.0.1       spatstat.utils_3.0-1   rex_1.2.1              parallel_4.1.3         RColorBrewer_1.1-3     yaml_2.3.7            
+ [71] reticulate_1.28        pbapply_1.7-0          gridExtra_2.3          stringi_1.7.12         desc_1.4.2             cyclocomp_1.1.0        rlang_1.0.6           
+ [78] pkgconfig_2.0.3        matrixStats_0.63.0     evaluate_0.20          lattice_0.20-45        ROCR_1.0-11            purrr_1.0.1            tensor_1.5            
+ [85] patchwork_1.1.2        htmlwidgets_1.6.1      processx_3.8.0         tidyselect_1.2.0       parallelly_1.34.0      RcppAnnoy_0.0.20       plyr_1.8.8            
+ [92] magrittr_2.0.3         R6_2.5.1               generics_0.1.3         withr_2.5.0            pillar_1.8.1           fitdistrplus_1.1-8     survival_3.3-1        
+ [99] abind_1.4-5            sp_1.6-0               tibble_3.1.8           future.apply_1.10.0    crayon_1.5.2           KernSmooth_2.23-20     utf8_1.2.3            
+[106] spatstat.geom_3.0-6    plotly_4.10.1          rmarkdown_2.20         grid_4.1.3             data.table_1.14.8      callr_3.7.3            digest_0.6.31         
+[113] R.cache_0.16.0         xtable_1.8-4           tidyr_1.3.0            httpuv_1.6.9           R.utils_2.12.2         munsell_0.5.0          viridisLite_0.4.1     
+
+```{r}
 # run style
 style_file(here("src/seurat_scripts/Setbp1_QC_01.Rmd"))
 # lintr was run as well
