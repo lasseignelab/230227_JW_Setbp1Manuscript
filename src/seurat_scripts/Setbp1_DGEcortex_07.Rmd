@@ -42,10 +42,14 @@ load(here("data/setbp1_cerebralintcelltypes.Rdata"))
 It is present in the data, but appears very similar across conditions.
 ```{r}
 # visualize with FeaturePlot
+png(
+  file = here("results/seurat/DGE_07/Setbp1_expression_cortex.png"),
+  width = 1000,
+  height = 1000
+)
 plot <- FeaturePlot(cerebral_int_celltypes, feature = "Setbp1", reduction = "umap_harmony", split.by = "type", label = TRUE)
 plot
-# Vln Plot of expression
-VlnPlot(object = cerebral_int_celltypes, features = "Setbp1", split.by = "type", assay = "RNA")
+dev.off()
 ```
 
 #### split violin plotting of Setbp1 across cell types:
@@ -79,49 +83,16 @@ excitatory.neurons_data <- FindAllMarkers(exneuro, logfc.threshold = 0.1, test.u
 head(excitatory.neurons_data, n = 5)
 ```
 
-
-
 ```{r}
 excitatory.neurons_het <- excitatory.neurons_data[excitatory.neurons_data$p_val < 0.5 & excitatory.neurons_data$avg_log2FC > 0.1 | excitatory.neurons_data$avg_log2FC < -0.1, ]
 excitatory.neurons_het <- excitatory.neurons_het[excitatory.neurons_het$cluster == "heterozygous", ]
 
-p <- ggplot(data = excitatory.neurons_het, aes(x = avg_log2FC, y = -log10(p_val))) +
-  geom_point() +
-  theme_minimal()
-p2 <- p + geom_vline(xintercept = c(-0.1, 0.1), col = "red") + geom_hline(yintercept = -log10(0.05), col = "red")
-p2
 # add column to data to indicate if DE or not:
 excitatory.neurons_het$diffexpressed <- "NO"
 # if log2Foldchange > 0.1 and pvalue < 0.05, set as "UP"
 excitatory.neurons_het$diffexpressed[excitatory.neurons_het$avg_log2FC > 0.1 & excitatory.neurons_het$p_val < 0.05] <- "UP"
 # if log2Foldchange < -0.1 and pvalue < 0.05, set as "DOWN"
 excitatory.neurons_het$diffexpressed[excitatory.neurons_het$avg_log2FC < -0.1 & excitatory.neurons_het$p_val < 0.05] <- "DOWN"
-# Re-plot but this time color the points with "diffexpressed"
-p <- ggplot(data = excitatory.neurons_het, aes(x = avg_log2FC, y = -log10(p_val), col = diffexpressed)) +
-  geom_point() +
-  theme_minimal()
-# Add lines as before...
-p2 <- p + geom_vline(xintercept = c(-0.1, 0.1), col = "red") +
-  geom_hline(yintercept = -log10(0.05), col = "red")
-p2
-x <- subset(excitatory.neurons_het, gene == "Setbp1")
-p4 <- p + geom_point(data = x, colour = "black")
-p4
-## Change point color
-# 1. by default, it is assigned to the categories in an alphabetical order):
-p3 <- p2 + scale_color_manual(values = c("blue", "black", "red"))
-# 2. to automate a bit: create a named vector: the values are the colors to be used, the names are the categories they will be assigned to:
-mycolors <- c("blue", "red", "black")
-names(mycolors) <- c("DOWN", "UP", "NO")
-p3 <- p2 + scale_colour_manual(values = mycolors)
-p3
-# label points:
-excitatory.neurons_het$delabel <- NA
-excitatory.neurons_het$delabel[excitatory.neurons_het$diffexpressed != "NO"] <- excitatory.neurons_het$gene[excitatory.neurons_het$diffexpressed != "NO"]
-ggplot(data = excitatory.neurons_het, aes(x = avg_log2FC, y = -log10(p_val), col = diffexpressed, label = delabel)) +
-  geom_point() +
-  geom_point() +
-  theme_minimal()
 ```
 
 
@@ -139,43 +110,12 @@ head(inhibitory.neurons_data, n = 5)
 inhibitory.neurons_het <- inhibitory.neurons_data[inhibitory.neurons_data$p_val < 0.5 & inhibitory.neurons_data$avg_log2FC > 0.1 | inhibitory.neurons_data$avg_log2FC < -0.1, ]
 inhibitory.neurons_het <- inhibitory.neurons_het[inhibitory.neurons_het$cluster == "heterozygous", ]
 
-p <- ggplot(data = inhibitory.neurons_het, aes(x = avg_log2FC, y = -log10(p_val))) +
-  geom_point() +
-  theme_minimal()
-p2 <- p + geom_vline(xintercept = c(-0.1, 0.1), col = "red") + geom_hline(yintercept = -log10(0.05), col = "red")
-p2
 # add column to data to indicate if DE or not:
 inhibitory.neurons_het$diffexpressed <- "NO"
 # if log2Foldchange > 0.1 and pvalue < 0.05, set as "UP"
 inhibitory.neurons_het$diffexpressed[inhibitory.neurons_het$avg_log2FC > 0.1 & inhibitory.neurons_het$p_val < 0.05] <- "UP"
 # if log2Foldchange < -0.1 and pvalue < 0.05, set as "DOWN"
 inhibitory.neurons_het$diffexpressed[inhibitory.neurons_het$avg_log2FC < -0.1 & inhibitory.neurons_het$p_val < 0.05] <- "DOWN"
-# Re-plot but this time color the points with "diffexpressed"
-p <- ggplot(data = inhibitory.neurons_het, aes(x = avg_log2FC, y = -log10(p_val), col = diffexpressed)) +
-  geom_point() +
-  theme_minimal()
-# Add lines as before...
-p2 <- p + geom_vline(xintercept = c(-0.1, 0.1), col = "red") +
-  geom_hline(yintercept = -log10(0.05), col = "red")
-p2
-x <- subset(inhibitory.neurons_het, gene == "Setbp1")
-p4 <- p + geom_point(data = x, colour = "black")
-p4
-## Change point color
-# 1. by default, it is assigned to the categories in an alphabetical order):
-p3 <- p2 + scale_color_manual(values = c("blue", "black", "red"))
-# 2. to automate a bit: create a named vector: the values are the colors to be used, the names are the categories they will be assigned to:
-mycolors <- c("blue", "red", "black")
-names(mycolors) <- c("DOWN", "UP", "NO")
-p3 <- p2 + scale_colour_manual(values = mycolors)
-p3
-# label points:
-inhibitory.neurons_het$delabel <- NA
-inhibitory.neurons_het$delabel[inhibitory.neurons_het$diffexpressed != "NO"] <- inhibitory.neurons_het$gene[inhibitory.neurons_het$diffexpressed != "NO"]
-ggplot(data = inhibitory.neurons_het, aes(x = avg_log2FC, y = -log10(p_val), col = diffexpressed, label = delabel)) +
-  geom_point() +
-  geom_point() +
-  theme_minimal()
 ```
 
 
@@ -192,43 +132,12 @@ head(astrocytes_data, n = 5)
 astrocytes_het <- astrocytes_data[astrocytes_data$p_val < 0.5 & astrocytes_data$avg_log2FC > 0.1 | astrocytes_data$avg_log2FC < -0.1, ]
 astrocytes_het <- astrocytes_het[astrocytes_het$cluster == "heterozygous", ]
 
-p <- ggplot(data = astrocytes_het, aes(x = avg_log2FC, y = -log10(p_val))) +
-  geom_point() +
-  theme_minimal()
-p2 <- p + geom_vline(xintercept = c(-0.1, 0.1), col = "red") + geom_hline(yintercept = -log10(0.05), col = "red")
-p2
 # add column to data to indicate if DE or not:
 astrocytes_het$diffexpressed <- "NO"
 # if log2Foldchange > 0.1 and pvalue < 0.05, set as "UP"
 astrocytes_het$diffexpressed[astrocytes_het$avg_log2FC > 0.1 & astrocytes_het$p_val < 0.05] <- "UP"
 # if log2Foldchange < -0.1 and pvalue < 0.05, set as "DOWN"
 astrocytes_het$diffexpressed[astrocytes_het$avg_log2FC < -0.1 & astrocytes_het$p_val < 0.05] <- "DOWN"
-# Re-plot but this time color the points with "diffexpressed"
-p <- ggplot(data = astrocytes_het, aes(x = avg_log2FC, y = -log10(p_val), col = diffexpressed)) +
-  geom_point() +
-  theme_minimal()
-# Add lines as before...
-p2 <- p + geom_vline(xintercept = c(-0.1, 0.1), col = "red") +
-  geom_hline(yintercept = -log10(0.05), col = "red")
-p2
-x <- subset(astrocytes_het, gene == "Setbp1")
-p4 <- p + geom_point(data = x, colour = "black")
-p4
-## Change point color
-# 1. by default, it is assigned to the categories in an alphabetical order):
-p3 <- p2 + scale_color_manual(values = c("blue", "black", "red"))
-# 2. to automate a bit: create a named vector: the values are the colors to be used, the names are the categories they will be assigned to:
-mycolors <- c("blue", "red", "black")
-names(mycolors) <- c("DOWN", "UP", "NO")
-p3 <- p2 + scale_colour_manual(values = mycolors)
-p3
-# label points:
-astrocytes_het$delabel <- NA
-astrocytes_het$delabel[astrocytes_het$diffexpressed != "NO"] <- astrocytes_het$gene[astrocytes_het$diffexpressed != "NO"]
-ggplot(data = astrocytes_het, aes(x = avg_log2FC, y = -log10(p_val), col = diffexpressed, label = delabel)) +
-  geom_point() +
-  geom_point() +
-  theme_minimal()
 ```
 
 
@@ -245,45 +154,13 @@ head(microglia_data, n = 5)
 microglia_het <- microglia_data[microglia_data$p_val < 0.5 & microglia_data$avg_log2FC > 0.1 | microglia_data$avg_log2FC < -0.1, ]
 microglia_het <- microglia_het[microglia_het$cluster == "heterozygous", ]
 
-p <- ggplot(data = microglia_het, aes(x = avg_log2FC, y = -log10(p_val))) +
-  geom_point() +
-  theme_minimal()
-p2 <- p + geom_vline(xintercept = c(-0.1, 0.1), col = "red") + geom_hline(yintercept = -log10(0.05), col = "red")
-p2
 # add column to data to indicate if DE or not:
 microglia_het$diffexpressed <- "NO"
 # if log2Foldchange > 0.1 and pvalue < 0.05, set as "UP"
 microglia_het$diffexpressed[microglia_het$avg_log2FC > 0.1 & microglia_het$p_val < 0.05] <- "UP"
 # if log2Foldchange < -0.1 and pvalue < 0.05, set as "DOWN"
 microglia_het$diffexpressed[microglia_het$avg_log2FC < -0.1 & microglia_het$p_val < 0.05] <- "DOWN"
-# Re-plot but this time color the points with "diffexpressed"
-p <- ggplot(data = microglia_het, aes(x = avg_log2FC, y = -log10(p_val), col = diffexpressed)) +
-  geom_point() +
-  theme_minimal()
-# Add lines as before...
-p2 <- p + geom_vline(xintercept = c(-0.1, 0.1), col = "red") +
-  geom_hline(yintercept = -log10(0.05), col = "red")
-p2
-x <- subset(microglia_het, gene == "Setbp1")
-p4 <- p + geom_point(data = x, colour = "black")
-p4
-## Change point color
-# 1. by default, it is assigned to the categories in an alphabetical order):
-p3 <- p2 + scale_color_manual(values = c("blue", "black", "red"))
-# 2. to automate a bit: create a named vector: the values are the colors to be used, the names are the categories they will be assigned to:
-mycolors <- c("blue", "red", "black")
-names(mycolors) <- c("DOWN", "UP", "NO")
-p3 <- p2 + scale_colour_manual(values = mycolors)
-p3
-# label points:
-microglia_het$delabel <- NA
-microglia_het$delabel[microglia_het$diffexpressed != "NO"] <- microglia_het$gene[microglia_het$diffexpressed != "NO"]
-ggplot(data = microglia_het, aes(x = avg_log2FC, y = -log10(p_val), col = diffexpressed, label = delabel)) +
-  geom_point() +
-  geom_point() +
-  theme_minimal()
 ```
-
 
 
 ---mural---
@@ -299,43 +176,12 @@ head(mural.cells_data, n = 5)
 mural.cells_het <- mural.cells_data[mural.cells_data$p_val < 0.5 & mural.cells_data$avg_log2FC > 0.1 | mural.cells_data$avg_log2FC < -0.1, ]
 mural.cells_het <- mural.cells_het[mural.cells_het$cluster == "heterozygous", ]
 
-p <- ggplot(data = mural.cells_het, aes(x = avg_log2FC, y = -log10(p_val))) +
-  geom_point() +
-  theme_minimal()
-p2 <- p + geom_vline(xintercept = c(-0.1, 0.1), col = "red") + geom_hline(yintercept = -log10(0.05), col = "red")
-p2
 # add column to data to indicate if DE or not:
 mural.cells_het$diffexpressed <- "NO"
 # if log2Foldchange > 0.1 and pvalue < 0.05, set as "UP"
 mural.cells_het$diffexpressed[mural.cells_het$avg_log2FC > 0.1 & mural.cells_het$p_val < 0.05] <- "UP"
 # if log2Foldchange < -0.1 and pvalue < 0.05, set as "DOWN"
 mural.cells_het$diffexpressed[mural.cells_het$avg_log2FC < -0.1 & mural.cells_het$p_val < 0.05] <- "DOWN"
-# Re-plot but this time color the points with "diffexpressed"
-p <- ggplot(data = mural.cells_het, aes(x = avg_log2FC, y = -log10(p_val), col = diffexpressed)) +
-  geom_point() +
-  theme_minimal()
-# Add lines as before...
-p2 <- p + geom_vline(xintercept = c(-0.1, 0.1), col = "red") +
-  geom_hline(yintercept = -log10(0.05), col = "red")
-p2
-x <- subset(mural.cells_het, gene == "Setbp1")
-p4 <- p + geom_point(data = x, colour = "black")
-p4
-## Change point color
-# 1. by default, it is assigned to the categories in an alphabetical order):
-p3 <- p2 + scale_color_manual(values = c("blue", "black", "red"))
-# 2. to automate a bit: create a named vector: the values are the colors to be used, the names are the categories they will be assigned to:
-mycolors <- c("blue", "red", "black")
-names(mycolors) <- c("DOWN", "UP", "NO")
-p3 <- p2 + scale_colour_manual(values = mycolors)
-p3
-# label points:
-mural.cells_het$delabel <- NA
-mural.cells_het$delabel[mural.cells_het$diffexpressed != "NO"] <- mural.cells_het$gene[mural.cells_het$diffexpressed != "NO"]
-ggplot(data = mural.cells_het, aes(x = avg_log2FC, y = -log10(p_val), col = diffexpressed, label = delabel)) +
-  geom_point() +
-  geom_point() +
-  theme_minimal()
 ```
 
 ---opcs---
@@ -351,43 +197,12 @@ head(opcs_data, n = 5)
 opcs_het <- opcs_data[opcs_data$p_val < 0.5 & opcs_data$avg_log2FC > 0.1 | opcs_data$avg_log2FC < -0.1, ]
 opcs_het <- opcs_het[opcs_het$cluster == "heterozygous", ]
 
-p <- ggplot(data = opcs_het, aes(x = avg_log2FC, y = -log10(p_val))) +
-  geom_point() +
-  theme_minimal()
-p2 <- p + geom_vline(xintercept = c(-0.1, 0.1), col = "red") + geom_hline(yintercept = -log10(0.05), col = "red")
-p2
 # add column to data to indicate if DE or not:
 opcs_het$diffexpressed <- "NO"
 # if log2Foldchange > 0.1 and pvalue < 0.05, set as "UP"
 opcs_het$diffexpressed[opcs_het$avg_log2FC > 0.1 & opcs_het$p_val < 0.05] <- "UP"
 # if log2Foldchange < -0.1 and pvalue < 0.05, set as "DOWN"
 opcs_het$diffexpressed[opcs_het$avg_log2FC < -0.1 & opcs_het$p_val < 0.05] <- "DOWN"
-# Re-plot but this time color the points with "diffexpressed"
-p <- ggplot(data = opcs_het, aes(x = avg_log2FC, y = -log10(p_val), col = diffexpressed)) +
-  geom_point() +
-  theme_minimal()
-# Add lines as before...
-p2 <- p + geom_vline(xintercept = c(-0.1, 0.1), col = "red") +
-  geom_hline(yintercept = -log10(0.05), col = "red")
-p2
-x <- subset(opcs_het, gene == "Setbp1")
-p4 <- p + geom_point(data = x, colour = "black")
-p4
-## Change point color
-# 1. by default, it is assigned to the categories in an alphabetical order):
-p3 <- p2 + scale_color_manual(values = c("blue", "black", "red"))
-# 2. to automate a bit: create a named vector: the values are the colors to be used, the names are the categories they will be assigned to:
-mycolors <- c("blue", "red", "black")
-names(mycolors) <- c("DOWN", "UP", "NO")
-p3 <- p2 + scale_colour_manual(values = mycolors)
-p3
-# label points:
-opcs_het$delabel <- NA
-opcs_het$delabel[opcs_het$diffexpressed != "NO"] <- opcs_het$gene[opcs_het$diffexpressed != "NO"]
-ggplot(data = opcs_het, aes(x = avg_log2FC, y = -log10(p_val), col = diffexpressed, label = delabel)) +
-  geom_point() +
-  geom_point() +
-  theme_minimal()
 ```
 
 
@@ -404,43 +219,12 @@ head(oligodendrocytes_data, n = 5)
 oligodendrocytes_het <- oligodendrocytes_data[oligodendrocytes_data$p_val < 0.5 & oligodendrocytes_data$avg_log2FC > 0.1 | oligodendrocytes_data$avg_log2FC < -0.1, ]
 oligodendrocytes_het <- oligodendrocytes_het[oligodendrocytes_het$cluster == "heterozygous", ]
 
-p <- ggplot(data = oligodendrocytes_het, aes(x = avg_log2FC, y = -log10(p_val))) +
-  geom_point() +
-  theme_minimal()
-p2 <- p + geom_vline(xintercept = c(-0.1, 0.1), col = "red") + geom_hline(yintercept = -log10(0.05), col = "red")
-p2
 # add column to data to indicate if DE or not:
 oligodendrocytes_het$diffexpressed <- "NO"
 # if log2Foldchange > 0.1 and pvalue < 0.05, set as "UP"
 oligodendrocytes_het$diffexpressed[oligodendrocytes_het$avg_log2FC > 0.1 & oligodendrocytes_het$p_val < 0.05] <- "UP"
 # if log2Foldchange < -0.1 and pvalue < 0.05, set as "DOWN"
 oligodendrocytes_het$diffexpressed[oligodendrocytes_het$avg_log2FC < -0.1 & oligodendrocytes_het$p_val < 0.05] <- "DOWN"
-# Re-plot but this time color the points with "diffexpressed"
-p <- ggplot(data = oligodendrocytes_het, aes(x = avg_log2FC, y = -log10(p_val), col = diffexpressed)) +
-  geom_point() +
-  theme_minimal()
-# Add lines as before...
-p2 <- p + geom_vline(xintercept = c(-0.1, 0.1), col = "red") +
-  geom_hline(yintercept = -log10(0.05), col = "red")
-p2
-x <- subset(oligodendrocytes_het, gene == "Setbp1")
-p4 <- p + geom_point(data = x, colour = "black")
-p4
-## Change point color
-# 1. by default, it is assigned to the categories in an alphabetical order):
-p3 <- p2 + scale_color_manual(values = c("blue", "black", "red"))
-# 2. to automate a bit: create a named vector: the values are the colors to be used, the names are the categories they will be assigned to:
-mycolors <- c("blue", "red", "black")
-names(mycolors) <- c("DOWN", "UP", "NO")
-p3 <- p2 + scale_colour_manual(values = mycolors)
-p3
-# label points:
-oligodendrocytes_het$delabel <- NA
-oligodendrocytes_het$delabel[oligodendrocytes_het$diffexpressed != "NO"] <- oligodendrocytes_het$gene[oligodendrocytes_het$diffexpressed != "NO"]
-ggplot(data = oligodendrocytes_het, aes(x = avg_log2FC, y = -log10(p_val), col = diffexpressed, label = delabel)) +
-  geom_point() +
-  geom_point() +
-  theme_minimal()
 ```
 
 ---fibroblasts---
@@ -453,62 +237,30 @@ head(fibroblasts_data, n = 5)
 ```
 
 
-
 ```{r}
 fibroblasts_het <- fibroblasts_data[fibroblasts_data$p_val < 0.5 & fibroblasts_data$avg_log2FC > 0.1 | fibroblasts_data$avg_log2FC < -0.1, ]
 fibroblasts_het <- fibroblasts_het[fibroblasts_het$cluster == "heterozygous", ]
 
-p <- ggplot(data = fibroblasts_het, aes(x = avg_log2FC, y = -log10(p_val))) +
-  geom_point() +
-  theme_minimal()
-p2 <- p + geom_vline(xintercept = c(-0.1, 0.1), col = "red") + geom_hline(yintercept = -log10(0.05), col = "red")
-p2
 # add column to data to indicate if DE or not:
 fibroblasts_het$diffexpressed <- "NO"
 # if log2Foldchange > 0.1 and pvalue < 0.05, set as "UP"
 fibroblasts_het$diffexpressed[fibroblasts_het$avg_log2FC > 0.1 & fibroblasts_het$p_val < 0.05] <- "UP"
 # if log2Foldchange < -0.1 and pvalue < 0.05, set as "DOWN"
 fibroblasts_het$diffexpressed[fibroblasts_het$avg_log2FC < -0.1 & fibroblasts_het$p_val < 0.05] <- "DOWN"
-# Re-plot but this time color the points with "diffexpressed"
-p <- ggplot(data = fibroblasts_het, aes(x = avg_log2FC, y = -log10(p_val), col = diffexpressed)) +
-  geom_point() +
-  theme_minimal()
-# Add lines as before...
-p2 <- p + geom_vline(xintercept = c(-0.1, 0.1), col = "red") +
-  geom_hline(yintercept = -log10(0.05), col = "red")
-p2
-x <- subset(fibroblasts_het, gene == "Setbp1")
-p4 <- p + geom_point(data = x, colour = "black")
-p4
-## Change point color
-# 1. by default, it is assigned to the categories in an alphabetical order):
-p3 <- p2 + scale_color_manual(values = c("blue", "black", "red"))
-# 2. to automate a bit: create a named vector: the values are the colors to be used, the names are the categories they will be assigned to:
-mycolors <- c("blue", "red", "black")
-names(mycolors) <- c("DOWN", "UP", "NO")
-p3 <- p2 + scale_colour_manual(values = mycolors)
-p3
-# label points:
-fibroblasts_het$delabel <- NA
-fibroblasts_het$delabel[fibroblasts_het$diffexpressed != "NO"] <- fibroblasts_het$gene[fibroblasts_het$diffexpressed != "NO"]
-ggplot(data = fibroblasts_het, aes(x = avg_log2FC, y = -log10(p_val), col = diffexpressed, label = delabel)) +
-  geom_point() +
-  geom_point() +
-  theme_minimal()
 ```
 
 
 
 #### saving all DEG in heterozygous as .csv for supplementary methods:
 ```{r}
-write.csv(astrocytes_het, here("results/seurat/DEG_astrocytes.csv"), row.names = FALSE)
-write.csv(excitatory.neurons_het, here("results/seurat/DEG_excitatory.neurons.csv"), row.names = FALSE)
-write.csv(inhibitory.neurons_het, here("results/seurat/DEG_inhibitory.neurons.csv"), row.names = FALSE)
-write.csv(microglia_het, here("results/seurat/DEG_microglia.csv"), row.names = FALSE)
-write.csv(mural.cells_het, here("results/seurat/DEG_mural.cells.csv"), row.names = FALSE)
-write.csv(oligodendrocytes_het, here("results/seurat/DEG_oligodendrocytes.csv"), row.names = FALSE)
-write.csv(opcs_het, here("results/seurat/DEG_opcs.csv"), row.names = FALSE)
-write.csv(fibroblasts_het, here("results/seurat/DEG_fibroblasts.csv"), row.names = FALSE)
+write.csv(astrocytes_het, here("results/seurat/DGE_07/DEG_astrocytes.csv"), row.names = FALSE)
+write.csv(excitatory.neurons_het, here("results/seurat/DGE_07/DEG_excitatory.neurons.csv"), row.names = FALSE)
+write.csv(inhibitory.neurons_het, here("results/seurat/DGE_07/DEG_inhibitory.neurons.csv"), row.names = FALSE)
+write.csv(microglia_het, here("results/seurat/DGE_07/DEG_microglia.csv"), row.names = FALSE)
+write.csv(mural.cells_het, here("results/seurat/DGE_07/DEG_mural.cells.csv"), row.names = FALSE)
+write.csv(oligodendrocytes_het, here("results/seurat/DGE_07/DEG_oligodendrocytes.csv"), row.names = FALSE)
+write.csv(opcs_het, here("results/seurat/DGE_07/DEG_opcs.csv"), row.names = FALSE)
+write.csv(fibroblasts_het, here("results/seurat/DGE_07/DEG_fibroblasts.csv"), row.names = FALSE)
 ```
 
 Outputs at log2FC of 0.1, for downstream analysis 
@@ -521,36 +273,6 @@ save(opcs_het, file = here("results/DEG/opcs_het_DEG01.Rdata"))
 save(mural.cells_het, file = here("results/DEG/mural_het_DEG01.Rdata"))
 save(microglia_het, file = here("results/DEG/micro_het_DEG01.Rdata"))
 save(fibroblasts_het, file = here("results/DEG/fibro_het_DEG01.Rdata"))
-```
-
-
-#### plotting histrograms of log2FC at 0.1 with pvalue <0.05 in het:
-
-```{r}
-ggplot(astrocytes_het, aes(x = avg_log2FC)) +
-  geom_histogram() +
-  ggtitle("Heterozygous -0.1 < Log2FC > 0.1 Distribution in Astro, p-value < 0.05  ")
-ggplot(excitatory.neurons_het, aes(x = avg_log2FC)) +
-  geom_histogram() +
-  ggtitle("Heterozygous -0.1 < Log2FC > 0.1 Distribution in Ex neuro")
-ggplot(inhibitory.neurons_het, aes(x = avg_log2FC)) +
-  geom_histogram() +
-  ggtitle("Heterozygous -0.1 < Log2FC > 0.1 Distribution in In neuro, p-value < 0.05  ")
-ggplot(microglia_het, aes(x = avg_log2FC)) +
-  geom_histogram() +
-  ggtitle("Heterozygous -0.1 < Log2FC > 0.1 Distribution in Micro, p-value < 0.05  ")
-ggplot(mural.cells_het, aes(x = avg_log2FC)) +
-  geom_histogram() +
-  ggtitle("Heterozygous -0.1 < Log2FC > 0.1 Distribution in Mural, p-value < 0.05  ")
-ggplot(opcs_het, aes(x = avg_log2FC)) +
-  geom_histogram() +
-  ggtitle("Heterozygous -0.1 < Log2FC > 0.1 Distribution in Opcs, p-value < 0.05  ")
-ggplot(oligodendrocytes_het, aes(x = avg_log2FC)) +
-  geom_histogram() +
-  ggtitle("Heterozygous -0.1 < Log2FC > 0.1 Distribution in Oligodendrocytes, p-value < 0.05  ")
-ggplot(fibroblasts_het, aes(x = avg_log2FC)) +
-  geom_histogram() +
-  ggtitle("Heterozygous -0.1 < Log2FC > 0.1 Distribution in Fibroblasts, p-value < 0.05  ")
 ```
 
 ### For loop to generate combined DEG output at log2FC threshold of 0.1:
@@ -580,9 +302,9 @@ for (i in celltypes) {
   DEGs_cerebralcells <- rbind(DEGs_cerebralcells, DEGs)
 }
 
-#write.csv(DEGs_cerebralcells, file = here("results/seurat/DEGs_cerebralcells.csv")) #written out once then commented out
+write.csv(DEGs_cerebralcells, file = here("results/seurat/DGE_07/DEGs_cerebralcells.csv")) #written out once then commented out
 
-DEGs_cerebralcells <- read.csv(here("results/seurat/DEGs_cerebralcells.csv"))
+DEGs_cerebralcells <- read.csv(here("results/seurat/DGE_07/DEGs_cerebralcells.csv"))
 ```
 
 
@@ -662,6 +384,47 @@ Heatmap(mat,
 )
 dev.off()
 ```
+
+```{r}
+sessionInfo()
+```
+R version 4.1.3 (2022-03-10)
+Platform: x86_64-pc-linux-gnu (64-bit)
+Running under: Ubuntu 20.04.5 LTS
+
+Matrix products: default
+BLAS/LAPACK: /usr/lib/x86_64-linux-gnu/openblas-pthread/libopenblasp-r0.3.8.so
+
+locale:
+[1] C
+
+attached base packages:
+[1] grid      stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+ [1] lintr_3.0.2           styler_1.9.0          here_1.0.1            circlize_0.4.15       ComplexHeatmap_2.10.0 dplyr_1.1.0           tidyr_1.3.0          
+ [8] ggplot2_3.4.1         SeuratObject_4.1.3    Seurat_4.3.0         
+
+loaded via a namespace (and not attached):
+  [1] plyr_1.8.8             igraph_1.4.1           lazyeval_0.2.2         sp_1.6-0               splines_4.1.3          listenv_0.9.0          scattermore_0.8       
+  [8] digest_0.6.31          foreach_1.5.2          htmltools_0.5.4        fansi_1.0.4            magrittr_2.0.3         tensor_1.5             cluster_2.1.2         
+ [15] doParallel_1.0.17      ROCR_1.0-11            remotes_2.4.2          globals_0.16.2         matrixStats_0.63.0     R.utils_2.12.2         spatstat.sparse_3.0-0 
+ [22] colorspace_2.1-0       ggrepel_0.9.3          xfun_0.37              callr_3.7.3            crayon_1.5.2           jsonlite_1.8.4         progressr_0.13.0      
+ [29] spatstat.data_3.0-0    survival_3.3-1         zoo_1.8-11             iterators_1.0.14       glue_1.6.2             polyclip_1.10-4        gtable_0.3.1          
+ [36] leiden_0.4.3           GetoptLong_1.0.5       R.cache_0.16.0         future.apply_1.10.0    shape_1.4.6            BiocGenerics_0.40.0    abind_1.4-5           
+ [43] scales_1.2.1           spatstat.random_3.1-3  miniUI_0.1.1.1         Rcpp_1.0.10            viridisLite_0.4.1      xtable_1.8-4           clue_0.3-64           
+ [50] reticulate_1.28        stats4_4.1.3           htmlwidgets_1.6.1      rex_1.2.1              httr_1.4.5             RColorBrewer_1.1-3     ellipsis_0.3.2        
+ [57] ica_1.0-3              pkgconfig_2.0.3        R.methodsS3_1.8.2      uwot_0.1.14            deldir_1.0-6           utf8_1.2.3             tidyselect_1.2.0      
+ [64] rlang_1.0.6            reshape2_1.4.4         later_1.3.0            munsell_0.5.0          tools_4.1.3            cli_3.6.0              generics_0.1.3        
+ [71] ggridges_0.5.4         stringr_1.5.0          fastmap_1.1.1          goftest_1.2-3          processx_3.8.0         knitr_1.42             fitdistrplus_1.1-8    
+ [78] purrr_1.0.1            RANN_2.6.1             pbapply_1.7-0          future_1.31.0          nlme_3.1-155           mime_0.12              R.oo_1.25.0           
+ [85] xml2_1.3.3             compiler_4.1.3         rstudioapi_0.14        plotly_4.10.1          png_0.1-8              spatstat.utils_3.0-1   tibble_3.1.8          
+ [92] stringi_1.7.12         cyclocomp_1.1.0        ps_1.7.2               desc_1.4.2             lattice_0.20-45        Matrix_1.5-3           vctrs_0.5.2           
+ [99] pillar_1.8.1           lifecycle_1.0.3        spatstat.geom_3.0-6    lmtest_0.9-40          GlobalOptions_0.1.2    RcppAnnoy_0.0.20       data.table_1.14.8     
+[106] cowplot_1.1.1          irlba_2.3.5.1          httpuv_1.6.9           patchwork_1.1.2        R6_2.5.1               promises_1.2.0.1       KernSmooth_2.23-20    
+[113] gridExtra_2.3          IRanges_2.28.0         parallelly_1.34.0      codetools_0.2-18       MASS_7.3-55            rprojroot_2.0.3        rjson_0.2.21          
+[120] withr_2.5.0            sctransform_0.3.5      S4Vectors_0.32.4       parallel_4.1.3         Rtsne_0.16             spatstat.explore_3.0-6 shiny_1.7.4          
+
 
 ```{r}
 # run style
