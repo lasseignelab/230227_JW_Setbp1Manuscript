@@ -1,9 +1,5 @@
 #set up libPath. NOTE: THE USER MUST CHANGE TO THEIR USERNAME
-<<<<<<< Updated upstream
-##set user for file path below
-=======
 ##set user
->>>>>>> Stashed changes
 username <- "jbarham3"
 
 ##give libpath
@@ -35,7 +31,7 @@ ppi <- read.table(file = here("data/processed/ppi_inputs/mm10_ppi.txt"), sep = "
 #make list of expression files needed to loop through
 files <- list.files(here("data/processed/expression_inputs"), pattern = "expression.Rdata", full.names = TRUE)
 files <- files[c(19, 20, 23, 24, 25, 26, 29, 30, 33, 34, 35, 36, 37, 38, 39, 40)]#grab all cerebral samples
-
+files
 
 #run for loop
 for(i in files){
@@ -47,5 +43,6 @@ for(i in files){
   pandaResults <- makePanda(motif, ppi, expression)
   name <- sub(".Rdata", "", basename(i))
   save(pandaResults, file = paste0(here("results/PANDA/"), name, "_PANDA.Rdata"))
+  rm(pandaResults)
   print(paste0(name, "_PANDA network made and saved."))
 }

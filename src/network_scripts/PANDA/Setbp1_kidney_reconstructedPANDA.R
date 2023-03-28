@@ -29,12 +29,12 @@ motif <- read.table(file = here("data/processed/motif_inputs/mus_motif_all.txt")
 ppi <- read.table(file = here("data/processed/ppi_inputs/mm10_ppi.txt"), sep = "\t") #load in ppi data
 
 #make list of expression files needed to loop through
-files <- list.files(here("data/processed/expression_inputs/"), pattern = "expression.Rdata", full.names = TRUE)
-files <- files[c(3,4,5,6,7,8,9,10,11,12,13,14,15,16,19,20,21,22,25,26,27,28,37,38,39,40,41,42,43,44,45,46)]#grab all kidney samples
-
+files <- list.files(here("data/processed/expression_inputs"), pattern = "expression.Rdata", full.names = TRUE)
+files <- files[c(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,21,22,27,28,31,32,41,42,43,44)]#grab all kidney samples
+files
 
 #run for loop
-for(i in files[2:32]){
+for(i in files){
   #load in the expression data files needed and rename:
   fileName = i
   expression <- loadRData(fileName)
@@ -42,7 +42,7 @@ for(i in files[2:32]){
   set.seed(1235)
   pandaResults <- makePanda(motif, ppi, expression)
   name <- sub(".Rdata", "", basename(i))
-  save(pandaResults, file = paste0(name, "_PANDA.Rdata"))
+  save(pandaResults, file = paste0(here("results/PANDA/"), name, "_PANDA.Rdata"))
   rm(pandaResults)
   print(paste0(name, "_PANDA network made and saved."))
 }
