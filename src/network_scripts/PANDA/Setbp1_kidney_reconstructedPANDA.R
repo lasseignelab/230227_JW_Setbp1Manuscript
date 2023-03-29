@@ -29,8 +29,7 @@ motif <- read.table(file = here("data/processed/motif_inputs/mus_motif_all.txt")
 ppi <- read.table(file = here("data/processed/ppi_inputs/mm10_ppi.txt"), sep = "\t") #load in ppi data
 
 #make list of expression files needed to loop through
-files <- list.files(here("data/processed/expression_inputs"), pattern = "expression.Rdata", full.names = TRUE)
-files <- files[c(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,21,22,27,28,31,32,41,42,43,44)]#grab all kidney samples
+files <- list.files(here("data/processed/expression_inputs"), pattern = "kidneyexpression.Rdata", full.names = TRUE)
 files
 
 #run for loop
@@ -39,7 +38,7 @@ for(i in files){
   fileName = i
   expression <- loadRData(fileName)
   #run panda on multi-omic inputs
-  set.seed(1235)
+  set.seed(2178)
   pandaResults <- makePanda(motif, ppi, expression)
   name <- sub(".Rdata", "", basename(i))
   save(pandaResults, file = paste0(here("results/PANDA/"), name, "_PANDA.Rdata"))

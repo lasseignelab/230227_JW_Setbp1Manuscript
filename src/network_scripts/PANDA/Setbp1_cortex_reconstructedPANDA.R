@@ -29,8 +29,7 @@ motif <- read.table(file = here("data/processed/motif_inputs/mus_motif_all.txt")
 ppi <- read.table(file = here("data/processed/ppi_inputs/mm10_ppi.txt"), sep = "\t") #load in ppi data
 
 #make list of expression files needed to loop through
-files <- list.files(here("data/processed/expression_inputs"), pattern = "expression.Rdata", full.names = TRUE)
-files <- files[c(19, 20, 23, 24, 25, 26, 29, 30, 33, 34, 35, 36, 37, 38, 39, 40)]#grab all cerebral samples
+files <- list.files(here("data/processed/expression_inputs"), pattern = "cortexexpression.Rdata", full.names = TRUE)
 files
 
 #run for loop

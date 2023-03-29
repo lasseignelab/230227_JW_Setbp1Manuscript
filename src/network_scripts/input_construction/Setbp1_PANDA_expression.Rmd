@@ -11,8 +11,10 @@ library(SingleCellExperiment)
 library(Matrix)
 library(grr)
 library(magrittr)
+library(Seurat)
 library(styler)
 library(lintr)
+library(here)
 source(here("src/functions/functions.R"))
 ```
 
@@ -163,67 +165,82 @@ table(heterozygous_cerebral_sce$cluster_id, heterozygous_cerebral_sce$orig.ident
 # control matrices ----------
 inhibitory.neurons <- as.data.frame(control_cerebral_agg$inhibitory.neurons)
 save(inhibitory.neurons,
-     file = here("data/processed/expression_inputs/inhibitory.neurons.controlexpression.Rdata"))
+  file = here("data/processed/expression_inputs/inhibitory.neurons.controlcortexexpression.Rdata")
+)
 
 excitatory.neurons <- as.data.frame(control_cerebral_agg$excitatory.neurons)
 save(excitatory.neurons,
-     file = here("data/processed/expression_inputs/excitatory.neurons.controlexpression.Rdata"))
+  file = here("data/processed/expression_inputs/excitatory.neurons.controlcortexexpression.Rdata")
+)
 
 astrocytes <- as.data.frame(control_cerebral_agg$astrocytes)
 save(astrocytes,
-     file = here("data/processed/expression_inputs/astrocytes.controlexpression.Rdata"))
+  file = here("data/processed/expression_inputs/astrocytes.controlcortexexpression.Rdata")
+)
 
 oligodendrocytes <- as.data.frame(control_cerebral_agg$oligodendrocytes)
 save(oligodendrocytes,
-     file = here("data/processed/expression_inputs/oligodendrocytes.controlexpression.Rdata"))
+  file = here("data/processed/expression_inputs/oligodendrocytes.controlcortexexpression.Rdata")
+)
 
 opcs <- as.data.frame(control_cerebral_agg$oligodendrocyte.precursor.cells)
 save(opcs,
-     file = here("data/processed/expression_inputs/opcs.controlexpression.Rdata"))
+  file = here("data/processed/expression_inputs/opcs.controlcortexexpression.Rdata")
+)
 
 microglia <- as.data.frame(control_cerebral_agg$microglia)
 save(microglia,
-     file = here("data/processed/expression_inputs/microglia.controlexpression.Rdata"))
+  file = here("data/processed/expression_inputs/microglia.controlcortexexpression.Rdata")
+)
 
 mural <- as.data.frame(control_cerebral_agg$mural.cells)
 save(mural,
-     file = here("data/processed/expression_inputs/mural.controlexpression.Rdata"))
+  file = here("data/processed/expression_inputs/mural.controlcortexexpression.Rdata")
+)
 
 fibro_cortex <- as.data.frame(control_cerebral_agg$fibroblasts)
 save(fibro_cortex,
-     file = here("data/processed/expression_inputs/fibro_cortex.controlexpression.Rdata"))
+  file = here("data/processed/expression_inputs/fibro_cortex.controlcortexexpression.Rdata")
+)
 
 # heterozygous matrices ----------
 inhibitory.neurons <- as.data.frame(heterozygous_cerebral_agg$inhibitory.neurons)
 save(inhibitory.neurons,
-     file = here("data/processed/expression_inputs/inhibitory.neurons.heterozygousexpression.Rdata"))
+  file = here("data/processed/expression_inputs/inhibitory.neurons.heterozygouscortexexpression.Rdata")
+)
 
 excitatory.neurons <- as.data.frame(heterozygous_cerebral_agg$excitatory.neurons)
 save(excitatory.neurons,
-     file = here("data/processed/expression_inputs/excitatory.neurons.heterozygousexpression.Rdata"))
+  file = here("data/processed/expression_inputs/excitatory.neurons.heterozygouscortexexpression.Rdata")
+)
 
 astrocytes <- as.data.frame(heterozygous_cerebral_agg$astrocytes)
 save(astrocytes,
-     file = here("data/processed/expression_inputs/astrocytes.heterozygousexpression.Rdata"))
+  file = here("data/processed/expression_inputs/astrocytes.heterozygouscortexexpression.Rdata")
+)
 
 oligodendrocytes <- as.data.frame(heterozygous_cerebral_agg$oligodendrocytes)
 save(oligodendrocytes,
-     file = here("data/processed/expression_inputs/oligodendrocytes.heterozygousexpression.Rdata"))
+  file = here("data/processed/expression_inputs/oligodendrocytes.heterozygouscortexexpression.Rdata")
+)
 
 opcs <- as.data.frame(heterozygous_cerebral_agg$oligodendrocyte.precursor.cells)
 save(opcs,
-     file = here("data/processed/expression_inputs/opcs.heterozygousexpression.Rdata"))
+  file = here("data/processed/expression_inputs/opcs.heterozygouscortexexpression.Rdata")
+)
 
 microglia <- as.data.frame(heterozygous_cerebral_agg$microglia)
-save(microglia, file = here("data/processed/expression_inputs/microglia.heterozygousexpression.Rdata"))
+save(microglia, file = here("data/processed/expression_inputs/microglia.heterozygouscortexexpression.Rdata"))
 
 mural <- as.data.frame(heterozygous_cerebral_agg$mural.cells)
 save(mural,
-     file = here("data/processed/expression_inputs/mural.heterozygousexpression.Rdata"))
+  file = here("data/processed/expression_inputs/mural.heterozygouscortexexpression.Rdata")
+)
 
 fibro_cortex <- as.data.frame(heterozygous_cerebral_agg$fibroblasts)
 save(fibro_cortex,
-     file = here("data/processed/expression_inputs/fibro_cortex.heterozygousexpression.Rdata"))
+  file = here("data/processed/expression_inputs/fibro_cortex.heterozygouscortexexpression.Rdata")
+)
 ```
 
 
@@ -243,8 +260,10 @@ Idents(kidney_int_celltypes) <- "cell_type"
 metadata$cluster_id <- factor(kidney_int_celltypes@active.ident)
 
 # create the single cell experiment object
-sce_kidney <- SingleCellExperiment(assays = list(counts = counts),
-                                   colData = metadata)
+sce_kidney <- SingleCellExperiment(
+  assays = list(counts = counts),
+  colData = metadata
+)
 
 
 control_kidney_sce <- sce_kidney[, sce_kidney$type == "control"] # if the dataset has a non-WT group, would also filter for that here
@@ -366,117 +385,145 @@ table(heterozygous_kidney_sce$cluster_id, heterozygous_kidney_sce$orig.ident)
 # control matrices ----------
 pericytes <- as.data.frame(control_kidney_agg$perciytes)
 save(pericytes,
-     file = here("data/processed/expression_inputs/perciytes.controlexpression.Rdata"))
+  file = here("data/processed/expression_inputs/perciytes.controlkidneyexpression.Rdata")
+)
 
 LOH <- as.data.frame(control_kidney_agg$LOH)
 save(LOH,
-     file = here("data/processed/expression_inputs/LOH.controlexpression.Rdata"))
+  file = here("data/processed/expression_inputs/LOH.controlkidneyexpression.Rdata")
+)
 
 PCT.S1 <- as.data.frame(control_kidney_agg$PCT.S1)
 save(PCT.S1,
-     file = here("data/processed/expression_inputs/PCT.S1.controlexpression.Rdata"))
+  file = here("data/processed/expression_inputs/PCT.S1.controlkidneyexpression.Rdata")
+)
 
 endothelial <- as.data.frame(control_kidney_agg$endothelial)
 save(endothelial,
-     file = here("data/processed/expression_inputs/endothelial.controlexpression.Rdata"))
+  file = here("data/processed/expression_inputs/endothelial.controlkidneyexpression.Rdata")
+)
 
 PST <- as.data.frame(control_kidney_agg$PST)
 save(PST,
-     file = here("data/processed/expression_inputs/PST.controlexpression.Rdata"))
+  file = here("data/processed/expression_inputs/PST.controlkidneyexpression.Rdata")
+)
 
 CD.PC <- as.data.frame(control_kidney_agg$CD.PC)
 save(CD.PC,
-     file = here("data/processed/expression_inputs/CD.PC.controlexpression.Rdata"))
+  file = here("data/processed/expression_inputs/CD.PC.controlkidneyexpression.Rdata")
+)
 
 DCT <- as.data.frame(control_kidney_agg$DCT)
 save(DCT,
-     file = here("data/processed/expression_inputs/DCT.controlexpression.Rdata"))
+  file = here("data/processed/expression_inputs/DCT.controlkidneyexpression.Rdata")
+)
 
 fibro <- as.data.frame(control_kidney_agg$fibroblasts)
 save(fibro,
-     file = here("data/processed/expression_inputs/fibroblasts.controlexpression.Rdata"))
+  file = here("data/processed/expression_inputs/fibroblasts.controlkidneyexpression.Rdata")
+)
 
 DLH <- as.data.frame(control_kidney_agg$DLH)
 save(DLH,
-     file = here("data/processed/expression_inputs/DLH.controlexpression.Rdata"))
+  file = here("data/processed/expression_inputs/DLH.controlkidneyexpression.Rdata")
+)
 
 CD.IC.typeB <- as.data.frame(control_kidney_agg$CD.IC.typeB)
 save(CD.IC.typeB,
-     file = here("data/processed/expression_inputs/CD.IC.typeB.controlexpression.Rdata"))
+  file = here("data/processed/expression_inputs/CD.IC.typeB.controlkidneyexpression.Rdata")
+)
 
 CD.IC.typeA <- as.data.frame(control_kidney_agg$CD.IC.typeA)
 save(CD.IC.typeA,
-     file = here("data/processed/expression_inputs/CD.IC.typeA.controlexpression.Rdata"))
+  file = here("data/processed/expression_inputs/CD.IC.typeA.controlkidneyexpression.Rdata")
+)
 
 macro <- as.data.frame(control_kidney_agg$macrophages)
 save(macro,
-     file = here("data/processed/expression_inputs/macrophages.controlexpression.Rdata"))
+  file = here("data/processed/expression_inputs/macrophages.controlkidneyexpression.Rdata")
+)
 
 blym <- as.data.frame(control_kidney_agg$B.lymphocytes)
 save(blym,
-     file = here("data/processed/expression_inputs/B.lymph.controlexpression.Rdata"))
+  file = here("data/processed/expression_inputs/B.lymph.controlkidneyexpression.Rdata")
+)
 
 podo <- as.data.frame(control_kidney_agg$podocytes)
 save(podo,
-     file = here("data/processed/expression_inputs/podocytes.controlexpression.Rdata"))
+  file = here("data/processed/expression_inputs/podocytes.controlkidneyexpression.Rdata")
+)
 
 
 # heterozygous matrices ----------
 pericytes <- as.data.frame(heterozygous_kidney_agg$pericytes)
 save(pericytes,
-     file = here("data/processed/expression_inputs/pericytes.heterozygousexpression.Rdata"))
+  file = here("data/processed/expression_inputs/pericytes.heterozygouskidneyexpression.Rdata")
+)
 
 LOH <- as.data.frame(heterozygous_kidney_agg$LOH)
 save(LOH,
-     file = here("data/processed/expression_inputs/LOH.heterozygousexpression.Rdata"))
+  file = here("data/processed/expression_inputs/LOH.heterozygouskidneyexpression.Rdata")
+)
 
 PCT.S1 <- as.data.frame(heterozygous_kidney_agg$PCT.S1)
 save(PCT.S1,
-     file = here("data/processed/expression_inputs/PCT.S1.heterozygousexpression.Rdata"))
+  file = here("data/processed/expression_inputs/PCT.S1.heterozygouskidneyexpression.Rdata")
+)
 
 endothelial <- as.data.frame(heterozygous_kidney_agg$endothelial)
 save(endothelial,
-     file = here("data/processed/expression_inputs/endothelial.heterozygousexpression.Rdata"))
+  file = here("data/processed/expression_inputs/endothelial.heterozygouskidneyexpression.Rdata")
+)
 
 PST <- as.data.frame(heterozygous_kidney_agg$PST)
 save(PST,
-     file = here("data/processed/expression_inputs/PST.heterozygousexpression.Rdata"))
+  file = here("data/processed/expression_inputs/PST.heterozygouskidneyexpression.Rdata")
+)
 
 CD.PC <- as.data.frame(heterozygous_kidney_agg$CD.PC)
 save(CD.PC,
-     file = here("data/processed/expression_inputs/CD.PC.heterozygousexpression.Rdata"))
+  file = here("data/processed/expression_inputs/CD.PC.heterozygouskidneyexpression.Rdata")
+)
 
 DCT <- as.data.frame(heterozygous_kidney_agg$DCT)
 save(DCT,
-     file = here("data/processed/expression_inputs/DCT.heterozygousexpression.Rdata"))
+  file = here("data/processed/expression_inputs/DCT.heterozygouskidneyexpression.Rdata")
+)
 
 fibro <- as.data.frame(heterozygous_kidney_agg$fibroblasts)
 save(fibro,
-     file = here("data/processed/expression_inputs/fibroblasts.heterozygousexpression.Rdata"))
+  file = here("data/processed/expression_inputs/fibroblasts.heterozygouskidneyexpression.Rdata")
+)
 
 DLH <- as.data.frame(heterozygous_kidney_agg$DLH)
 save(DLH,
-     file = here("data/processed/expression_inputs/DLH.heterozygousexpression.Rdata"))
+  file = here("data/processed/expression_inputs/DLH.heterozygouskidneyexpression.Rdata")
+)
 
 CD.IC.typeB <- as.data.frame(heterozygous_kidney_agg$CD.IC.typeB)
 save(CD.IC.typeB,
-     file = here("data/processed/expression_inputs/CD.IC.typeB.heterozygousexpression.Rdata"))
+  file = here("data/processed/expression_inputs/CD.IC.typeB.heterozygouskidneyexpression.Rdata")
+)
 
 CD.IC.typeA <- as.data.frame(heterozygous_kidney_agg$CD.IC.typeA)
 save(CD.IC.typeA,
-     file = here("data/processed/expression_inputs/CD.IC.typeA.heterozygousexpression.Rdata"))
+  file = here("data/processed/expression_inputs/CD.IC.typeA.heterozygouskidneyexpression.Rdata")
+)
 
 macro <- as.data.frame(heterozygous_kidney_agg$macrophages)
 save(macro,
-     file = here("data/processed/expression_inputs/macrophages.heterozygousexpression.Rdata"))
+  file = here("data/processed/expression_inputs/macrophages.heterozygouskidneyexpression.Rdata")
+)
 
 blym <- as.data.frame(heterozygous_kidney_agg$B.lymphocytes)
 save(blym,
-     file = here("data/processed/expression_inputs/B.lymph.heterozygousexpression.Rdata"))
+  file = here("data/processed/expression_inputs/B.lymph.heterozygouskidneyexpression.Rdata")
+)
 
 podo <- as.data.frame(heterozygous_kidney_agg$podocytes)
 save(podo,
-     file = here("data/processed/expression_inputs/podocytes.heterozygousexpression.Rdata"))
+  file = here("data/processed/expression_inputs/podocytes.heterozygouskidneyexpression.Rdata")
+)
 ```
 
 ```{r}
