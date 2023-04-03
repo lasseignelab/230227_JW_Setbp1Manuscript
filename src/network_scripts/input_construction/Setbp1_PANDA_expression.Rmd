@@ -298,7 +298,7 @@ control_kidney_agg <- aggregate.Matrix(t(counts(control_kidney_sce)),
   groupings = groups_kidney, fun = "sum"
 )
 class(control_kidney_agg)
-dim(control_cerebral_agg) # 90 x 36587 (6 cell types and 15 samples = 90 rows)
+dim(control_kidney_agg) # 90 x 36587 (6 cell types and 15 samples = 90 rows)
 # view gene by cell-type matrix:
 control_kidney_agg[1:6, 1:6]
 
@@ -310,7 +310,7 @@ heterozygous_kidney_agg <- aggregate.Matrix(t(counts(heterozygous_kidney_sce)),
   groupings = groups_kidney, fun = "sum"
 )
 class(heterozygous_kidney_agg)
-dim(heterozygous_cerebral_agg) # 90 x 36587 (6 cell types and 15 samples = 90 rows)
+dim(heterozygous_kidney_agg) # 90 x 36587 (6 cell types and 15 samples = 90 rows)
 # view gene by cell-type matrix:
 heterozygous_kidney_agg[1:6, 1:6]
 ```
@@ -383,7 +383,7 @@ table(heterozygous_kidney_sce$cluster_id, heterozygous_kidney_sce$orig.ident)
 ### Extract cell-specific expression matrices and save to inputs folder for Setbp1 data:
 ```{r}
 # control matrices ----------
-pericytes <- as.data.frame(control_kidney_agg$perciytes)
+pericytes <- as.data.frame(control_kidney_agg$pericytes)
 save(pericytes,
   file = here("data/processed/expression_inputs/perciytes.controlkidneyexpression.Rdata")
 )
