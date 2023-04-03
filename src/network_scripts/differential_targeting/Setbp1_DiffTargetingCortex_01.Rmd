@@ -10,6 +10,7 @@ Targeting code was originially implemented here: http://netbooks.networkmedicine
 
 #load in required libraries & functions
 ```{r loading-libraries-functions, results='hide'}
+set.seed(2178)
 library(netZooR)
 library(data.table)
 library(dplyr)
@@ -27,7 +28,6 @@ library(here)
 source(here("src/functions/functions.R"))
 library(styler)
 library(lintr)
-set.seed(2178)
 ```
 
 ## load in PANDA object containing list of all cell types from Setbp1 data
