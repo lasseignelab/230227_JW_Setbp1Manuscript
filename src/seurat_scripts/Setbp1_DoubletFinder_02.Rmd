@@ -61,7 +61,8 @@ for (i in 1:length(split_sample)) {
                                 assay = "RNA")
     split_sample[[i]] <- RunPCA(split_sample[[i]],
                                 verbose = FALSE,
-                                npcs = 30) #make sure this matches the RunUMAP below
+                                npcs = 30, 
+                                approx = FALSE) #make sure this matches the RunUMAP below
     split_sample[[i]] <- RunUMAP(split_sample[[i]],
                                 verbose = FALSE,
                                 dims = 1:30) #make sure this matches the RunPCA npcs
@@ -100,33 +101,33 @@ DoubletFinder takes the following arguments:
 
 ```{r remove-doublets-kidney}
 #K1
-define_pK(split_sample$K1)
-doublet_removal(sample = split_sample$K1, expected = 0.102, pK = 0.01) #pK obtained from plot in line above
+define_pK_noapprox(split_sample$K1)
+doublet_removal_noapprox(sample = split_sample$K1, expected = 0.102, pK = 0.01) #pK obtained from plot in line above
 split_sample$K1 <- no_doublets
 
 #K2
-define_pK(split_sample$K2)
-doublet_removal(sample = split_sample$K2, expected = 0.146, pK = 0.15) #pK obtained from plot in line above
+define_pK_noapprox(split_sample$K2)
+doublet_removal_noapprox(sample = split_sample$K2, expected = 0.146, pK = 0.1) #pK obtained from plot in line above
 split_sample$K2 <- no_doublets
 
 #K3
-define_pK(split_sample$K3)
-doublet_removal(sample = split_sample$K3, expected = 0.086, pK = 0.01) #pK obtained from plot in line above
+define_pK_noapprox(split_sample$K3)
+doublet_removal_noapprox(sample = split_sample$K3, expected = 0.086, pK = 0.01) #pK obtained from plot in line above
 split_sample$K3 <- no_doublets
 
 #K4
-define_pK(split_sample$K4)
-doublet_removal(sample = split_sample$K4, expected = 0.088, pK = 0.005) #pK obtained from plot in line above
+define_pK_noapprox(split_sample$K4)
+doublet_removal_noapprox(sample = split_sample$K4, expected = 0.088, pK = 0.005) #pK obtained from plot in line above
 split_sample$K4 <- no_doublets
 
 #K5
-define_pK(split_sample$K5)
-doublet_removal(sample = split_sample$K5, expected = 0.106, pK = 0.02) #pK obtained from plot in line above
+define_pK_noapprox(split_sample$K5)
+doublet_removal_noapprox(sample = split_sample$K5, expected = 0.106, pK = 0.01) #pK obtained from plot in line above
 split_sample$K5 <- no_doublets
 
 #K6
-define_pK(split_sample$K6)
-doublet_removal(sample = split_sample$K6, expected = 0.097, pK = 0.005) #pK obtained from plot in line above
+define_pK_noapprox(split_sample$K6)
+doublet_removal_noapprox(sample = split_sample$K6, expected = 0.097, pK = 0.005) #pK obtained from plot in line above
 split_sample$K6 <- no_doublets
 ```
 
@@ -143,7 +144,7 @@ kidney_seurat_filtered <- merge(
   )
 )
 
-save(kidney_seurat_filtered, 
+save(kidney_seurat_filtered_mousecell, 
      file = here("data/nodoublet_setbp1_kidney_seurat.Rdata"))
 ```
 
@@ -166,7 +167,8 @@ for (i in 1:length(split_sample)) {
                                    assay = "RNA")
     split_sample[[i]] <- RunPCA(split_sample[[i]], 
                                 verbose = FALSE, 
-                                npcs = 30)
+                                npcs = 30,
+                                approx = FALSE)
     split_sample[[i]] <- RunUMAP(split_sample[[i]], 
                                  verbose = FALSE, 
                                  dims = 1:30)
@@ -188,33 +190,33 @@ For the kidney, doublets were estimated as follows:
 
 ```{r remove-doublets-cortex}
 #J1
-define_pK(split_sample$J1)
-doublet_removal(sample = split_sample$J1, expected = 0.04, pK = 0.2) #pK obtained from plot in line above
+define_pK_noapprox(split_sample$J1)
+doublet_removal_noapprox(sample = split_sample$J1, expected = 0.04, pK = 0.2) #pK obtained from plot in line above
 split_sample$J1 <- no_doublets
 
 #J2
-define_pK(split_sample$J2)
-doublet_removal(sample = split_sample$J2, expected = 0.054, pK = 0.3) #pK obtained from plot in line above
+define_pK_noapprox(split_sample$J2)
+doublet_removal_noapprox(sample = split_sample$J2, expected = 0.054, pK = 0.3) #pK obtained from plot in line above
 split_sample$J2 <- no_doublets
 
 #J3
-define_pK(split_sample$J3)
-doublet_removal(sample = split_sample$J3, expected = 0.078, pK = 0.3) #pK obtained from plot in line above
+define_pK_noapprox(split_sample$J3)
+doublet_removal_noapprox(sample = split_sample$J3, expected = 0.078, pK = 0.3) #pK obtained from plot in line above
 split_sample$J3 <- no_doublets
 
 #J4
-define_pK(split_sample$J4)
-doublet_removal(sample = split_sample$J4, expected = 0.079, pK = 0.08) #pK obtained from plot in line above
+define_pK_noapprox(split_sample$J4)
+doublet_removal_noapprox(sample = split_sample$J4, expected = 0.079, pK = 0.08) #pK obtained from plot in line above
 split_sample$J4 <- no_doublets
 
 #J13
-define_pK(split_sample$J13)
-doublet_removal(sample = split_sample$J13, expected = 0.071, pK = 0.16) #pK obtained from plot in line above
+define_pK_noapprox(split_sample$J13)
+doublet_removal_noapprox(sample = split_sample$J13, expected = 0.071, pK = 0.16) #pK obtained from plot in line above
 split_sample$J13 <- no_doublets
 
 #J15
-define_pK(split_sample$J15)
-doublet_removal(sample = split_sample$J15, expected = 0.067, pK = 0.23) #pK obtained from plot in line above
+define_pK_noapprox(split_sample$J15)
+doublet_removal_noapprox(sample = split_sample$J15, expected = 0.067, pK = 0.23) #pK obtained from plot in line above
 split_sample$J15 <- no_doublets
 ```
 
