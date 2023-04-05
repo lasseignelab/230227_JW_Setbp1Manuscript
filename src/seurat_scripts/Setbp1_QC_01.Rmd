@@ -25,7 +25,7 @@ Accompanying dry lab notebook for this analysis is here: https://docs.google.com
 ```{r setup}
 getwd()
 .libPaths() # "/usr/local/lib/R/site-library" "/usr/local/lib/R/library" "/home/jbarham3/R/x86_64-pc-linux-gnu-library/4.1"
-set.seed(333)
+set.seed(2178)
 ```
 
 ### Loading in all required libraries
@@ -561,7 +561,7 @@ cerebral_seurat_filtered <- cerebral_seurat_filtered[!grepl(
 #### Checking cell cycle scoring
 ```{r}
 # Change default from human to mouse, Seurat uses a human list and we are working with mouse data. (code credit: TCH)
-# reading in cell cycle gene list (downloded from https://github.com/hbc/tinyatlas/blob/master/cell_cycle/Mus_musculus.csv) on 230322
+# reading in cell cycle gene list (downloaded from https://github.com/hbc/tinyatlas/blob/master/cell_cycle/Mus_musculus.csv) on 230322
 cell_cycle_gene <- read_csv(here("results/seurat/230322_mouse_cell_cycle_genes.csv"))
 # converting ENSMUSG to Gene Symbol
 symbols <- gconvert(cell_cycle_gene$geneID,
@@ -957,7 +957,6 @@ save(cerebral_seurat_filtered, file = here("data/filtered_setbp1_cerebral_seurat
 ```{r}
 sessionInfo()
 ```
-
 R version 4.1.3 (2022-03-10)
 Platform: x86_64-pc-linux-gnu (64-bit)
 Running under: Ubuntu 20.04.5 LTS
@@ -972,29 +971,33 @@ attached base packages:
 [1] stats     graphics  grDevices utils     datasets  methods   base     
 
 other attached packages:
- [1] lintr_3.0.2        styler_1.9.0       gprofiler2_0.2.1   lubridate_1.9.2    forcats_1.0.0      stringr_1.5.0      purrr_1.0.1        tidyr_1.3.0        tibble_3.1.8      
-[10] tidyverse_2.0.0    here_1.0.1         ggplot2_3.4.1      cowplot_1.1.1      SeuratObject_4.1.3 Seurat_4.3.0       Matrix_1.5-3       dplyr_1.1.0        readr_2.1.4       
-[19] magrittr_2.0.3     devtools_2.4.5     usethis_2.1.6     
+ [1] lintr_3.0.2        styler_1.9.0       gprofiler2_0.2.1   lubridate_1.9.2    forcats_1.0.0      stringr_1.5.0      purrr_1.0.1        tidyr_1.3.0       
+ [9] tibble_3.1.8       tidyverse_2.0.0    here_1.0.1         ggplot2_3.4.1      cowplot_1.1.1      SeuratObject_4.1.3 Seurat_4.3.0       Matrix_1.5-3      
+[17] dplyr_1.1.0        readr_2.1.4        magrittr_2.0.3     devtools_2.4.5     usethis_2.1.6     
 
 loaded via a namespace (and not attached):
-  [1] plyr_1.8.8             igraph_1.4.1           lazyeval_0.2.2         sp_1.6-0               splines_4.1.3          listenv_0.9.0          scattermore_0.8       
-  [8] digest_0.6.31          htmltools_0.5.4        fansi_1.0.4            memoise_2.0.1          tensor_1.5             cluster_2.1.2          ROCR_1.0-11           
- [15] tzdb_0.3.0             remotes_2.4.2          globals_0.16.2         matrixStats_0.63.0     R.utils_2.12.2         timechange_0.2.0       spatstat.sparse_3.0-0 
- [22] prettyunits_1.1.1      colorspace_2.1-0       ggrepel_0.9.3          xfun_0.37              callr_3.7.3            crayon_1.5.2           jsonlite_1.8.4        
- [29] progressr_0.13.0       spatstat.data_3.0-0    survival_3.3-1         zoo_1.8-11             glue_1.6.2             polyclip_1.10-4        gtable_0.3.1          
- [36] leiden_0.4.3           R.cache_0.16.0         pkgbuild_1.3.1         future.apply_1.10.0    abind_1.4-5            scales_1.2.1           spatstat.random_3.1-3 
- [43] miniUI_0.1.1.1         Rcpp_1.0.10            viridisLite_0.4.1      xtable_1.8-4           reticulate_1.28        profvis_0.3.7          rex_1.2.1             
- [50] htmlwidgets_1.6.1      httr_1.4.5             RColorBrewer_1.1-3     ellipsis_0.3.2         ica_1.0-3              R.methodsS3_1.8.2      urlchecker_1.0.1      
- [57] pkgconfig_2.0.3        uwot_0.1.14            deldir_1.0-6           utf8_1.2.3             tidyselect_1.2.0       rlang_1.0.6            reshape2_1.4.4        
- [64] later_1.3.0            munsell_0.5.0          tools_4.1.3            cachem_1.0.7           cli_3.6.0              generics_0.1.3         ggridges_0.5.4        
- [71] evaluate_0.20          fastmap_1.1.1          yaml_2.3.7             goftest_1.2-3          processx_3.8.0         knitr_1.42             fs_1.6.1              
- [78] fitdistrplus_1.1-8     RANN_2.6.1             pbapply_1.7-0          future_1.31.0          nlme_3.1-155           mime_0.12              R.oo_1.25.0           
- [85] xml2_1.3.3             compiler_4.1.3         rstudioapi_0.14        plotly_4.10.1          png_0.1-8              spatstat.utils_3.0-1   stringi_1.7.12        
- [92] cyclocomp_1.1.0        ps_1.7.2               desc_1.4.2             lattice_0.20-45        vctrs_0.5.2            pillar_1.8.1           lifecycle_1.0.3       
- [99] spatstat.geom_3.0-6    lmtest_0.9-40          RcppAnnoy_0.0.20       data.table_1.14.8      irlba_2.3.5.1          httpuv_1.6.9           patchwork_1.1.2       
-[106] R6_2.5.1               promises_1.2.0.1       KernSmooth_2.23-20     gridExtra_2.3          parallelly_1.34.0      sessioninfo_1.2.2      codetools_0.2-18      
-[113] MASS_7.3-55            pkgload_1.3.2          rprojroot_2.0.3        withr_2.5.0            sctransform_0.3.5      parallel_4.1.3         hms_1.1.2             
-[120] grid_4.1.3             rmarkdown_2.20         Rtsne_0.16             spatstat.explore_3.0-6 shiny_1.7.4           
+  [1] plyr_1.8.8             igraph_1.4.1           lazyeval_0.2.2         sp_1.6-0               splines_4.1.3          listenv_0.9.0         
+  [7] scattermore_0.8        digest_0.6.31          htmltools_0.5.4        fansi_1.0.4            memoise_2.0.1          tensor_1.5            
+ [13] cluster_2.1.2          ROCR_1.0-11            tzdb_0.3.0             remotes_2.4.2          globals_0.16.2         matrixStats_0.63.0    
+ [19] vroom_1.6.1            R.utils_2.12.2         timechange_0.2.0       spatstat.sparse_3.0-0  prettyunits_1.1.1      colorspace_2.1-0      
+ [25] ggrepel_0.9.3          xfun_0.37              RCurl_1.98-1.10        callr_3.7.3            crayon_1.5.2           jsonlite_1.8.4        
+ [31] progressr_0.13.0       spatstat.data_3.0-0    survival_3.3-1         zoo_1.8-11             glue_1.6.2             polyclip_1.10-4       
+ [37] gtable_0.3.1           leiden_0.4.3           R.cache_0.16.0         pkgbuild_1.3.1         future.apply_1.10.0    abind_1.4-5           
+ [43] scales_1.2.1           spatstat.random_3.1-3  miniUI_0.1.1.1         Rcpp_1.0.10            viridisLite_0.4.1      xtable_1.8-4          
+ [49] reticulate_1.28        bit_4.0.5              profvis_0.3.7          rex_1.2.1              htmlwidgets_1.6.1      httr_1.4.5            
+ [55] RColorBrewer_1.1-3     ellipsis_0.3.2         ica_1.0-3              farver_2.1.1           urlchecker_1.0.1       pkgconfig_2.0.3       
+ [61] R.methodsS3_1.8.2      uwot_0.1.14            deldir_1.0-6           utf8_1.2.3             labeling_0.4.2         tidyselect_1.2.0      
+ [67] rlang_1.0.6            reshape2_1.4.4         later_1.3.0            munsell_0.5.0          tools_4.1.3            cachem_1.0.7          
+ [73] cli_3.6.0              generics_0.1.3         ggridges_0.5.4         fastmap_1.1.1          goftest_1.2-3          bit64_4.0.5           
+ [79] processx_3.8.0         knitr_1.42             fs_1.6.1               fitdistrplus_1.1-8     RANN_2.6.1             pbapply_1.7-0         
+ [85] future_1.31.0          nlme_3.1-155           mime_0.12              R.oo_1.25.0            xml2_1.3.3             compiler_4.1.3        
+ [91] rstudioapi_0.14        plotly_4.10.1          png_0.1-8              spatstat.utils_3.0-1   stringi_1.7.12         cyclocomp_1.1.0       
+ [97] ps_1.7.2               desc_1.4.2             lattice_0.20-45        vctrs_0.5.2            pillar_1.8.1           lifecycle_1.0.3       
+[103] spatstat.geom_3.0-6    lmtest_0.9-40          RcppAnnoy_0.0.20       bitops_1.0-7           data.table_1.14.8      irlba_2.3.5.1         
+[109] httpuv_1.6.9           patchwork_1.1.2        R6_2.5.1               promises_1.2.0.1       KernSmooth_2.23-20     gridExtra_2.3         
+[115] parallelly_1.34.0      sessioninfo_1.2.2      codetools_0.2-18       MASS_7.3-55            pkgload_1.3.2          rprojroot_2.0.3       
+[121] withr_2.5.0            sctransform_0.3.5      mgcv_1.8-39            parallel_4.1.3         hms_1.1.2              grid_4.1.3            
+[127] Rtsne_0.16             spatstat.explore_3.0-6 shiny_1.7.4           
 
 ```{r}
 # run style
