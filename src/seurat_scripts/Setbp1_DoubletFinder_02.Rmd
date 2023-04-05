@@ -98,7 +98,6 @@ DoubletFinder takes the following arguments:
 
 *nExp ~ This defines the pANN threshold used to make final doublet/singlet predictions. This value can best be estimated from cell loading densities into the 10X/Drop-Seq device, and adjusted according to the estimated proportion of homotypic doublets.
 
-
 ```{r remove-doublets-kidney}
 #K1
 define_pK_noapprox(split_sample$K1)
