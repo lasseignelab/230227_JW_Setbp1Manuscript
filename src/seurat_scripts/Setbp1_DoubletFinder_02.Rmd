@@ -106,12 +106,12 @@ split_sample$K1 <- no_doublets
 
 #K2
 define_pK_noapprox(split_sample$K2)
-doublet_removal_noapprox(sample = split_sample$K2, expected = 0.146, pK = 0.1) #pK obtained from plot in line above
+doublet_removal_noapprox(sample = split_sample$K2, expected = 0.146, pK = 0.14) #pK obtained from plot in line above
 split_sample$K2 <- no_doublets
 
 #K3
 define_pK_noapprox(split_sample$K3)
-doublet_removal_noapprox(sample = split_sample$K3, expected = 0.086, pK = 0.01) #pK obtained from plot in line above
+doublet_removal_noapprox(sample = split_sample$K3, expected = 0.086, pK = 0.005) #pK obtained from plot in line above
 split_sample$K3 <- no_doublets
 
 #K4
@@ -121,7 +121,7 @@ split_sample$K4 <- no_doublets
 
 #K5
 define_pK_noapprox(split_sample$K5)
-doublet_removal_noapprox(sample = split_sample$K5, expected = 0.106, pK = 0.01) #pK obtained from plot in line above
+doublet_removal_noapprox(sample = split_sample$K5, expected = 0.106, pK = 0.005) #pK obtained from plot in line above
 split_sample$K5 <- no_doublets
 
 #K6
@@ -143,7 +143,7 @@ kidney_seurat_filtered <- merge(
   )
 )
 
-save(kidney_seurat_filtered_mousecell, 
+save(kidney_seurat_filtered, 
      file = here("data/nodoublet_setbp1_kidney_seurat.Rdata"))
 ```
 

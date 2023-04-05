@@ -137,7 +137,8 @@ cerebral_seurat_filtered <- ScaleData(
 cerebral_seurat_filtered <- RunPCA(
   cerebral_seurat_filtered,
   npcs = 50,
-  verbose = FALSE
+  verbose = FALSE, 
+  approx = FALSE
 ) # has a seed already set in source code
 
 png(
@@ -153,7 +154,8 @@ dev.off()
 kidney_seurat_filtered <- RunPCA(
   kidney_seurat_filtered,
   npcs = 50,
-  verbose = FALSE
+  verbose = FALSE, 
+  approx = FALSE
 ) # has a seed set already in source code
 
 png(
