@@ -99,7 +99,7 @@ DoubletFinder takes the following arguments:
 *nExp ~ This defines the pANN threshold used to make final doublet/singlet predictions. This value can best be estimated from cell loading densities into the 10X/Drop-Seq device, and adjusted according to the estimated proportion of homotypic doublets.
 
 ```{r definepK-kidney}
-pdf(filename = here("results/seurat/DoubletFinder_02/definepK_kidney.pdf"))
+pdf(here("results/seurat/DoubletFinder_02/definepK_kidney.pdf"))
 #K1
 define_pK_noapprox(split_sample$K1)
 
@@ -121,7 +121,7 @@ dev.off()
 ```
 
 ```{r remove-doublets-kidney}
-pdf(filename = here("results/seurat/DoubletFinder_02/doubletsremoved_kidney.pdf"))
+pdf(here("results/seurat/DoubletFinder_02/doubletsremoved_kidney.pdf"))
 
 #K1
 doublet_removal_noapprox(sample = split_sample$K1, expected = 0.102, pK = 0.01) #pK obtained from plot in line above
@@ -208,7 +208,7 @@ For the kidney, doublets were estimated as follows:
 * J15 - 8852 nuclei recovered; ~6.7% doublets
 
 ```{r define-pK-doublets-cortex}
-pdf(filename = here("results/seurat/DoubletFinder_02/definepK_cortex.pdf"))
+pdf(here("results/seurat/DoubletFinder_02/definepK_cortex.pdf"))
 
 #J1
 define_pK_noapprox(split_sample$J1)
@@ -232,21 +232,21 @@ dev.off()
 ```
 
 ```{r remove-doublets-cortex}
-pdf(filename = here("results/seurat/DoubletFinder_02/doubletsremoved_cortex.pdf"))
+pdf(here("results/seurat/DoubletFinder_02/doubletsremoved_cortex.pdf"))
 #J1
 doublet_removal_noapprox(sample = split_sample$J1, expected = 0.04, pK = 0.3) #pK obtained from plot in line above
 split_sample$J1 <- no_doublets
 
 #J2
-doublet_removal_noapprox(sample = split_sample$J2, expected = 0.054, pK = 0.3) #pK obtained from plot in line above
+doublet_removal_noapprox(sample = split_sample$J2, expected = 0.054, pK = 0.27) #pK obtained from plot in line above
 split_sample$J2 <- no_doublets
 
 #J3
-doublet_removal_noapprox(sample = split_sample$J3, expected = 0.078, pK = 0.19) #pK obtained from plot in line above
+doublet_removal_noapprox(sample = split_sample$J3, expected = 0.078, pK = 0.18) #pK obtained from plot in line above
 split_sample$J3 <- no_doublets
 
 #J4
-doublet_removal_noapprox(sample = split_sample$J4, expected = 0.079, pK = 0.16) #pK obtained from plot in line above
+doublet_removal_noapprox(sample = split_sample$J4, expected = 0.079, pK = 0.18) #pK obtained from plot in line above
 split_sample$J4 <- no_doublets
 
 #J13
@@ -254,7 +254,7 @@ doublet_removal_noapprox(sample = split_sample$J13, expected = 0.071, pK = 0.25)
 split_sample$J13 <- no_doublets
 
 #J15
-doublet_removal_noapprox(sample = split_sample$J15, expected = 0.067, pK = 0.23) #pK obtained from plot in line above
+doublet_removal_noapprox(sample = split_sample$J15, expected = 0.067, pK = 0.17) #pK obtained from plot in line above
 split_sample$J15 <- no_doublets
 
 dev.off()
