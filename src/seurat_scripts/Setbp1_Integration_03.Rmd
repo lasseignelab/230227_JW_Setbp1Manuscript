@@ -142,7 +142,7 @@ cerebral_seurat_filtered <- RunPCA(
 ) # has a seed already set in source code
 
 png(
-  filename = here("results/seurat/Integration_03/elbow_kidney.png"),
+  filename = here("results/seurat/Integration_03/elbow_cerebral.png"),
   width = 1000,
   height = 1000
 )
@@ -159,7 +159,7 @@ kidney_seurat_filtered <- RunPCA(
 ) # has a seed set already in source code
 
 png(
-  filename = here("results/seurat/Integration_03/elbow_cerebral.png"),
+  filename = here("results/seurat/Integration_03/elbow_kidney.png"),
   width = 1000,
   height = 1000
 )

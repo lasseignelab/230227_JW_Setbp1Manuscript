@@ -89,7 +89,7 @@ png(file = here("results/seurat/Clustering_04/kidneyint_clustree.jpeg"),
 clustree(kidney_int@meta.data, prefix = "RNA_snn_res.")
 dev.off()
 
-save(kidney_int, file = here("data/kidney_leiden.Rdata"))
+save(kidney_int_mousecell, file = here("data/kidney_leiden.Rdata"))
 
 
 for (res in c(0.7, 0.8, 0.9, 1, 1.5)) {
