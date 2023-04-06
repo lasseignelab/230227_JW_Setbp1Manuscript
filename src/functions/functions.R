@@ -357,44 +357,6 @@ doublet_removal_noapprox <- function(sample, expected, pK){
   plot(plot2)
 }
 
-# # Function-define-pK
-# define_pK <- function(sample){
-#   sweep_res_list <- paramSweep_v3(sample, PCs = 1:30, sct = FALSE)
-#   sweep_stats <- summarizeSweep(sweep_res_list, GT = FALSE)
-#   bcmvn <- find.pK(sweep_stats)
-#   pK <- as.numeric(as.character(bcmvn$pK))
-#   BCmetric <- bcmvn$BCmetric
-#   pK_choose <- pK[which(BCmetric %in% max(BCmetric))]
-#   
-#   par(mar = c(5, 4, 4, 8) + 1, cex.main = 1.2, font.main = 2)
-#   plot(x = pK, y = BCmetric, pch = 16, type = "b",
-#        col = "blue", lty = 1)
-#   abline(v = pK_choose, lwd = 2, col = "red", lty = 2)
-#   title("The BCmvn distributions")
-#   text(pK_choose, max(BCmetric), as.character(pK_choose), pos = 4, col = "red")
-# }
-# 
-# # Function-remove-doublets
-# doublet_removal <- function(sample, expected, pK){
-#   # define the expected number of doublets in nuclei.
-#   nExp <- round(ncol(sample) * expected)  # expect 10.2% doublets
-#   sample <- doubletFinder_v3(sample, pN = 0.25, pK = pK, nExp = nExp, PCs = 1:30)
-#   
-#   # name of the DF prediction can change, so extract the correct column name.
-#   DF.name <- colnames(sample@meta.data)[grepl("DF.classification", colnames(sample@meta.data))]
-#   plot1 <- cowplot::plot_grid(ncol = 2, DimPlot(sample, group.by = "orig.ident") + NoAxes(),
-#                               DimPlot(sample, group.by = DF.name) + NoAxes())
-#   plot(plot1)
-#   VlnPlot(sample, features = "nFeature_RNA", group.by = DF.name, pt.size = 0.1)
-#   #REMOVE DOUBLETS:
-#   sample <- sample[, sample@meta.data[, DF.name] == "Singlet"]
-#   assign("no_doublets", sample, envir = globalenv())
-#   #revisualize:
-#   plot2 <- cowplot::plot_grid(ncol = 2, DimPlot(sample, group.by = "orig.ident") + NoAxes(),
-#                               DimPlot(sample, group.by = DF.name) + NoAxes())
-#   plot(plot2)
-# }
-
 # aggregate matrix function
 ##Matrix.utils function not loading into Docker, so grabbed source code (https://rdrr.io/cran/Matrix.utils/src/R/Matrix.utils.R)
 aggregate.Matrix<-function(x,groupings=NULL,form=NULL,fun='sum',...)
