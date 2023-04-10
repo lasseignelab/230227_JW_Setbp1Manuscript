@@ -44,9 +44,148 @@ scatterPlot <- function(
   }
 }
 
-# Function-define-pK
-define_pK <- function(sample){
-  sweep_res_list <- paramSweep_v3(sample, PCs = 1:30, sct = FALSE)
+# function-parallel_paranSweep_v3_noapprox; used in paramSweep_v3_noapprox, setting RunPCA approx = FALSE
+parallel_paramSweep_v3_noapprox <- function (n, n.real.cells, real.cells, pK, pN, data, orig.commands, 
+                                             PCs, sct) 
+{
+  sweep.res.list = list()
+  list.ind = 0
+  print(paste("Creating artificial doublets for pN = ", pN[n] * 
+                100, "%", sep = ""))
+  n_doublets <- round(n.real.cells/(1 - pN[n]) - n.real.cells)
+  real.cells1 <- sample(real.cells, n_doublets, replace = TRUE)
+  real.cells2 <- sample(real.cells, n_doublets, replace = TRUE)
+  doublets <- (data[, real.cells1] + data[, real.cells2])/2
+  colnames(doublets) <- paste("X", 1:n_doublets, sep = "")
+  data_wdoublets <- cbind(data, doublets)
+  if (sct == FALSE) {
+    print("Creating Seurat object...")
+    seu_wdoublets <- CreateSeuratObject(counts = data_wdoublets)
+    print("Normalizing Seurat object...")
+    seu_wdoublets <- NormalizeData(seu_wdoublets, normalization.method = orig.commands$NormalizeData.RNA@params$normalization.method, 
+                                   scale.factor = orig.commands$NormalizeData.RNA@params$scale.factor, 
+                                   margin = orig.commands$NormalizeData.RNA@params$margin)
+    print("Finding variable genes...")
+    seu_wdoublets <- FindVariableFeatures(seu_wdoublets, 
+                                          selection.method = orig.commands$FindVariableFeatures.RNA$selection.method, 
+                                          loess.span = orig.commands$FindVariableFeatures.RNA$loess.span, 
+                                          clip.max = orig.commands$FindVariableFeatures.RNA$clip.max, 
+                                          mean.function = orig.commands$FindVariableFeatures.RNA$mean.function, 
+                                          dispersion.function = orig.commands$FindVariableFeatures.RNA$dispersion.function, 
+                                          num.bin = orig.commands$FindVariableFeatures.RNA$num.bin, 
+                                          binning.method = orig.commands$FindVariableFeatures.RNA$binning.method, 
+                                          nfeatures = orig.commands$FindVariableFeatures.RNA$nfeatures, 
+                                          mean.cutoff = orig.commands$FindVariableFeatures.RNA$mean.cutoff, 
+                                          dispersion.cutoff = orig.commands$FindVariableFeatures.RNA$dispersion.cutoff)
+    print("Scaling data...")
+    seu_wdoublets <- ScaleData(seu_wdoublets, features = orig.commands$ScaleData.RNA$features, 
+                               model.use = orig.commands$ScaleData.RNA$model.use, 
+                               do.scale = orig.commands$ScaleData.RNA$do.scale, 
+                               do.center = orig.commands$ScaleData.RNA$do.center, 
+                               scale.max = orig.commands$ScaleData.RNA$scale.max, 
+                               block.size = orig.commands$ScaleData.RNA$block.size, 
+                               min.cells.to.block = orig.commands$ScaleData.RNA$min.cells.to.block)
+    print("Running PCA...")
+    seu_wdoublets <- RunPCA(seu_wdoublets, features = orig.commands$ScaleData.RNA$features, 
+                            npcs = length(PCs), approx = FALSE, rev.pca = orig.commands$RunPCA.RNA$rev.pca, 
+                            weight.by.var = orig.commands$RunPCA.RNA$weight.by.var, 
+                            verbose = FALSE)
+  }
+  if (sct == TRUE) {
+    require(sctransform)
+    print("Creating Seurat object...")
+    seu_wdoublets <- CreateSeuratObject(counts = data_wdoublets)
+    print("Running SCTransform...")
+    seu_wdoublets <- SCTransform(seu_wdoublets)
+    print("Running PCA...")
+    seu_wdoublets <- RunPCA(seu_wdoublets, npcs = length(PCs), approx = FALSE)
+  }
+  print("Calculating PC distance matrix...")
+  nCells <- nrow(seu_wdoublets@meta.data)
+  pca.coord <- seu_wdoublets@reductions$pca@cell.embeddings[, 
+                                                            PCs]
+  rm(seu_wdoublets)
+  gc()
+  dist.mat <- fields::rdist(pca.coord)[, 1:n.real.cells]
+  print("Defining neighborhoods...")
+  for (i in 1:n.real.cells) {
+    dist.mat[, i] <- order(dist.mat[, i])
+  }
+  ind <- round(nCells * max(pK)) + 5
+  dist.mat <- dist.mat[1:ind, ]
+  print("Computing pANN across all pK...")
+  for (k in 1:length(pK)) {
+    print(paste("pK = ", pK[k], "...", sep = ""))
+    pk.temp <- round(nCells * pK[k])
+    pANN <- as.data.frame(matrix(0L, nrow = n.real.cells, 
+                                 ncol = 1))
+    colnames(pANN) <- "pANN"
+    rownames(pANN) <- real.cells
+    list.ind <- list.ind + 1
+    for (i in 1:n.real.cells) {
+      neighbors <- dist.mat[2:(pk.temp + 1), i]
+      pANN$pANN[i] <- length(which(neighbors > n.real.cells))/pk.temp
+    }
+    sweep.res.list[[list.ind]] <- pANN
+  }
+  return(sweep.res.list)
+}
+
+#function-paramSweep-v3-noapprox; setting RunpCA approx to false, used in defin_pK function
+paramSweep_v3_noapprox <- function (seu, PCs = 1:10, sct = FALSE, num.cores = 1) 
+{
+  require(Seurat)
+  require(fields)
+  pK <- c(5e-04, 0.001, 0.005, seq(0.01, 0.3, by = 0.01))
+  pN <- seq(0.05, 0.3, by = 0.05)
+  min.cells <- round(nrow(seu@meta.data)/(1 - 0.05) - nrow(seu@meta.data))
+  pK.test <- round(pK * min.cells)
+  pK <- pK[which(pK.test >= 1)]
+  orig.commands <- seu@commands
+  if (nrow(seu@meta.data) > 10000) {
+    real.cells <- rownames(seu@meta.data)[sample(1:nrow(seu@meta.data), 
+                                                 10000, replace = FALSE)]
+    data <- seu@assays$RNA@counts[, real.cells]
+    n.real.cells <- ncol(data)
+  }
+  if (nrow(seu@meta.data) <= 10000) {
+    real.cells <- rownames(seu@meta.data)
+    data <- seu@assays$RNA@counts
+    n.real.cells <- ncol(data)
+  }
+  if (num.cores > 1) {
+    require(parallel)
+    cl <- makeCluster(num.cores)
+    output2 <- mclapply(as.list(1:length(pN)), FUN = parallel_paramSweep_v3_noapprox, 
+                        n.real.cells, real.cells, pK, pN, data, orig.commands, 
+                        PCs, sct, mc.cores = num.cores)
+    stopCluster(cl)
+  }
+  else {
+    output2 <- lapply(as.list(1:length(pN)), FUN = parallel_paramSweep_v3_noapprox, 
+                      n.real.cells, real.cells, pK, pN, data, orig.commands, 
+                      PCs, sct)
+  }
+  sweep.res.list <- list()
+  list.ind <- 0
+  for (i in 1:length(output2)) {
+    for (j in 1:length(output2[[i]])) {
+      list.ind <- list.ind + 1
+      sweep.res.list[[list.ind]] <- output2[[i]][[j]]
+    }
+  }
+  name.vec <- NULL
+  for (j in 1:length(pN)) {
+    name.vec <- c(name.vec, paste("pN", pN[j], "pK", pK, 
+                                  sep = "_"))
+  }
+  names(sweep.res.list) <- name.vec
+  return(sweep.res.list)
+}
+
+# Function-define-pK-noapprox; used in doubletfinder script, setting approx for RunPCA = FALSE
+define_pK_noapprox <- function(sample){
+  sweep_res_list <- paramSweep_v3_noapprox(sample, PCs = 1:30, sct = FALSE)
   sweep_stats <- summarizeSweep(sweep_res_list, GT = FALSE)
   bcmvn <- find.pK(sweep_stats)
   pK <- as.numeric(as.character(bcmvn$pK))
@@ -61,11 +200,147 @@ define_pK <- function(sample){
   text(pK_choose, max(BCmetric), as.character(pK_choose), pos = 4, col = "red")
 }
 
-# Function-remove-doublets
-doublet_removal <- function(sample, expected, pK){
+# function doubletFinder_v3_noapprox ; used in doublet_removal, setting RunPCA approx = FALSE
+doubletFinder_v3_noapprox <- function (seu, PCs, pN = 0.25, pK, nExp, reuse.pANN = FALSE, 
+                                       sct = FALSE, annotations = NULL) 
+{
+  require(Seurat)
+  require(fields)
+  require(KernSmooth)
+  if (reuse.pANN != FALSE) {
+    pANN.old <- seu@meta.data[, reuse.pANN]
+    classifications <- rep("Singlet", length(pANN.old))
+    classifications[order(pANN.old, decreasing = TRUE)[1:nExp]] <- "Doublet"
+    seu@meta.data[, paste("DF.classifications", pN, pK, nExp, 
+                          sep = "_")] <- classifications
+    return(seu)
+  }
+  if (reuse.pANN == FALSE) {
+    real.cells <- rownames(seu@meta.data)
+    data <- seu@assays$RNA@counts[, real.cells]
+    n_real.cells <- length(real.cells)
+    n_doublets <- round(n_real.cells/(1 - pN) - n_real.cells)
+    print(paste("Creating", n_doublets, "artificial doublets...", 
+                sep = " "))
+    real.cells1 <- sample(real.cells, n_doublets, replace = TRUE)
+    real.cells2 <- sample(real.cells, n_doublets, replace = TRUE)
+    doublets <- (data[, real.cells1] + data[, real.cells2])/2
+    colnames(doublets) <- paste("X", 1:n_doublets, sep = "")
+    data_wdoublets <- cbind(data, doublets)
+    if (!is.null(annotations)) {
+      stopifnot(typeof(annotations) == "character")
+      stopifnot(length(annotations) == length(Cells(seu)))
+      stopifnot(!any(is.na(annotations)))
+      annotations <- factor(annotations)
+      names(annotations) <- Cells(seu)
+      doublet_types1 <- annotations[real.cells1]
+      doublet_types2 <- annotations[real.cells2]
+    }
+    orig.commands <- seu@commands
+    if (sct == FALSE) {
+      print("Creating Seurat object...")
+      seu_wdoublets <- CreateSeuratObject(counts = data_wdoublets)
+      print("Normalizing Seurat object...")
+      seu_wdoublets <- NormalizeData(seu_wdoublets, normalization.method = orig.commands$NormalizeData.RNA@params$normalization.method, 
+                                     scale.factor = orig.commands$NormalizeData.RNA@params$scale.factor, 
+                                     margin = orig.commands$NormalizeData.RNA@params$margin)
+      print("Finding variable genes...")
+      seu_wdoublets <- FindVariableFeatures(seu_wdoublets, 
+                                            selection.method = orig.commands$FindVariableFeatures.RNA$selection.method, 
+                                            loess.span = orig.commands$FindVariableFeatures.RNA$loess.span, 
+                                            clip.max = orig.commands$FindVariableFeatures.RNA$clip.max, 
+                                            mean.function = orig.commands$FindVariableFeatures.RNA$mean.function, 
+                                            dispersion.function = orig.commands$FindVariableFeatures.RNA$dispersion.function, 
+                                            num.bin = orig.commands$FindVariableFeatures.RNA$num.bin, 
+                                            binning.method = orig.commands$FindVariableFeatures.RNA$binning.method, 
+                                            nfeatures = orig.commands$FindVariableFeatures.RNA$nfeatures, 
+                                            mean.cutoff = orig.commands$FindVariableFeatures.RNA$mean.cutoff, 
+                                            dispersion.cutoff = orig.commands$FindVariableFeatures.RNA$dispersion.cutoff)
+      print("Scaling data...")
+      seu_wdoublets <- ScaleData(seu_wdoublets, features = orig.commands$ScaleData.RNA$features, 
+                                 model.use = orig.commands$ScaleData.RNA$model.use, 
+                                 do.scale = orig.commands$ScaleData.RNA$do.scale, 
+                                 do.center = orig.commands$ScaleData.RNA$do.center, 
+                                 scale.max = orig.commands$ScaleData.RNA$scale.max, 
+                                 block.size = orig.commands$ScaleData.RNA$block.size, 
+                                 min.cells.to.block = orig.commands$ScaleData.RNA$min.cells.to.block)
+      print("Running PCA...")
+      seu_wdoublets <- RunPCA(seu_wdoublets, features = orig.commands$ScaleData.RNA$features, 
+                              npcs = length(PCs), approx = FALSE, rev.pca = orig.commands$RunPCA.RNA$rev.pca, 
+                              weight.by.var = orig.commands$RunPCA.RNA$weight.by.var, 
+                              verbose = FALSE)
+      pca.coord <- seu_wdoublets@reductions$pca@cell.embeddings[, 
+                                                                PCs]
+      cell.names <- rownames(seu_wdoublets@meta.data)
+      nCells <- length(cell.names)
+      rm(seu_wdoublets)
+      gc()
+    }
+    if (sct == TRUE) {
+      require(sctransform)
+      print("Creating Seurat object...")
+      seu_wdoublets <- CreateSeuratObject(counts = data_wdoublets)
+      print("Running SCTransform...")
+      seu_wdoublets <- SCTransform(seu_wdoublets)
+      print("Running PCA...")
+      seu_wdoublets <- RunPCA(seu_wdoublets, npcs = length(PCs), approx = FALSE)
+      pca.coord <- seu_wdoublets@reductions$pca@cell.embeddings[, 
+                                                                PCs]
+      cell.names <- rownames(seu_wdoublets@meta.data)
+      nCells <- length(cell.names)
+      rm(seu_wdoublets)
+      gc()
+    }
+    print("Calculating PC distance matrix...")
+    dist.mat <- fields::rdist(pca.coord)
+    print("Computing pANN...")
+    pANN <- as.data.frame(matrix(0L, nrow = n_real.cells, 
+                                 ncol = 1))
+    if (!is.null(annotations)) {
+      neighbor_types <- as.data.frame(matrix(0L, nrow = n_real.cells, 
+                                             ncol = length(levels(doublet_types1))))
+    }
+    rownames(pANN) <- real.cells
+    colnames(pANN) <- "pANN"
+    k <- round(nCells * pK)
+    for (i in 1:n_real.cells) {
+      neighbors <- order(dist.mat[, i])
+      neighbors <- neighbors[2:(k + 1)]
+      pANN$pANN[i] <- length(which(neighbors > n_real.cells))/k
+      if (!is.null(annotations)) {
+        for (ct in unique(annotations)) {
+          neighbor_types[i, ] <- table(doublet_types1[neighbors - 
+                                                        n_real.cells]) + table(doublet_types2[neighbors - 
+                                                                                                n_real.cells])
+          neighbor_types[i, ] <- neighbor_types[i, ]/sum(neighbor_types[i, 
+          ])
+        }
+      }
+    }
+    print("Classifying doublets..")
+    classifications <- rep("Singlet", n_real.cells)
+    classifications[order(pANN$pANN[1:n_real.cells], decreasing = TRUE)[1:nExp]] <- "Doublet"
+    seu@meta.data[, paste("pANN", pN, pK, nExp, sep = "_")] <- pANN[rownames(seu@meta.data), 
+                                                                    1]
+    seu@meta.data[, paste("DF.classifications", pN, pK, nExp, 
+                          sep = "_")] <- classifications
+    if (!is.null(annotations)) {
+      colnames(neighbor_types) = levels(doublet_types1)
+      for (ct in levels(doublet_types1)) {
+        seu@meta.data[, paste("DF.doublet.contributors", 
+                              pN, pK, nExp, ct, sep = "_")] <- neighbor_types[, 
+                                                                              ct]
+      }
+    }
+    return(seu)
+  }
+}
+
+# function doublet_removal used in doubletFinder script; setting RunPCA approx = FALSE
+doublet_removal_noapprox <- function(sample, expected, pK){
   # define the expected number of doublets in nuclei.
   nExp <- round(ncol(sample) * expected)  # expect 10.2% doublets
-  sample <- doubletFinder_v3(sample, pN = 0.25, pK = pK, nExp = nExp, PCs = 1:30)
+  sample <- doubletFinder_v3_noapprox(sample, pN = 0.25, pK = pK, nExp = nExp, PCs = 1:30)
   
   # name of the DF prediction can change, so extract the correct column name.
   DF.name <- colnames(sample@meta.data)[grepl("DF.classification", colnames(sample@meta.data))]
@@ -406,4 +681,110 @@ geom_split_violin <- function(mapping = NULL, data = NULL, stat = "ydensity", po
     position = position, show.legend = show.legend, inherit.aes = inherit.aes,
     params = list(trim = trim, scale = scale, draw_quantiles = draw_quantiles, na.rm = na.rm, ...)
   )
+}
+
+# function targeting-Calc on panda regNet for gene and TF
+targetingCalc <- function(regNetmatrix, variable_name, edge_weight_name, condition){
+  #rearrange dataframe 
+  regNetmatrix <- melt(regNetmatrix, varnames = c("TF", "gene"), value.name = "edge_weight_name")#melting dataframe
+  print("datframe melted")
+  regNetmatrix$edge_weight_name_pos <- ifelse(regNetmatrix$edge_weight_name < 0, 0, regNetmatrix$edge_weight_name) #replacing all negatives as a 0 and storing in new column
+  print("subsetting only positive edge weights")
+  regNetmatrix <- regNetmatrix[,c(1,2,4)]
+  regNetmatrix
+  
+  #calculate gene targeting
+  print("calculating gene targeting")
+  Gene.targeting <- aggregate(.~gene, regNetmatrix[-1], sum) #removing TF column and calculating targeting for all edge weights and when edge weight is only positive
+  #set column names based on condition
+  print("renaming columns")
+  if(condition == "het"){
+    colnames(Gene.targeting) <- c("gene", "het_edge_weight_pos")
+    print("plotting gene targeting score distribution")
+    png(file = paste0(here("results/diff_targeting/"), variable_name, condition, "_GeneTargetingScoresDist.png"),
+        width = 1000,
+        height = 1000)
+      hist(Gene.targeting$het_edge_weight_pos)
+      dev.off()
+  } else {
+    colnames(Gene.targeting) <- c("gene", "ctrl_edge_weight_pos")
+    print("plotting gene targeting score distribution")
+    png(file = paste0(here("results/diff_targeting/"), variable_name, condition, "_GeneTargetingScoresDist.png"),
+        width = 1000,
+        height = 1000)
+    hist(Gene.targeting$ctrl_edge_weight_pos)
+    dev.off()
+  }
+  #reassign variable 
+  print("assigning variable name to object")
+  variable_name <- as.character(variable_name)
+  assign(paste0(variable_name, "_gene_targeting_", condition), Gene.targeting, envir = .GlobalEnv)
+  print("gene targeting calculation complete")
+  
+  #calculate TF targeting
+  print("calculating TF targeting")
+  TF.targeting <- aggregate(.~TF, regNetmatrix[-2], sum) #same as above but for TF instead of gene
+  #set column names based on condition
+  print("renaming columns")
+  if(condition == "het"){
+    colnames(TF.targeting) <- c("TF", "het_edge_weight_pos")
+    print("plotting TF targeting score distribution")
+    png(file = paste0(here("results/diff_targeting/"), variable_name, condition, "_TFTargetingScoresDist.png"),
+        width = 1000,
+        height = 1000)
+    hist(TF.targeting$het_edge_weight_pos)
+    dev.off()
+  } else {
+    colnames(TF.targeting) <- c("TF", "ctrl_edge_weight_pos")
+    print("plotting TF targeting score distribution")
+    png(file = paste0(here("results/diff_targeting/"), variable_name, condition, "_TFTargetingScoresDist.png"),
+        width = 1000,
+        height = 1000)
+    hist(TF.targeting$ctrl_edge_weight_pos)
+    dev.off()
+  }
+  #reassign variable
+  print("assigning variable name to object")
+  variable_name <- as.character(variable_name)
+  assign(paste0(variable_name, "_TF_targeting_", condition), TF.targeting, envir = .GlobalEnv)
+  print("TF targeting calculation complete")
+}
+
+# function-targeting_heatmap; used in targeting
+targeting_heatmap <- function(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title){
+  #plotting all 
+  ##grabbing metadata and annotations
+  meta <- as.data.frame(colnames(data))
+  colnames(meta) <- meta_colname
+  rownames(meta) <- meta[,1]
+  
+  ##set heatmap annotations
+  heat.anno = HeatmapAnnotation(df = meta, show_annotation_name = TRUE, col = annotation_colors)
+  
+  ##ensure column order matches annotation table
+  data <- data[,rownames(meta), drop = FALSE]
+  
+  ##convert data to matrix
+  mat <- as.matrix(data)
+  
+  ##plot heatmap 
+  png(filename = plot_path,
+      width = 1000,
+      height = 1000)
+  print(Heatmap(mat,
+                col = colorRampPalette(brewer.pal(8,"Blues")) (25),
+                heatmap_legend_param = list(title = "targeting score"),
+                cluster_rows = TRUE,
+                cluster_columns = TRUE,
+                column_order = NULL,
+                show_row_dend = TRUE,
+                show_column_dend = TRUE,
+                show_row_names = FALSE,
+                show_column_names = FALSE,
+                use_raster = TRUE,
+                raster_device = c("png"),
+                bottom_annotation = NULL,
+                top_annotation = heat.anno,
+                column_title = plot_title, row_title = rowtitle, row_title_side = "right"))
+  dev.off()
 }

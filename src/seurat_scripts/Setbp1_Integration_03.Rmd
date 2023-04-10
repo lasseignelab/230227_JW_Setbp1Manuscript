@@ -137,11 +137,12 @@ cerebral_seurat_filtered <- ScaleData(
 cerebral_seurat_filtered <- RunPCA(
   cerebral_seurat_filtered,
   npcs = 50,
-  verbose = FALSE
+  verbose = FALSE, 
+  approx = FALSE
 ) # has a seed already set in source code
 
 png(
-  filename = here("results/seurat/Integration_03/elbow_kidney.png"),
+  filename = here("results/seurat/Integration_03/elbow_cerebral.png"),
   width = 1000,
   height = 1000
 )
@@ -153,11 +154,12 @@ dev.off()
 kidney_seurat_filtered <- RunPCA(
   kidney_seurat_filtered,
   npcs = 50,
-  verbose = FALSE
+  verbose = FALSE, 
+  approx = FALSE
 ) # has a seed set already in source code
 
 png(
-  filename = here("results/seurat/Integration_03/elbow_cerebral.png"),
+  filename = here("results/seurat/Integration_03/elbow_kidney.png"),
   width = 1000,
   height = 1000
 )
