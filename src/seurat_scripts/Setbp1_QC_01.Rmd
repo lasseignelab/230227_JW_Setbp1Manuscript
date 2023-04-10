@@ -955,6 +955,12 @@ save(cerebral_seurat_filtered, file = here("data/filtered_setbp1_cerebral_seurat
 ```
 
 ```{r}
+proc.time()
+```
+user  system elapsed 
+4.593   1.462 486.477 
+
+```{r}
 sessionInfo()
 ```
 R version 4.1.3 (2022-03-10)
