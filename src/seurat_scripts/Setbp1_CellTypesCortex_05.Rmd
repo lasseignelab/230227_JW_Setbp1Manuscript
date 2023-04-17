@@ -1,0 +1,388 @@
+---
+title: "Setbp1_CellTypesCortex_05"
+author: "Jordan Whitlock"
+date: '2022-09-08'
+output:     
+  html_document:
+      toc: true
+      toc_depth: 2
+      toc_float: true
+---
+
+# *Single-nuclei analysis: Identify Cell Types Cerebral Cortex*
+* Loading libraries
+* Selecting resolution
+* Investigating top markers for Cerebral Cortex
+* Assigning cell types
+* Visualizing cell types distribution
+
+This analysis comes after 'Setbp1_MarkersCortex_04.Rmd' and comes before "Setbp1_DGEcortex_06.Rmd"
+
+## Code: 
+
+Accompanying dry lab notebook for this analysis is here: https://docs.google.com/document/d/1FO_Je9oxbBFF9S_k-8tVF2t4ba88O4C77sw1v7DIFec/edit?usp=sharing
+
+#### load in libraries:
+```{r}
+library(devtools)
+library(magrittr)
+library(readr)
+library(dplyr)
+library(Seurat)
+library(cowplot)
+library(ggplot2)
+library(tidyverse)
+library(RColorBrewer)
+library(here)
+library(styler)
+library(lintr)
+set.seed(2178)
+```
+
+
+#### load in markers:
+```{r}
+load(here("results/seurat/Markers_05/cerebral_markers.Rdata"))
+```
+
+*also be sure that the previously generated clustered objects at resolution 0.9 are here if not loaded already, run below chunk:
+```{r}
+load(here("data/cerebral_leiden.Rdata"))
+select_resolution <- "RNA_snn_res.1"
+cerebral_int <- SetIdent(cerebral_int, value = select_resolution)
+```
+
+#### identify the top25 markers for cerebral cortex:
+```{r}
+# top 25 cerebral
+cerebral_top25 <- cerebral_markers_genes %>%
+  group_by(cluster) %>%
+  top_n(-25, p_val_adj)
+
+save(cerebral_top25, file = here("results/seurat/CellTypes_05/cerebral_top25.Rdata"))
+```
+
+```{r}
+final_cerebral_features <- c("Slc17a7", "Pcp4", "Synpr", "Gad1", "Hapln2", "Olig2", "Pdgfra", "Aqp4", "Gja1", "Slc1a3", "Cx3cr1", "Csf1r", "Dock8", "Vtn", "Nr4a2", "Ptgds", "Ryr3", "Opalin", "Bcn2")
+VlnPlot(cerebral_int, final_cerebral_features, stack = TRUE, sort = FALSE, flip = TRUE) +
+  theme(legend.position = "none") + ggtitle("Cerebral Cortex Cell-type Identity Markers")
+dev.off()
+
+png(here("results/seurat/CellTypes_05/cerebral_celltype_allfeatureDotPlot.png"),
+    width = 1000,
+    height = 1000)
+DotPlot(cerebral_int, features = final_cerebral_features) + coord_flip() + RotatedAxis()
+dev.off()
+```
+Breakdown of cell type markers used for assignment:
+*Neurons: Ryr3
+*Excitatory: Slc17a7, Pcp4
+*Inhibitory: Gad1, Synpr
+*Oligos: Hapln2, Ptgds, Opalin
+*Opcs: Pdgfra, Olig2
+*Astrocytes: Slc1a3, Gja1, Aqp4
+*Microglia: Cx3cr1, Csf1r, Dock8
+*Mural: Vtn
+*Fibroblasts: Nr4a2, Bcn2
+
+#### Investigating unknown clusters (using cerebral_top25 and panglaoDB)
+```{r cluster-19} 
+png(file = here("results/seurat/CellTypes_05/cerebral_cluster19.png"), width = 1000, height = 1000)
+FeaturePlot(cerebral_int, features = "Opalin", label = TRUE, reduction = "umap_harmony") #oligodendrocytes
+dev.off()
+```
+
+```{r cluster-21}
+png(file = here("results/seurat/CellTypes_05/cerebral_cluster21.png"), width = 4000, height = 4000)
+plot_grid(
+FeaturePlot(cerebral_int, features = c("Erbb4", "Nxph1", "Gm38505", "Sox2ot", "Sox6"), label = TRUE, reduction = "umap_harmony"),
+
+FeaturePlot(cerebral_int, features = c("Hapln2", "Ptgds", "Opalin"), label = TRUE, reduction = "umap_harmony"), #not oligos
+
+FeaturePlot(cerebral_int, features = c("Pdgfra", "Olig2"), label = TRUE, reduction = "umap_harmony"), #not opcs
+
+FeaturePlot(cerebral_int, features = c("Gad1", "Synpr"), label = TRUE, reduction = "umap_harmony"), #not inhibitory
+FeaturePlot(cerebral_int, features = c("Slc17a7", "Pcp4"), label = TRUE, reduction = "umap_harmony")) #cluster 19 is excitatory neurons
+dev.off()
+```
+
+```{r cluster-24}
+png(file = here("results/seurat/CellTypes_05/cerebral_cluster24.png"), width = 1000, height = 1000)
+FeaturePlot(cerebral_int, features = c("Nr4a2"), label = TRUE, reduction = "umap_harmony") #cluster 24 is fibroblasts
+dev.off()
+```
+
+```{r cluster-30}
+png(file = here("results/seurat/CellTypes_05/cerebral_cluster30.png"), width = 1000, height = 1000)
+FeaturePlot(cerebral_int, features = c("Phka1"), label = TRUE, reduction = "umap_harmony") #cluster 30 is astrocytes
+dev.off()
+```
+
+```{r cluster-31}
+png(file = here("results/seurat/CellTypes_05/cerebral_cluster31.png"), width = 2000, height = 1000)
+plot_grid(
+FeaturePlot(cerebral_int, features = c("Slc17a7", "Pcp4"), label = TRUE, reduction = "umap_harmony"), #looking at excitatory markers
+FeaturePlot(cerebral_int, features = c("Ntng1", "Cdh8"), label = TRUE, reduction = "umap_harmony")) #looking at top markers from top 25, cluster 31 is excitatory neurons
+dev.off()
+```
+
+
+#### Investigating clusters with multiple markers:
+```{r cluster-23}
+png(file = here("results/seurat/CellTypes_05/cerebral_cluster23.png"), width = 1000, height = 1000)
+FeaturePlot(cerebral_int, features = c("Slc17a7", "Pcp4", "Gad1", "Synpr"), label = TRUE, reduction = "umap_harmony") #looking at excitatory/inhibitory markers, cluster 23 is excitatory
+dev.off()
+```
+```{r cluster-26}
+png(file = here("results/seurat/CellTypes_05/cerebral_cluster26.png"), width = 1000, height = 1000)
+FeaturePlot(cerebral_int, features = c("Slc17a7", "Pcp4", "Gad1", "Synpr"), label = TRUE, reduction = "umap_harmony") #looking at excitatory/inhibitory markers, cluster 26 is excitatory
+dev.off()
+```
+
+```{r cluster-28}
+png(file = here("results/seurat/CellTypes_05/cerebral_cluster28.png"), width = 1000, height = 1000)
+plot_grid(
+FeaturePlot(cerebral_int, features = c("Hapln2", "Ptgds", "Opalin"), label = TRUE, reduction = "umap_harmony"),
+FeaturePlot(cerebral_int, features = c("Pdgfra", "Olig2"), label = TRUE, reduction = "umap_harmony"),
+FeaturePlot(cerebral_int, features = c("Slc1a3", "Gja1", "Aqp4"), label = TRUE, reduction = "umap_harmony")) #cluster 28 is astrocytes
+dev.off()
+
+```
+
+```{r cluster-29}
+png(file = here("results/seurat/CellTypes_05/cerebral_cluster29.png"), width = 1000, height = 1000)
+FeaturePlot(cerebral_int, features = c("Slc17a7", "Pcp4", "Nr4a2"), label = TRUE, reduction = "umap_harmony") #looking at excitatory/inhibitory markers, cluster 29 is excitatory
+dev.off()
+```
+```{r cluster-35}
+png(file = here("results/seurat/CellTypes_05/cerebral_cluster35.png"), width = 1000, height = 1000)
+plot_grid(
+FeaturePlot(cerebral_int, features = c("Hapln2", "Ptgds", "Opalin"), label = TRUE, reduction = "umap_harmony"),
+FeaturePlot(cerebral_int, features = c("Slc1a3", "Gja1", "Aqp4"), label = TRUE, reduction = "umap_harmony"),
+FeaturePlot(cerebral_int, features = c("Bnc2"), label = TRUE, reduction = "umap_harmony")) #cluster 35 is fibroblasts
+dev.off()
+```
+
+
+#### assigning cell types to cerebral cortex clusters:
+```{r}
+select_resolution <- "RNA_snn_res.1"
+cerebral_int <- SetIdent(cerebral_int, value = select_resolution)
+cerebral_int_celltypes <- SetIdent(cerebral_int, value = select_resolution)
+cerebral_int_celltypes <- RenameIdents(cerebral_int,
+  "1" = "excitatory_neurons",
+  "2" = "excitatory_neurons",
+  "3" = "excitatory_neurons",
+  "4" = "excitatory_neurons",
+  "5" = "excitatory_neurons",
+  "6" = "excitatory_neurons",
+  "7" = "oligodendrocytes",
+  "8" = "astrocytes",
+  "9" = "inhibitory_neurons",
+  "10" = "excitatory_neurons",
+  "11" = "inhibitory_neurons",
+  "12" = "excitatory_neurons",
+  "13" = "opcs",
+  "14" = "astrocytes",
+  "15" = "microglia",
+  "16" = "excitatory_neurons",
+  "17" = "inhibitory_neurons",
+  "18" = "excitatory_neurons",
+  "19" = "oligodendrocytes",
+  "20" = "inhibitory_neurons",
+  "21" = "excitatory_neurons",
+  "22" = "excitatory_neurons",
+  "23" = "excitatory_neurons",
+  "24" = "fibroblasts",
+  "25" = "excitatory_neurons",
+  "26" = "excitatory_neurons",
+  "27" = "opcs",
+  "28" = "astrocytes",
+  "29" = "excitatory_neurons",
+  "30" = "astrocytes",
+  "31" = "excitatory_neurons",
+  "32" = "excitatory_neurons",
+  "33" = "mural_cells",
+  "34" = "microglia",
+  "35" = "fibroblasts"
+)
+cerebral_int_celltypes <- AddMetaData(object = cerebral_int_celltypes, as.vector(cerebral_int_celltypes@active.ident), col.name = "cell_type")
+save(cerebral_int_celltypes, file = here("data/setbp1_cerebralintcelltypes.Rdata"))
+```
+
+#### visualizing new UMAP and data with cell types assigned:
+```{r}
+p1 <- DimPlot(cerebral_int_celltypes, reduction = "umap_harmony", group.by = "type", cols = c("control" = "#644DD4", "heterozygous" = "#5F9EFD"))
+p2 <- DimPlot(cerebral_int_celltypes, reduction = "umap_harmony", group.by = "cell_type", cols = c("excitatory_neurons" = "#DC71FA", "inhibitory_neurons" = "#00BBDB", "oligodendrocytes" = "#7997FF", "astrocytes" = "#6968B4", "microglia" = "#C216B7", "opcs" = "#00C1AA", "mural_cells" = "#027461", "fibroblasts" = "#0a2f6f"), shuffle = TRUE)
+png(
+  filename = here("results/figures/cortex_setbp1_UMAP.png"),
+  width = 1500,
+  height = 1000
+)
+p1 + p2
+dev.off()
+```
+
+```{r}
+pt <- table(cerebral_int_celltypes@meta.data$cell_type, cerebral_int_celltypes@meta.data$type)
+pt <- as.data.frame(pt)
+pt$Var1 <- as.character(pt$Var1)
+pt$Var2 <- as.character(pt$Var2)
+p7 <- ggplot(pt, aes(y = Var1, x = Freq, fill = Var2)) +
+  geom_bar(position = "dodge", stat = "identity") +
+  theme_bw(base_size = 15) +
+  ylab("Cell-types") +
+  xlab("Nuclei Counts") +
+  ggtitle("Comparison of cell-type proportions across conditions") +
+  scale_fill_manual(values = c("control" = "#644DD4", "heterozygous" = "#5F9EFD")) +
+  # scale_fill_manual(values = brewer.pal(12, "Paired")) +
+  theme(legend.title = element_blank(), axis.text.x = element_text(angle = 45))
+
+png(file = here("results/seurat/CellTypes_05/cortex_nuclei_prop.png"),
+    width = 1000,
+    height = 1000)
+p7
+dev.off()
+```
+
+
+#### plotting nuclei proportions stacked with cell type markers
+```{r}
+# rename pt vairable V1 to ident:
+colnames(pt) <- c("ident", "Condition", "Freq")
+
+# set plot to save
+png(file = here("results/figures/CortexFig2A.png"), 
+    width = 2000, 
+    height = 3000)
+
+# generate plot
+yy <- VlnPlot(cerebral_int_celltypes, final_cerebral_features, stack = TRUE, sort = FALSE, flip = TRUE, assay = "RNA", group.by = "cell_type", fill.by = "ident", cols = c("excitatory_neurons" = "#DC71FA", "inhibitory_neurons" = "#00BBDB", "oligodendrocytes" = "#7997FF", "astrocytes" = "#6968B4", "microglia" = "#BF80FF", "opcs" = "#00C1AA", "mural_cells" = "#027461", "fibroblasts" = "#0a2f6f")) + labs(fill = "Cell Type") + theme_bw() + theme(legend.position = "left") + theme(axis.text.x = element_blank()) + theme(axis.title.x = element_blank()) + theme(panel.grid = element_blank()) + theme(strip.text.y.right = element_text(angle = 0))
+
+
+xx <- ggplot(pt, aes(x = ident, y = Freq, fill = Condition)) +
+  geom_bar(position = "dodge", stat = "identity") +
+  ggtitle("Cerebral Cortex Cell-type Nuclei Proportions and Identity Markers") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  ylab("Nuclei Counts") +
+  geom_text(aes(label = Freq), position = position_dodge(width = 0.9), vjust = 0.5, angle = 90, hjust = -.1) +
+  scale_fill_manual(values = c("control" = "#644DD4", "heterozygous" = "#5F9EFD")) +
+  theme_bw() +
+  theme(panel.border = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  theme(axis.text.x = element_blank()) +
+  theme(axis.text.y = element_blank()) +
+  theme(axis.title.x = element_blank()) +
+  theme(axis.ticks = element_blank()) +
+  theme(legend.position = "left")
+
+
+# saving plot to outputs
+xx / yy
+
+xx
+dev.off()
+```
+
+```{r}
+# rename pt vairable V1 to ident:
+colnames(pt) <- c("ident", "Condition", "Freq")
+
+# set plot to save
+png(file = here("results/figures/DotCortexFig2A.png"), 
+    width = 2000, 
+    height = 3000)
+
+
+pt <- table(Idents(cerebral_int_celltypes), cerebral_int_celltypes$type)
+pt <- as.data.frame(pt)
+pt$Var1 <- as.character(pt$Var1)
+
+# calculate proportions
+stats <- pt %>%
+  group_by(Var2, Var1) %>%
+  summarise(Nb = Freq) %>%
+  mutate(C = sum(Nb)) %>%
+  mutate(prop = Nb / C * 100)
+
+stats$prop <- round(stats$prop, digits = 1)
+colnames(stats) <- c("Condition", "Cell_type", "Nb", "C", "prop")
+
+# generate plot
+yy <- DotPlot(cerebral_int_celltypes, final_cerebral_features, assay = "RNA", group.by = "cell_type", cols = c("black", "#EECB00")) + labs(fill = "Cell Type") + theme_bw() + theme(legend.position = "left") + theme(axis.title.y = element_blank()) + theme(axis.title.x = element_blank()) + theme(panel.grid = element_blank()) + theme(axis.text.x = element_text(angle = 90)) + coord_flip()
+
+
+xx <- ggplot(stats, aes(x = Cell_type, y = prop, fill = Condition)) +
+  geom_bar(position = "dodge", stat = "identity") +
+  # ggtitle("Cerebral Cortex Cell-type Nuclei Proportions and Identity Markers") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  ylab("Nuclei Counts") +
+  geom_text(aes(label = prop), position = position_dodge(width = 0.9), vjust = -0.5, angle = 0) +
+  scale_fill_manual(values = c("control" = "#644DD4", "heterozygous" = "#5F9EFD")) +
+  theme_bw() +
+  theme(panel.border = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  theme(axis.text.x = element_blank()) +
+  theme(axis.text.y = element_blank()) +
+  theme(axis.title.x = element_blank()) +
+  theme(axis.ticks = element_blank()) +
+  theme(legend.position = "left", plot.margin = margin(0.1))
+
+
+# saving plot to outputs
+xx / yy
+xx
+yy
+dev.off()
+```
+
+```{r}
+proc.time()
+```
+    user   system  elapsed 
+ 292.797   80.634 8279.600 
+
+```{r}
+sessionInfo()
+```
+R version 4.1.3 (2022-03-10)
+Platform: x86_64-pc-linux-gnu (64-bit)
+Running under: Ubuntu 20.04.5 LTS
+
+Matrix products: default
+BLAS/LAPACK: /usr/lib/x86_64-linux-gnu/openblas-pthread/libopenblasp-r0.3.8.so
+
+locale:
+[1] C
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+ [1] lintr_3.0.2        styler_1.9.0       here_1.0.1         RColorBrewer_1.1-3 lubridate_1.9.2    forcats_1.0.0      stringr_1.5.0      purrr_1.0.1        tidyr_1.3.0       
+[10] tibble_3.1.8       tidyverse_2.0.0    ggplot2_3.4.1      cowplot_1.1.1      SeuratObject_4.1.3 Seurat_4.3.0       dplyr_1.1.0        readr_2.1.4        magrittr_2.0.3    
+[19] devtools_2.4.5     usethis_2.1.6     
+
+loaded via a namespace (and not attached):
+  [1] plyr_1.8.8             igraph_1.4.1           lazyeval_0.2.2         sp_1.6-0               splines_4.1.3          listenv_0.9.0          scattermore_0.8       
+  [8] digest_0.6.31          htmltools_0.5.4        fansi_1.0.4            memoise_2.0.1          tensor_1.5             cluster_2.1.2          ROCR_1.0-11           
+ [15] tzdb_0.3.0             remotes_2.4.2          globals_0.16.2         matrixStats_0.63.0     R.utils_2.12.2         timechange_0.2.0       spatstat.sparse_3.0-0 
+ [22] prettyunits_1.1.1      colorspace_2.1-0       ggrepel_0.9.3          xfun_0.37              callr_3.7.3            crayon_1.5.2           jsonlite_1.8.4        
+ [29] progressr_0.13.0       spatstat.data_3.0-0    survival_3.3-1         zoo_1.8-11             glue_1.6.2             polyclip_1.10-4        gtable_0.3.1          
+ [36] leiden_0.4.3           R.cache_0.16.0         pkgbuild_1.3.1         future.apply_1.10.0    abind_1.4-5            scales_1.2.1           spatstat.random_3.1-3 
+ [43] miniUI_0.1.1.1         Rcpp_1.0.10            viridisLite_0.4.1      xtable_1.8-4           reticulate_1.28        profvis_0.3.7          rex_1.2.1             
+ [50] htmlwidgets_1.6.1      httr_1.4.5             ellipsis_0.3.2         ica_1.0-3              urlchecker_1.0.1       pkgconfig_2.0.3        R.methodsS3_1.8.2     
+ [57] uwot_0.1.14            deldir_1.0-6           utf8_1.2.3             tidyselect_1.2.0       rlang_1.0.6            reshape2_1.4.4         later_1.3.0           
+ [64] munsell_0.5.0          tools_4.1.3            cachem_1.0.7           cli_3.6.0              generics_0.1.3         ggridges_0.5.4         fastmap_1.1.1         
+ [71] goftest_1.2-3          processx_3.8.0         knitr_1.42             fs_1.6.1               fitdistrplus_1.1-8     RANN_2.6.1             pbapply_1.7-0         
+ [78] future_1.31.0          nlme_3.1-155           mime_0.12              R.oo_1.25.0            xml2_1.3.3             compiler_4.1.3         rstudioapi_0.14       
+ [85] plotly_4.10.1          png_0.1-8              spatstat.utils_3.0-1   stringi_1.7.12         cyclocomp_1.1.0        ps_1.7.2               desc_1.4.2            
+ [92] lattice_0.20-45        Matrix_1.5-3           vctrs_0.5.2            pillar_1.8.1           lifecycle_1.0.3        spatstat.geom_3.0-6    lmtest_0.9-40         
+ [99] RcppAnnoy_0.0.20       data.table_1.14.8      irlba_2.3.5.1          httpuv_1.6.9           patchwork_1.1.2        R6_2.5.1               promises_1.2.0.1      
+[106] KernSmooth_2.23-20     gridExtra_2.3          parallelly_1.34.0      sessioninfo_1.2.2      codetools_0.2-18       MASS_7.3-55            pkgload_1.3.2         
+[113] rprojroot_2.0.3        withr_2.5.0            sctransform_0.3.5      parallel_4.1.3         hms_1.1.2              grid_4.1.3             Rtsne_0.16            
+[120] spatstat.explore_3.0-6 shiny_1.7.4           
+
+```{r}
+# run style
+style_file(here("src/seurat_scripts/Setbp1_CellTypesCortex_05.Rmd"))
+# lintr was run as well
+```
