@@ -1,0 +1,842 @@
+---
+title: "Setbp1_DGEkidney_06"
+author: "Jordan Whitlock"
+date: '2022-09-14'
+output:     
+  html_document:
+      toc: true
+      toc_depth: 2
+      toc_float: true
+---
+
+This analysis comes after 'Setbp1_CellTypesKidney_05.Rmd' and precedes 'Setbp1_PathwayAnalysisCortexKidney_07.Rmd'
+
+# *Single-nuclei analysis: Identify DEG in Kidney data*
+
+
+## Code: 
+
+#### Loading in libraries:
+```{r}
+set.seed(2178)
+library(Seurat)
+library(SeuratObject)
+library(ggplot2)
+library(tidyr)
+library(dplyr)
+library(ComplexHeatmap)
+library(circlize)
+library(here)
+library(styler)
+library(lintr)
+source(here("src/functions/functions.R"))
+```
+
+#### Loading in the object:
+```{r}
+load(here("data/kidney_integrated_celltypes_postSoup.Rdata"))
+
+Idents(kidney_int_celltypes) <- "cell_type"
+```
+
+#### checking to see if Setbp1 is even in the seurat object:
+
+It is present in the data, but appears very similar across conditions.
+```{r}
+# visualize with FeaturePlot
+png(
+  file = here("results/seurat/DGE_06/Setbp1_expression_kidney.png"),
+  width = 1000,
+  height = 1000
+)
+plot <- FeaturePlot(kidney_int_celltypes,
+  feature = "Setbp1",
+  reduction = "umap_harmony",
+  split.by = "type", label = TRUE
+)
+plot
+dev.off()
+```
+#### split violin plotting of setbp1 across celltypes
+```{r}
+# grabbing the Setbp1 expression data and moving from S4 to a dataframe
+setbp1_exp <- FetchData(kidney_int_celltypes,
+  vars = c("Setbp1", "cell_type", "type")
+)
+colnames(setbp1_exp) <- c("Expression", "cell_type", "type")
+
+png(
+  filename = here("results/figures/kidney_setbp1_splitviolin.png"),
+  width = 1500,
+  height = 1000
+)
+ggplot(setbp1_exp, aes(cell_type, Expression, fill = type)) +
+  geom_split_violin() +
+  theme_bw() +
+  ggtitle("Setbp1 Expression across Kidney") +
+  scale_fill_manual(values = c("control" = "#FE6100", "heterozygous" = "#FFB000"))
+dev.off()
+```
+
+
+
+
+#### Calculating DGE by cell type: log2FC of 0.1
+
+---B_cells---
+```{r}
+# subset seurat object for each cell type
+bcell <- subset(x = kidney_int_celltypes, idents = "B_cells")
+Idents(bcell) <- bcell@meta.data$type
+bcell_data <- FindAllMarkers(bcell,
+  logfc.threshold = 0.1,
+  test.use = "wilcox",
+  only.pos = FALSE,
+  assay = "RNA"
+)
+head(bcell_data, n = 5)
+```
+
+```{r}
+# subsetting just the DEG from Het:
+bcell_het <- bcell_data[bcell_data$p_val < 0.5 &
+  bcell_data$avg_log2FC > 0.1 |
+  bcell_data$avg_log2FC < -0.1, ]
+bcell_het <- bcell_het[bcell_het$cluster == "heterozygous", ]
+
+# add column to data to indicate if DE or not:
+bcell_het$diffexpressed <- "NO"
+# if log2Foldchange > 0.1 and pvalue < 0.05, set as "UP"
+bcell_het$diffexpressed[bcell_het$avg_log2FC > 0.1 & 
+                           bcell_het$p_val < 0.05] <- "UP"
+# if log2Foldchange < -0.1 and pvalue < 0.05, set as "DOWN"
+bcell_het$diffexpressed[bcell_het$avg_log2FC < -0.1 & 
+                           bcell_het$p_val < 0.05] <- "DOWN"
+```
+
+---Collecting Duct Intercalating Cells Type A---
+```{r}
+# subset seurat object for each cell type
+CDIC_typeA <- subset(x = kidney_int_celltypes, idents = "CDIC_typeA")
+Idents(CDIC_typeA) <- CDIC_typeA@meta.data$type
+CDIC_typeA_data <- FindAllMarkers(CDIC_typeA,
+  logfc.threshold = 0.1,
+  test.use = "wilcox",
+  only.pos = FALSE,
+  assay = "RNA"
+)
+head(CDIC_typeA_data, n = 5)
+```
+
+```{r}
+# subsetting just the DEG from Het:
+CDIC_typeA_het <- CDIC_typeA_data[CDIC_typeA_data$p_val < 0.5 &
+  CDIC_typeA_data$avg_log2FC > 0.1 |
+  CDIC_typeA_data$avg_log2FC < -0.1, ]
+CDIC_typeA_het <- CDIC_typeA_het[CDIC_typeA_het$cluster == "heterozygous", ]
+
+CDIC_typeA_het$diffexpressed <- "NO"
+# if log2Foldchange > 0.1 and pvalue < 0.05, set as "UP"
+CDIC_typeA_het$diffexpressed[CDIC_typeA_het$avg_log2FC > 0.1 & 
+                           CDIC_typeA_het$p_val < 0.05] <- "UP"
+# if log2Foldchange < -0.1 and pvalue < 0.05, set as "DOWN"
+CDIC_typeA_het$diffexpressed[CDIC_typeA_het$avg_log2FC < -0.1 & 
+                           CDIC_typeA_het$p_val < 0.05] <- "DOWN"
+```
+
+
+---Collecting Duct Intercalating Cells Type B---
+```{r}
+# subset seurat object for each cell type
+CDIC_typeB <- subset(x = kidney_int_celltypes, idents = "CDIC_typeB")
+Idents(CDIC_typeB) <- CDIC_typeB@meta.data$type
+CDIC_typeB_data <- FindAllMarkers(CDIC_typeB,
+  logfc.threshold = 0.1,
+  test.use = "wilcox",
+  only.pos = FALSE,
+  assay = "RNA"
+)
+head(CDIC_typeB_data, n = 5)
+```
+
+```{r}
+CDIC_typeB_het <- CDIC_typeB_data[CDIC_typeB_data$p_val < 0.5 &
+  CDIC_typeB_data$avg_log2FC > 0.1 |
+  CDIC_typeB_data$avg_log2FC < -0.1, ]
+CDIC_typeB_het <- CDIC_typeB_het[CDIC_typeB_het$cluster == "heterozygous", ]
+
+# add column to data to indicate if DE or not:
+CDIC_typeB_het$diffexpressed <- "NO"
+# if log2Foldchange > 0.1 and pvalue < 0.05, set as "UP"
+CDIC_typeB_het$diffexpressed[CDIC_typeB_het$avg_log2FC > 0.1 & 
+                           CDIC_typeB_het$p_val < 0.05] <- "UP"
+# if log2Foldchange < -0.1 and pvalue < 0.05, set as "DOWN"
+CDIC_typeB_het$diffexpressed[CDIC_typeB_het$avg_log2FC < -0.1 & 
+                           CDIC_typeB_het$p_val < 0.05] <- "DOWN"
+```
+
+---Collecting Duct Principal Cells---
+```{r}
+# subset seurat object for each cell type
+CDPC <- subset(x = kidney_int_celltypes, idents = "CDPC")
+Idents(CDPC) <- CDPC@meta.data$type
+CDPC_data <- FindAllMarkers(CDPC,
+  logfc.threshold = 0.1,
+  test.use = "wilcox",
+  only.pos = FALSE,
+  assay = "RNA"
+)
+head(CDPC_data, n = 5)
+```
+
+```{r}
+CDPC_het <- CDPC_data[CDPC_data$p_val < 0.5 &
+  CDPC_data$avg_log2FC > 0.1 |
+  CDPC_data$avg_log2FC < -0.1, ]
+CDPC_het <- CDPC_het[CDPC_het$cluster == "heterozygous", ]
+
+# add column to data to indicate if DE or not:
+CDPC_het$diffexpressed <- "NO"
+# if log2Foldchange > 0.1 and pvalue < 0.05, set as "UP"
+CDPC_het$diffexpressed[CDPC_het$avg_log2FC > 0.1 & 
+                          CDPC_het$p_val < 0.05] <- "UP"
+# if log2Foldchange < -0.1 and pvalue < 0.05, set as "DOWN"
+CDPC_het$diffexpressed[CDPC_het$avg_log2FC < -0.1 & 
+                          CDPC_het$p_val < 0.05] <- "DOWN"
+```
+
+
+---Distal Convoluted Tubule---
+```{r}
+# subset seurat object for each cell type
+DCT <- subset(x = kidney_int_celltypes, idents = "DCT")
+Idents(DCT) <- DCT@meta.data$type
+DCT_data <- FindAllMarkers(DCT,
+  logfc.threshold = 0.1,
+  test.use = "wilcox",
+  only.pos = FALSE,
+  assay = "RNA"
+)
+head(DCT_data, n = 5)
+```
+
+```{r}
+# subsetting just the DEG from Het:
+DCT_het <- DCT_data[DCT_data$p_val < 0.5 &
+  DCT_data$avg_log2FC > 0.1 | DCT_data$avg_log2FC < -0.1, ]
+DCT_het <- DCT_het[DCT_het$cluster == "heterozygous", ]
+
+# add column to data to indicate if DE or not:
+DCT_het$diffexpressed <- "NO"
+# if log2Foldchange > 0.1 and pvalue < 0.05, set as "UP"
+DCT_het$diffexpressed[DCT_het$avg_log2FC > 0.1 & DCT_het$p_val < 0.05] <- "UP"
+# if log2Foldchange < -0.1 and pvalue < 0.05, set as "DOWN"
+DCT_het$diffexpressed[DCT_het$avg_log2FC < -0.1 & DCT_het$p_val < 0.05] <- "DOWN"
+```
+
+---Distal Loop of Henle---
+```{r}
+# subset seurat object for each cell type
+DLH <- subset(x = kidney_int_celltypes, idents = "DLH")
+Idents(DLH) <- DLH@meta.data$type
+DLH_data <- FindAllMarkers(DLH,
+  logfc.threshold = 0.1,
+  test.use = "wilcox",
+  only.pos = FALSE,
+  assay = "RNA"
+)
+head(DLH_data, n = 5)
+```
+
+
+```{r}
+# subsetting just the DEG from Het:
+DLH_het <- DLH_data[DLH_data$p_val < 0.5 &
+  DLH_data$avg_log2FC > 0.1 | DLH_data$avg_log2FC < -0.1, ]
+DLH_het <- DLH_het[DLH_het$cluster == "heterozygous", ]
+
+
+# add column to data to indicate if DE or not:
+DLH_het$diffexpressed <- "NO"
+# if log2Foldchange > 0.1 and pvalue < 0.05, set as "UP"
+DLH_het$diffexpressed[DLH_het$avg_log2FC > 0.1 & DLH_het$p_val < 0.05] <- "UP"
+# if log2Foldchange < -0.1 and pvalue < 0.05, set as "DOWN"
+DLH_het$diffexpressed[DLH_het$avg_log2FC < -0.1 & DLH_het$p_val < 0.05] <- "DOWN"
+```
+
+---Endothelial---
+```{r}
+# subset seurat object for each cell type
+endo <- subset(x = kidney_int_celltypes, idents = "endothelial")
+Idents(endo) <- endo@meta.data$type
+endo_data <- FindAllMarkers(endo,
+  logfc.threshold = 0.1,
+  test.use = "wilcox",
+  only.pos = FALSE,
+  assay = "RNA"
+)
+head(endo_data, n = 5)
+```
+
+```{r}
+# subsetting just the DEG from Het:
+endo_het <- endo_data[endo_data$p_val < 0.5 &
+  endo_data$avg_log2FC > 0.1 | endo_data$avg_log2FC < -0.1, ]
+endo_het <- endo_het[endo_het$cluster == "heterozygous", ]
+# add column to data to indicate if DE or not:
+endo_het$diffexpressed <- "NO"
+# if log2Foldchange > 0.1 and pvalue < 0.05, set as "UP"
+endo_het$diffexpressed[endo_het$avg_log2FC > 0.1 & 
+                         endo_het$p_val < 0.05] <- "UP"
+# if log2Foldchange < -0.1 and pvalue < 0.05, set as "DOWN"
+endo_het$diffexpressed[endo_het$avg_log2FC < -0.1 & 
+                         endo_het$p_val < 0.05] <- "DOWN"
+```
+
+---Fibroblasts---
+```{r}
+# subset seurat object for each cell type
+fibro <- subset(x = kidney_int_celltypes, idents = "fibroblasts")
+Idents(fibro) <- fibro@meta.data$type
+fibro_data <- FindAllMarkers(fibro,
+  logfc.threshold = 0.1,
+  test.use = "wilcox",
+  only.pos = FALSE,
+  assay = "RNA"
+)
+head(fibro_data, n = 5)
+```
+
+```{r}
+# subsetting just the DEG from Het:
+fibro_het <- fibro_data[fibro_data$p_val < 0.5 &
+  fibro_data$avg_log2FC > 0.1 |
+  fibro_data$avg_log2FC < -0.1, ]
+fibro_het <- fibro_het[fibro_het$cluster == "heterozygous", ]
+
+# add column to data to indicate if DE or not:
+fibro_het$diffexpressed <- "NO"
+# if log2Foldchange > 0.1 and pvalue < 0.05, set as "UP"
+fibro_het$diffexpressed[fibro_het$avg_log2FC > 0.1 & 
+                          fibro_het$p_val < 0.05] <- "UP"
+# if log2Foldchange < -0.1 and pvalue < 0.05, set as "DOWN"
+fibro_het$diffexpressed[fibro_het$avg_log2FC < -0.1 & 
+                          fibro_het$p_val < 0.05] <- "DOWN"
+```
+
+
+---LOH---
+```{r}
+# subset seurat object for each cell type
+LOH <- subset(x = kidney_int_celltypes, idents = "LOH")
+Idents(LOH) <- LOH@meta.data$type
+LOH_data <- FindAllMarkers(LOH,
+  logfc.threshold = 0.1,
+  test.use = "wilcox",
+  only.pos = FALSE,
+  assay = "RNA"
+)
+head(LOH_data, n = 5)
+```
+
+```{r}
+# subsetting just the DEG from Het:
+LOH_het <- LOH_data[LOH_data$p_val < 0.5 &
+  LOH_data$avg_log2FC > 0.1 | LOH_data$avg_log2FC < -0.1, ]
+LOH_het <- LOH_het[LOH_het$cluster == "heterozygous", ]
+
+# add column to data to indicate if DE or not:
+LOH_het$diffexpressed <- "NO"
+# if log2Foldchange > 0.1 and pvalue < 0.05, set as "UP"
+LOH_het$diffexpressed[LOH_het$avg_log2FC > 0.1 & LOH_het$p_val < 0.05] <- "UP"
+# if log2Foldchange < -0.1 and pvalue < 0.05, set as "DOWN"
+LOH_het$diffexpressed[LOH_het$avg_log2FC < -0.1 & LOH_het$p_val < 0.05] <- "DOWN"
+```
+
+
+---macrophages---
+```{r}
+# subset seurat object for each cell type
+macro <- subset(x = kidney_int_celltypes, idents = "macrophages")
+Idents(macro) <- macro@meta.data$type
+macro_data <- FindAllMarkers(macro,
+  logfc.threshold = 0.1,
+  test.use = "wilcox",
+  only.pos = FALSE,
+  assay = "RNA"
+)
+head(macro_data, n = 5)
+```
+
+```{r}
+# subsetting just the DEG from Het:
+macro_het <- macro_data[macro_data$p_val < 0.5 &
+  macro_data$avg_log2FC > 0.1 |
+  macro_data$avg_log2FC < -0.1, ]
+macro_het <- macro_het[macro_het$cluster == "heterozygous", ]
+
+# add column to data to indicate if DE or not:
+macro_het$diffexpressed <- "NO"
+# if log2Foldchange > 0.1 and pvalue < 0.05, set as "UP"
+macro_het$diffexpressed[macro_het$avg_log2FC > 0.1 & 
+                          macro_het$p_val < 0.05] <- "UP"
+# if log2Foldchange < -0.1 and pvalue < 0.05, set as "DOWN"
+macro_het$diffexpressed[macro_het$avg_log2FC < -0.1 & 
+                          macro_het$p_val < 0.05] <- "DOWN"
+```
+
+---Proximal Convoluted Tubule Segment 1---
+```{r}
+# subset seurat object for each cell type
+PCTS1 <- subset(x = kidney_int_celltypes, idents = "PCTS1")
+Idents(PCTS1) <- PCTS1@meta.data$type
+PCTS1_data <- FindAllMarkers(PCTS1,
+  logfc.threshold = 0.1,
+  test.use = "wilcox",
+  only.pos = FALSE,
+  assay = "RNA"
+)
+head(PCTS1_data, n = 5)
+```
+
+```{r}
+# subsetting just the DEG from Het:
+PCTS1_het <- PCTS1_data[PCTS1_data$p_val < 0.5 &
+  PCTS1_data$avg_log2FC > 0.1 |
+  PCTS1_data$avg_log2FC < -0.1, ]
+PCTS1_het <- PCTS1_het[PCTS1_het$cluster == "heterozygous", ]
+
+# add column to data to indicate if DE or not:
+PCTS1_het$diffexpressed <- "NO"
+# if log2Foldchange > 0.1 and pvalue < 0.05, set as "UP"
+PCTS1_het$diffexpressed[PCTS1_het$avg_log2FC > 0.1 & 
+                           PCTS1_het$p_val < 0.05] <- "UP"
+# if log2Foldchange < -0.1 and pvalue < 0.05, set as "DOWN"
+PCTS1_het$diffexpressed[PCTS1_het$avg_log2FC < -0.1 & 
+                           PCTS1_het$p_val < 0.05] <- "DOWN"
+```
+
+
+---podocytes---
+```{r}
+# subset seurat object for each cell type
+podo <- subset(x = kidney_int_celltypes, idents = "podocytes")
+Idents(podo) <- podo@meta.data$type
+podo_data <- FindAllMarkers(podo,
+  logfc.threshold = 0.1,
+  test.use = "wilcox",
+  only.pos = FALSE,
+  assay = "RNA"
+)
+head(podo_data, n = 5)
+```
+
+
+
+```{r}
+# subsetting just the DEG from Het:
+podo_het <- podo_data[podo_data$p_val < 0.5 &
+  podo_data$avg_log2FC > 0.1 |
+  podo_data$avg_log2FC < -0.1, ]
+podo_het <- podo_het[podo_het$cluster == "heterozygous", ]
+
+# add column to data to indicate if DE or not:
+podo_het$diffexpressed <- "NO"
+# if log2Foldchange > 0.1 and pvalue < 0.05, set as "UP"
+podo_het$diffexpressed[podo_het$avg_log2FC > 0.1 & 
+                         podo_het$p_val < 0.05] <- "UP"
+# if log2Foldchange < -0.1 and pvalue < 0.05, set as "DOWN"
+podo_het$diffexpressed[podo_het$avg_log2FC < -0.1 & 
+                         podo_het$p_val < 0.05] <- "DOWN"
+```
+
+
+---Proximal Straight Tubule---
+```{r}
+# subset seurat object for each cell type
+PST <- subset(x = kidney_int_celltypes, idents = "PST")
+Idents(PST) <- PST@meta.data$type
+PST_data <- FindAllMarkers(PST,
+  logfc.threshold = 0.1,
+  test.use = "wilcox",
+  only.pos = FALSE,
+  assay = "RNA"
+)
+head(PST_data, n = 5)
+
+```
+
+
+
+```{r}
+# subsetting just the DEG from Het:
+PST_het <- PST_data[PST_data$p_val < 0.5 & PST_data$avg_log2FC > 0.1 |
+  PST_data$avg_log2FC < -0.1, ]
+PST_het <- PST_het[PST_het$cluster == "heterozygous", ]
+
+# add column to data to indicate if DE or not:
+PST_het$diffexpressed <- "NO"
+# if log2Foldchange > 0.1 and pvalue < 0.05, set as "UP"
+PST_het$diffexpressed[PST_het$avg_log2FC > 0.1 & PST_het$p_val < 0.05] <- "UP"
+# if log2Foldchange < -0.1 and pvalue < 0.05, set as "DOWN"
+PST_het$diffexpressed[PST_het$avg_log2FC < -0.1 & PST_het$p_val < 0.05] <- "DOWN"
+```
+
+
+
+---pericytes---
+```{r}
+# subset seurat object for each cell type
+pericytes <- subset(x = kidney_int_celltypes, idents = "pericytes")
+Idents(pericytes) <- pericytes@meta.data$type
+pericytes_data <- FindAllMarkers(pericytes,
+  logfc.threshold = 0.1,
+  test.use = "wilcox",
+  only.pos = FALSE,
+  assay = "RNA"
+)
+head(pericytes_data, n = 5)
+```
+
+
+
+```{r}
+# subsetting just the DEG from Het:
+pericytes_het <- pericytes_data[pericytes_data$p_val < 0.5 &
+  pericytes_data$avg_log2FC > 0.1 |
+  pericytes_data$avg_log2FC < -0.1, ]
+pericytes_het <- pericytes_het[pericytes_het$cluster == "heterozygous", ]
+
+# add column to data to indicate if DE or not:
+pericytes_het$diffexpressed <- "NO"
+# if log2Foldchange > 0.1 and pvalue < 0.05, set as "UP"
+pericytes_het$diffexpressed[pericytes_het$avg_log2FC > 0.1 & 
+                              pericytes_het$p_val < 0.05] <- "UP"
+# if log2Foldchange < -0.1 and pvalue < 0.05, set as "DOWN"
+pericytes_het$diffexpressed[pericytes_het$avg_log2FC < -0.1 & 
+                              pericytes_het$p_val < 0.05] <- "DOWN"
+```
+
+---PCTS2---
+```{r}
+# subset seurat object for each cell type
+PCTS2 <- subset(x = kidney_int_celltypes, idents = "PCTS2")
+Idents(PCTS2) <- PCTS2@meta.data$type
+PCTS2_data <- FindAllMarkers(PCTS2,
+  logfc.threshold = 0.1,
+  test.use = "wilcox",
+  only.pos = FALSE,
+  assay = "RNA"
+)
+head(PCTS2_data, n = 5)
+```
+
+```{r}
+# subsetting just the DEG from Het:
+PCTS2_het <- PCTS2_data[PCTS2_data$p_val < 0.5 &
+  PCTS2_data$avg_log2FC > 0.1 |
+  PCTS2_data$avg_log2FC < -0.1, ]
+PCTS2_het <- PCTS2_het[PCTS2_het$cluster == "heterozygous", ]
+
+# add column to data to indicate if DE or not:
+PCTS2_het$diffexpressed <- "NO"
+# if log2Foldchange > 0.1 and pvalue < 0.05, set as "UP"
+PCTS2_het$diffexpressed[PCTS2_het$avg_log2FC > 0.1 & 
+                              PCTS2_het$p_val < 0.05] <- "UP"
+# if log2Foldchange < -0.1 and pvalue < 0.05, set as "DOWN"
+PCTS2_het$diffexpressed[PCTS2_het$avg_log2FC < -0.1 & 
+                              PCTS2_het$p_val < 0.05] <- "DOWN"
+```
+
+---smcs---
+```{r}
+# subset seurat object for each cell type
+smcs <- subset(x = kidney_int_celltypes, idents = "smooth_muscle_cells")
+Idents(smcs) <- smcs@meta.data$type
+smcs_data <- FindAllMarkers(smcs,
+  logfc.threshold = 0.1,
+  test.use = "wilcox",
+  only.pos = FALSE,
+  assay = "RNA"
+)
+head(smcs_data, n = 5)
+```
+
+```{r}
+# subsetting just the DEG from Het:
+smcs_het <- smcs_data[smcs_data$p_val < 0.5 &
+  smcs_data$avg_log2FC > 0.1 |
+  smcs_data$avg_log2FC < -0.1, ]
+smcs_het <- smcs_het[smcs_het$cluster == "heterozygous", ]
+
+# add column to data to indicate if DE or not:
+smcs_het$diffexpressed <- "NO"
+# if log2Foldchange > 0.1 and pvalue < 0.05, set as "UP"
+smcs_het$diffexpressed[smcs_het$avg_log2FC > 0.1 & 
+                              smcs_het$p_val < 0.05] <- "UP"
+# if log2Foldchange < -0.1 and pvalue < 0.05, set as "DOWN"
+smcs_het$diffexpressed[smcs_het$avg_log2FC < -0.1 & 
+                              smcs_het$p_val < 0.05] <- "DOWN"
+```
+
+---prox_tubule---
+```{r}
+# subset seurat object for each cell type
+prox_tubule <- subset(x = kidney_int_celltypes, idents = "proximal_tubule")
+Idents(prox_tubule) <- prox_tubule@meta.data$type
+prox_tubule_data <- FindAllMarkers(prox_tubule,
+  logfc.threshold = 0.1,
+  test.use = "wilcox",
+  only.pos = FALSE,
+  assay = "RNA"
+)
+head(prox_tubule_data, n = 5)
+```
+
+```{r}
+# subsetting just the DEG from Het:
+prox_tubule_het <- prox_tubule_data[prox_tubule_data$p_val < 0.5 &
+  prox_tubule_data$avg_log2FC > 0.1 |
+  prox_tubule_data$avg_log2FC < -0.1, ]
+prox_tubule_het <- prox_tubule_het[prox_tubule_het$cluster == "heterozygous", ]
+
+# add column to data to indicate if DE or not:
+prox_tubule_het$diffexpressed <- "NO"
+# if log2Foldchange > 0.1 and pvalue < 0.05, set as "UP"
+prox_tubule_het$diffexpressed[prox_tubule_het$avg_log2FC > 0.1 & 
+                              prox_tubule_het$p_val < 0.05] <- "UP"
+# if log2Foldchange < -0.1 and pvalue < 0.05, set as "DOWN"
+prox_tubule_het$diffexpressed[prox_tubule_het$avg_log2FC < -0.1 & 
+                              prox_tubule_het$p_val < 0.05] <- "DOWN"
+```
+
+Outputs at log2FC of 0.1:
+```{r}
+save(bcell_het, file = here("results/DEG/bcell_het_DEG01.Rdata"))
+save(CDPC_het, file = here("results/DEG/CDPC_het_DEG01.Rdata"))
+save(CDIC_typeA_het, file = here("results/DEG/CDICA_het_DEG01.Rdata"))
+save(CDIC_typeB_het, file = here("results/DEG/CDICB_het_DEG01.Rdata"))
+save(DCT_het, file = here("results/DEG/DCT_het_DEG01.Rdata"))
+save(DLH_het, file = here("results/DEG/DLH_het_DEG01.Rdata"))
+save(endo_het, file = here("results/DEG/endo_het_DEG01.Rdata"))
+save(fibro_het, file = here("results/DEG/fibro_het_kid_DEG01.Rdata"))
+save(LOH_het, file = here("results/DEG/LOH_het_DEG01.Rdata"))
+save(macro_het, file = here("results/DEG/macro_het_DEG01.Rdata"))
+save(PCTS1_het, file = here("results/DEG/PCTS1_het_DEG01.Rdata"))
+save(podo_het, file = here("results/DEG/podo_het_DEG01.Rdata"))
+save(PST_het, file = here("results/DEG/PST_het_DEG01.Rdata"))
+save(pericytes_het, file = here("results/DEG/pericytes_het_DEG01.Rdata"))
+save(PCTS2_het, file = here("results/DEG/PCTS2_het_DEG01.Rdata"))
+save(smcs_het, file = here("results/DEG/smcs_het_DEG01.Rdata"))
+save(prox_tubule_het, file = here("results/DEG/prox_tubule_het_DEG01.Rdata"))
+```
+
+#### saving all DEG in heterozygous as .csv for supplementary methods:
+```{r}
+write.csv(bcell_het, here("results/seurat/DGE_06/DEG_bcell.csv"), row.names = FALSE)
+write.csv(CDPC_het, here("results/seurat/DGE_06/DEG_CDPC.csv"), row.names = FALSE)
+write.csv(CDIC_typeA_het, here("results/seurat/DGE_06/DEG_CDIC_typeA.csv"), row.names = FALSE)
+write.csv(CDIC_typeB_het, here("results/seurat/DGE_06/DEG_CDIC_typeB.csv"), row.names = FALSE)
+write.csv(DCT_het, here("results/seurat/DGE_06/DEG_DCT.csv"), row.names = FALSE)
+write.csv(DLH_het, here("results/seurat/DGE_06/DEG_DLH.csv"), row.names = FALSE)
+write.csv(endo_het, here("results/seurat/DGE_06/DEG_endo.csv"), row.names = FALSE)
+write.csv(fibro_het, here("results/seurat/DGE_06/DEG_fibro_kid.csv"), row.names = FALSE)
+write.csv(LOH_het, here("results/seurat/DGE_06/DEG_LOH.csv"), row.names = FALSE)
+write.csv(macro_het, here("results/seurat/DGE_06/DEG_macro.csv"), row.names = FALSE)
+write.csv(PCTS1_het, here("results/seurat/DGE_06/DEG_PCTS1.csv"), row.names = FALSE)
+write.csv(podo_het, here("results/seurat/DGE_06/DEG_podo.csv"), row.names = FALSE)
+write.csv(PST_het, here("results/seurat/DGE_06/DEG_PST.csv"), row.names = FALSE)
+write.csv(pericytes_het, here("results/seurat/DGE_06/DEG_pericytes.csv"), row.names = FALSE)
+write.csv(PCTS2_het, here("results/seurat/DGE_06/DEG_PCTS2.csv"), row.names = FALSE)
+write.csv(smcs_het, here("results/seurat/DGE_06/DEG_smcs.csv"), row.names = FALSE)
+write.csv(prox_tubule_het, here("results/seurat/DGE_06/DEG_prox_tubule.csv"), row.names = FALSE)
+```
+
+### For loop to generate DEG output at log2FC threshold of 0.1 :
+```{r}
+# specify the cell types in the data to loop through
+celltypes <- levels(kidney_int_celltypes)
+
+# create empty dataframe to store the loop outputs within
+DEGs_kidneycells <- data.frame()
+
+# for loop, loops through each of the 'celltypes' in kidney and calculates the DEG between conditions (heterozygous and control)
+for (i in celltypes) {
+  # subset seurat data for each kidney cell type ----------
+  celltype <- subset(kidney_int_celltypes, idents = i)
+  # change the subsetted object identity to be type (heterozygous or control) so that DEG are calculated between the two conditions ------------
+  Idents(celltype) <- celltype@meta.data$type
+  # calculate DEGs between conditions -----------
+  DEGs <- FindAllMarkers(celltype,
+    logfc.threshold = 0.1,
+    test.use = "wilcox",
+    only.pos = FALSE,
+    assay = "RNA"
+  )
+  # add an additional column to the df with celltype annotation (for downstream analysis purposes) -----------
+  DEGs$cell_type <- i
+  # combine the dataframe generated in the for loop with the entire list of all DEGs across cell types in kidney ----------
+  DEGs_kidneycells <- rbind(DEGs_kidneycells, DEGs)
+}
+
+write.csv(DEGs_kidneycells, file = here("results/seurat/DGE_06/DEGs_kidneycells.csv")) # written out once then commented out
+# DEGs_kidneycells <- read.csv(here("results/seurat/DGE_06/DEGs_kidneycells.csv"))
+```
+
+
+#### Heatmap of expression of regulators and targets of Setbp1 across cell types:
+Setbp1 target gene list was constructed in 'Setbp1_target_list_construction.Rmd' 
+```{r}
+setbp1_genes <- read.csv(here("results/seurat/setbp1_targets.csv"))
+setbp1_genes <- setbp1_genes[, -1]
+setbp1_genes <- append(setbp1_genes, "Setbp1")
+```
+
+# generating seurat input for complex heatmap from DGE data
+```{r}
+# filter DEG list for just setbp1 targets
+kidney_subset <- DEGs_kidneycells[DEGs_kidneycells$gene %in% setbp1_genes, ]
+
+# grab just log2fc values from DEG matrix, keep rownames and then order (below) by rowname
+genes_mat <- kidney_subset[, c("avg_log2FC", "cell_type", "gene", "cluster"),
+  drop = FALSE
+]
+genes_pivot <- pivot_wider(genes_mat,
+  names_from = c("cell_type", "cluster"),
+  values_from = "avg_log2FC",
+  names_repair = "minimal"
+)
+genes_pivot[is.na(genes_pivot)] <- 0
+rownames <- genes_pivot$gene # add gene names as rownames
+genes_pivot <- genes_pivot[, -1, drop = FALSE] # drop gene column
+rownames(genes_pivot) <- rownames
+
+# grab meta data for plot:
+meta <- as.data.frame(colnames(genes_pivot))
+meta.data <- t(as.data.frame(strsplit(sub("(_)(?=[^_]+$)", " ", meta$`colnames(genes_pivot)`, perl = TRUE), " ")))
+rownames(meta.data) <- meta$`colnames(genes_pivot)`
+colnames(meta.data) <- c("cell_type", "condition")
+
+
+# define order of annotations and colors:
+ordered.meta.data <- meta.data[order(rownames(meta.data)), ] # order by cell type
+
+
+annotation_colors <- list(
+  "condition" = c(
+    "control" = "#FE6100",
+    "heterozygous" = "#FFB000"
+  ),
+  "cell_type" = c("B_cells" = "#FFBE1D",
+                  "CDIC_typeA" = "#4E3801",
+                  "CDIC_typeB" = "#EEDF37",
+                  "CDPC" = "#F03F00",
+                  "DCT" = "#6D0404",
+                  "DLH" = "#AA6320",
+                  "endothelial" = "#CF9400",
+                  "fibroblasts" = "#FFC8C4",
+                  "LOH" = "#AA937E",
+                  "macrophages" = "#C70F0F",
+                  "PCTS1" = "#A85A5A",
+                  "podocytes" = "#BD085E",
+                  "PST" = "#948802",
+                  "pericytes" = "#FFE196",
+                  "PCTS2" = "#FF7600",
+                  "proximal_tubule" = "#F8766D",
+                  "smooth_muscle_cells" = "#FFE196"))
+
+# set heatmap annotations:
+heat.anno <- HeatmapAnnotation(
+  df = ordered.meta.data,
+  show_annotation_name = TRUE,
+  col = annotation_colors
+)
+
+
+# ensure the column order of the expression data matches row order of annotation table
+genes_pivot <- genes_pivot[, rownames(ordered.meta.data), drop = FALSE]
+rownames(genes_pivot) <- rownames
+
+# convert dataframe to matrix
+mat <- as.matrix(genes_pivot)
+
+# plot heatmap
+# Heatmap
+col_fun <- colorRamp2(c(-1, 0, 1), c("purple", "black", "yellow"))
+png(
+  filename = here("results/figures/kidney_DEGsetbp1_heatmap.png"),
+  width = 2000,
+  height = 2000
+)
+Heatmap(mat,
+  col = col_fun,
+  heatmap_legend_param = list(title = "avg_log2FC"),
+  cluster_rows = TRUE,
+  cluster_columns = FALSE,
+  column_order = NULL,
+  show_row_dend = TRUE,
+  show_column_dend = TRUE,
+  show_row_names = TRUE,
+  show_column_names = FALSE,
+  use_raster = TRUE,
+  raster_device = c("png"),
+  bottom_annotation = NULL,
+  top_annotation = heat.anno,
+  column_title = "Differential Expression of Setbp1 Targets Across Cell-types in Kidney", row_title = "Setbp1 Targets", row_title_side = "right"
+)
+dev.off()
+```
+
+```{r}
+proc.time()
+```
+     user    system   elapsed 
+ 5027.117   112.462 12964.077
+
+```{r}
+sessionInfo()
+```
+
+R version 4.1.3 (2022-03-10)
+Platform: x86_64-pc-linux-gnu (64-bit)
+Running under: Ubuntu 20.04.5 LTS
+
+Matrix products: default
+BLAS/LAPACK: /usr/lib/x86_64-linux-gnu/openblas-pthread/libopenblasp-r0.3.8.so
+
+locale:
+[1] C
+
+attached base packages:
+[1] grid      stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+ [1] lintr_3.0.2           styler_1.9.0          here_1.0.1            circlize_0.4.15       ComplexHeatmap_2.10.0 dplyr_1.1.0           tidyr_1.3.0          
+ [8] ggplot2_3.4.1         SeuratObject_4.1.3    Seurat_4.3.0         
+
+loaded via a namespace (and not attached):
+  [1] plyr_1.8.8             igraph_1.4.1           lazyeval_0.2.2         sp_1.6-0               splines_4.1.3          listenv_0.9.0          scattermore_0.8       
+  [8] digest_0.6.31          foreach_1.5.2          htmltools_0.5.4        fansi_1.0.4            magrittr_2.0.3         tensor_1.5             cluster_2.1.2         
+ [15] doParallel_1.0.17      ROCR_1.0-11            remotes_2.4.2          globals_0.16.2         matrixStats_0.63.0     R.utils_2.12.2         spatstat.sparse_3.0-0 
+ [22] colorspace_2.1-0       ggrepel_0.9.3          xfun_0.37              callr_3.7.3            crayon_1.5.2           jsonlite_1.8.4         progressr_0.13.0      
+ [29] spatstat.data_3.0-0    survival_3.3-1         zoo_1.8-11             iterators_1.0.14       glue_1.6.2             polyclip_1.10-4        gtable_0.3.1          
+ [36] leiden_0.4.3           GetoptLong_1.0.5       R.cache_0.16.0         future.apply_1.10.0    shape_1.4.6            BiocGenerics_0.40.0    abind_1.4-5           
+ [43] scales_1.2.1           spatstat.random_3.1-3  miniUI_0.1.1.1         Rcpp_1.0.10            viridisLite_0.4.1      xtable_1.8-4           clue_0.3-64           
+ [50] reticulate_1.28        stats4_4.1.3           htmlwidgets_1.6.1      rex_1.2.1              httr_1.4.5             RColorBrewer_1.1-3     ellipsis_0.3.2        
+ [57] ica_1.0-3              pkgconfig_2.0.3        R.methodsS3_1.8.2      uwot_0.1.14            deldir_1.0-6           utf8_1.2.3             tidyselect_1.2.0      
+ [64] rlang_1.0.6            reshape2_1.4.4         later_1.3.0            munsell_0.5.0          tools_4.1.3            cli_3.6.0              generics_0.1.3        
+ [71] ggridges_0.5.4         stringr_1.5.0          fastmap_1.1.1          goftest_1.2-3          processx_3.8.0         knitr_1.42             fitdistrplus_1.1-8    
+ [78] purrr_1.0.1            RANN_2.6.1             pbapply_1.7-0          future_1.31.0          nlme_3.1-155           mime_0.12              R.oo_1.25.0           
+ [85] xml2_1.3.3             compiler_4.1.3         rstudioapi_0.14        plotly_4.10.1          png_0.1-8              spatstat.utils_3.0-1   tibble_3.1.8          
+ [92] stringi_1.7.12         cyclocomp_1.1.0        ps_1.7.2               desc_1.4.2             lattice_0.20-45        Matrix_1.5-3           vctrs_0.5.2           
+ [99] pillar_1.8.1           lifecycle_1.0.3        spatstat.geom_3.0-6    lmtest_0.9-40          GlobalOptions_0.1.2    RcppAnnoy_0.0.20       data.table_1.14.8     
+[106] cowplot_1.1.1          irlba_2.3.5.1          httpuv_1.6.9           patchwork_1.1.2        R6_2.5.1               promises_1.2.0.1       KernSmooth_2.23-20    
+[113] gridExtra_2.3          IRanges_2.28.0         parallelly_1.34.0      codetools_0.2-18       MASS_7.3-55            rprojroot_2.0.3        rjson_0.2.21          
+[120] withr_2.5.0            sctransform_0.3.5      S4Vectors_0.32.4       parallel_4.1.3         Rtsne_0.16             spatstat.explore_3.0-6 shiny_1.7.4          
+
+
+```{r}
+# run style
+style_file(here("src/seurat_scripts/Setbp1_DGEkidney_06.Rmd"))
+# lintr was run as well
+```
