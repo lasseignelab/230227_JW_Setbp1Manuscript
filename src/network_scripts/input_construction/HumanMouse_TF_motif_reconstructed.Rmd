@@ -19,6 +19,7 @@ library(dplyr)
 library(here)
 library(styler)
 library(lintr)
+set.seed(2178)
 ```
 
 # Create Human (Homo Sapiens) Input:
@@ -44,7 +45,7 @@ signor_hu$interaction <- 1
 ```
 
 ```{r load-human-TRRUST}
-trrust_hu <- read_tsv(file = here("/dataunprocessed/trrust_rawdata.human.tsv"), col_names = "X") # load in motif data
+trrust_hu <- read_tsv(file = here("data/unprocessed/trrust_rawdata.human.tsv"), col_names = "X") # load in motif data
 
 colnames(trrust_hu) <- c("TF_Info", "Motif", "mechanism", "PMID")
 trrust_hu <- trrust_hu[, c(1:2)]
@@ -132,4 +133,38 @@ write.table(mus_motif_all, file = here("data/processed/motif_inputs/mus_motif_al
 style_file(here("src/network_scripts/input_construction/HumanMouse_TF_motif_reconstructed.Rmd"))
 # lintr was run as well
 ```
+
+```{r}
+proc.time()
+```
+   user  system elapsed 
+143.345  25.066 449.363
+
+```{r}
+sessionInfo()
+```
+R version 4.1.3 (2022-03-10)
+Platform: x86_64-pc-linux-gnu (64-bit)
+Running under: Ubuntu 20.04.5 LTS
+
+Matrix products: default
+BLAS/LAPACK: /usr/lib/x86_64-linux-gnu/openblas-pthread/libopenblasp-r0.3.8.so
+
+locale:
+[1] C
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+[1] lintr_3.0.2  styler_1.9.0 here_1.0.1   dplyr_1.1.0  readr_2.1.4 
+
+loaded via a namespace (and not attached):
+ [1] pillar_1.8.1      compiler_4.1.3    R.methodsS3_1.8.2 R.utils_2.12.2    remotes_2.4.2     tools_4.1.3       bit_4.0.5         digest_0.6.31    
+ [9] evaluate_0.20     lifecycle_1.0.3   tibble_3.1.8      R.cache_0.16.0    pkgconfig_2.0.3   rlang_1.0.6       rex_1.2.1         cli_3.6.0        
+[17] rstudioapi_0.14   yaml_2.3.7        parallel_4.1.3    xfun_0.37         fastmap_1.1.1     cyclocomp_1.1.0   xml2_1.3.3        withr_2.5.0      
+[25] knitr_1.42        generics_0.1.3    desc_1.4.2        vctrs_0.5.2       hms_1.1.2         bit64_4.0.5       rprojroot_2.0.3   tidyselect_1.2.0 
+[33] glue_1.6.2        R6_2.5.1          processx_3.8.0    fansi_1.0.4       vroom_1.6.1       rmarkdown_2.20    tzdb_0.3.0        purrr_1.0.1      
+[41] callr_3.7.3       magrittr_2.0.3    htmltools_0.5.4   ps_1.7.2          ellipsis_0.3.2    utf8_1.2.3        lazyeval_0.2.2    crayon_1.5.2     
+[49] R.oo_1.25.0  
 
