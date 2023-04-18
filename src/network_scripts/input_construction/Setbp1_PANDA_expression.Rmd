@@ -101,7 +101,7 @@ heterozygous_cerebral_agg[1:6, 1:6]
 # Not every cluster is present in all samples; create a vector that represents how to split samples
 splitf_control <- sapply(
   stringr::str_split(rownames(control_cerebral_agg),
-    pattern = "_",
+    pattern = "_J", #note: this needs to be adjusted for different data
     n = 2
   ),
   `[`, 1
@@ -109,7 +109,7 @@ splitf_control <- sapply(
 
 splitf_het <- sapply(
   stringr::str_split(rownames(heterozygous_cerebral_agg),
-    pattern = "_",
+    pattern = "_J",
     n = 2
   ),
   `[`, 1
