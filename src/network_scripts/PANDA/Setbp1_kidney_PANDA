@@ -23,4 +23,4 @@
 module load R/4.2.0-foss-2021a
 
 #script to call on
-Rscript Setbp1_kidney_reconstructedPANDA.R
+Rscript Setbp1_kidney_PANDA.R

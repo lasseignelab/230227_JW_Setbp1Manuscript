@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-#SBATCH --job-name=All_cortex
+#SBATCH --job-name=All_kid
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=jwhitlock@uab.edu #CHANGE THE EMAIL TO YOUR OWN
 #
@@ -11,8 +11,8 @@
 #SBATCH --time=150:00:00
 #SBATCH --partition=long
 #
-#SBATCH --output=All_cortex.out
-#SBATCH --error=All_cortex.err
+#SBATCH --output=Test23_kidney.out
+#SBATCH --error=Test23_kidney.err
 
 
 ########################################
@@ -23,4 +23,4 @@
 module load R/4.2.0-foss-2021a
 
 #script to call on
-Rscript Setbp1_cortex_reconstructedPANDA.R
+Rscript Setbp1_kidney_reconstructedPANDA_TEST.R
