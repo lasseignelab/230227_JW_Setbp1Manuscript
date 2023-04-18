@@ -1,0 +1,724 @@
+---
+title: "Setbp1_CellTypesKidney_05"
+author: "Jordan Whitlock"
+date: '2022-09-14'
+output:     
+  html_document:
+      toc: true
+      toc_depth: 2
+      toc_float: true
+---
+
+# *Single-nuclei analysis: Identify Cell Types Kidney*
+* Loading libraries
+* Selecting resolution
+* Investigating top markers for Kidney Cortex
+
+## Code: 
+
+
+This analysis follows 'Setbp1_MarkersKidney_postSoup_04.Rmd' and precedes "Setbp1_DGEkidney_postSoup_06.Rmd"
+
+#### load in libraries:
+```{r}
+set.seed(2178)
+library(Seurat)
+library(ggplot2)
+library(styler)
+library(here)
+library(lintr)
+library(magrittr)
+library(dplyr)
+```
+
+#### load in markers:
+```{r}
+load(here("results/seurat/Markers_04/kidney_markers_postSoup.Rdata"))
+```
+
+*also be sure that the previously generated clustered objects at resolution 0.9 are here if not loaded already, run below chunk:
+```{r}
+load(here("data/kidney_leiden_postSoup.Rdata"))
+select_resolution <- "RNA_snn_res.1.5"
+kidney_int <- SetIdent(kidney_int, value = select_resolution)
+```
+
+#### identify the top25 markers for kidney :
+```{r}
+# top 25 kidney
+kidney_top25 <- kidney_markers_genes %>%
+  group_by(cluster) %>%
+  top_n(-25, p_val_adj)
+
+save(kidney_top25, file = here("results/seurat/CellTypes_05/kidney_top25_postSoup.Rdata"))
+```
+
+#### investigate top markers and assign for kidney:
+see notes on resources used to do this here as well as this paper: https://docs.google.com/document/d/1FO_Je9oxbBFF9S_k-8tVF2t4ba88O4C77sw1v7DIFec/edit?usp=sharing, https://www.science.org/doi/pdf/10.1126/science.aar2131)
+
+
+##### Pericytes
+```{r pericyte-features}
+png(
+  filename = here("results/figures/pericyte_postSoup_markers.png"),
+  width = 1000,
+  height = 1000
+)
+FeaturePlot(kidney_int,
+  features = c("Pdgfrb"),
+  reduction = "umap_harmony",
+  label = TRUE
+)
+dev.off()
+```
+
+##### Endothelial
+```{r endo-features}
+png(
+  filename = here("results/figures/endothelial_postSoup_markers.png"),
+  width = 1000,
+  height = 1000
+)
+FeaturePlot(kidney_int,
+  features = c("Kdr", "Ptprb"),
+  reduction = "umap_harmony",
+  label = TRUE
+) # 1, 11, 29
+dev.off()
+```
+
+##### Proximal Tubule
+```{r PT-features}
+png(
+  filename = here("results/figures/proximaltubule_postSoup_markers.png"),
+  width = 1000,
+  height = 1000
+)
+FeaturePlot(kidney_int,
+  features = c("Slc34a1", "Slc13a3"),
+  reduction = "umap_harmony",
+  label = TRUE
+) # clusters 2, 3, 5, 8, 14, 21, 23, 25
+dev.off()
+```
+
+##### Proximal Straight Tubule (PST)
+```{r PST-features}
+png(
+  filename = here("results/figures/PST_postSoup_markers.png"),
+  width = 1000,
+  height = 1000
+)
+FeaturePlot(kidney_int,
+  features = c("Slc22a7", "Atp11a"),
+  reduction = "umap_harmony",
+  label = TRUE
+) # 2, 3, 4, 14, 27
+dev.off()
+```
+
+##### PCT-S1
+```{r PCTS1-features}
+png(
+  filename = here("results/figures/PCTS1_postSoup_markers.png"),
+  width = 1000,
+  height = 1000
+)
+FeaturePlot(kidney_int,
+  features = c("Slc5a2", "Slc5a12"),
+  reduction = "umap_harmony",
+  label = TRUE
+) # cluster 21, 5, 8, 23, 25
+dev.off()
+```
+
+##### PCT-S2
+```{r PCTS2-features}
+png(
+  filename = here("results/figures/PCTS2_postSoup_markers.png"),
+  width = 1000,
+  height = 1000
+)
+FeaturePlot(kidney_int,
+  features = c("Fxyd2"),
+  reduction = "umap_harmony",
+  label = TRUE
+) #
+dev.off()
+```
+
+##### LOH
+```{r LOH-features}
+png(
+  filename = here("results/figures/LOH_postSoup_markers.png"),
+  width = 1000,
+  height = 1000
+)
+FeaturePlot(kidney_int,
+  features = c("Slc12a1"),
+  reduction = "umap_harmony",
+  label = TRUE
+) # cluster 7, 6, 36, and 40
+dev.off()
+```
+
+##### CD-PC
+```{r CDPC-features}
+png(
+  filename = here("results/figures/CDPC_postSoup_markers.png"),
+  width = 1000,
+  height = 1000
+)
+FeaturePlot(kidney_int,
+  features = c("Aqp2", "Hsd11b2"),
+  reduction = "umap_harmony",
+  label = TRUE
+) # cluster 12 and 13, and 39
+dev.off()
+```
+
+##### DCT
+```{r DCT-features}
+png(
+  filename = here("results/figures/DCT_postSoup_markers.png"),
+  width = 1000,
+  height = 1000
+)
+FeaturePlot(kidney_int,
+  features = c("Slc12a3"),
+  reduction = "umap_harmony",
+  label = TRUE
+) # cluster 10
+dev.off()
+```
+
+##### Macrophages
+```{r macro-features}
+png(
+  filename = here("results/figures/macrophage_postSoup_markers.png"),
+  width = 1000,
+  height = 1000
+)
+FeaturePlot(kidney_int,
+  features = c("Ptprc", "Runx1"),
+  reduction = "umap_harmony",
+  label = TRUE
+)
+dev.off()
+```
+
+##### DLH
+https://esbl.nhlbi.nih.gov/Databases/AllTranscripts/
+```{r DLH-features}
+png(
+  filename = here("results/figures/DLH_postSoup_markers.png"),
+  width = 1000,
+  height = 1000
+)
+FeaturePlot(kidney_int,
+  features = c("Bst1", "Akr1b3"),
+  reduction = "umap_harmony",
+  label = TRUE
+)
+dev.off()
+```
+
+##### CD-IC-A
+```{r}
+png(
+  filename = here("results/figures/CDICA_postSoup_markers.png"),
+  width = 1000,
+  height = 1000
+)
+FeaturePlot(kidney_int,
+  features = c("Aqp6"),
+  reduction = "umap_harmony",
+  label = TRUE
+)
+dev.off()
+```
+
+##### CD-IC-B
+```{r CDICB-features}
+png(
+  filename = here("results/figures/CDICB_postSoup_markers.png"),
+  width = 1000,
+  height = 1000
+)
+FeaturePlot(kidney_int,
+  features = c("Hmx2"),
+  reduction = "umap_harmony",
+  label = TRUE
+) # cluster 20
+dev.off()
+```
+
+##### CD-IC
+```{r CDIC-features}
+png(
+  filename = here("results/figures/CDIC_postSoup_markers.png"),
+  width = 1000,
+  height = 1000
+)
+FeaturePlot(kidney_int,
+  features = c("Atp6v1g3", "Atp6v0d2"),
+  reduction = "umap_harmony",
+  label = TRUE
+) # clusters 19 and 20
+dev.off()
+```
+
+##### B cell
+```{r bcell-features}
+png(
+  filename = here("results/figures/bcell_postSoup_markers.png"),
+  width = 1000,
+  height = 1000
+)
+FeaturePlot(kidney_int,
+  features = c("Cd79b", "Bank1"),
+  reduction = "umap_harmony",
+  label = TRUE
+) # cluster 35
+dev.off()
+```
+
+##### podocytes
+https://pubmed.ncbi.nlm.nih.gov/11912180/, https://www.sciencedirect.com/science/article/pii/S0002944013005853
+```{r podo-features}
+png(
+  filename = here("results/figures/podocyte_postSoup_markers.png"),
+  width = 1000,
+  height = 1000
+)
+FeaturePlot(kidney_int,
+  features = c("Nphs1", "Nphs2", "Wt1"),
+  reduction = "umap_harmony",
+  label = TRUE
+) # cluster 28
+dev.off()
+```
+
+
+##### Fibroblasts
+```{r fibro-features}
+png(
+  filename = here("results/figures/fibroblast_postSoup_markers.png"),
+  width = 1000,
+  height = 1000
+)
+FeaturePlot(kidney_int,
+  features = c("Pdgfra"),
+  reduction = "umap_harmony",
+  label = TRUE
+) # 9, 16, 33, 22, 33, 24, 34
+dev.off()
+```
+
+##### Smooth Muscle Cells
+```{r cluster-smc-features}
+png(
+  file = here("results/figures/smooth_muscle_cells_postSoup_markers.png"),
+  width = 1000,
+  height = 1000
+)
+FeaturePlot(kidney_int, features = c("Atp1a2"), reduction = "umap_harmony", label = TRUE) # smooth muscle cells
+dev.off()
+```
+
+##### Plotting all markers
+
+For some reason the levels were not in numerical order, so I re-ordered them. 
+```{r reordering-levels}
+levels(kidney_int)
+
+levels(kidney_int) <- c("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11",
+                        "12", "13", "14", "15", "16", "17", "18", "19", "20",
+                        "21", "22", "23", "24", "25", "26", "27", "28", "29",
+                        "30", "31", "32", "33", "34", "35", "36", "37", "38",
+                        "39", "40", "41", "42", "43", "44", "45", "46", "47",
+                        "48", "49")
+
+levels(kidney_int)
+```
+
+
+Fxyd2: PCTS2
+```{r plotting-final-features}
+kidney_features <- c("Atp1a2", #smoooth muscle cells
+                     "Pdgfra", #fibro
+                     "Nphs1", "Nphs2", "Wt1", #podocytes
+                     "Cd79b", "Bank1", #Bcells
+                     "Hmx2", #CDIC_typeB
+                     "Aqp6", #CDIC_typeA
+                     "Atp6v1g3", "Atp6v0d2", #CDIC
+                     "Bst1", "Akr1b3", #DLH
+                     "Runx1", "Ptprc", #macrophages
+                     "Slc12a3", #DCT 
+                     "Aqp2", "Hsd11b2", #CDPC
+                     "Slc12a1", #LOH
+                     "Fxyd2", #PCTS2
+                     "Slc5a2", "Slc5a12", #PCTS1
+                     "Slc22a7", "Atp11a", #PST
+                     "Slc34a1", "Slc13a3", #proximaltubule
+                     "Kdr", "Ptprb", #endothelial
+                     "Pdgfrb") #pericytes
+
+png(
+  filename = here("results/figures/setbp1_kidney_markers_dotplot_postSoup.png"),
+  width = 1000,
+  height = 1000
+)
+DotPlot(kidney_int, kidney_features, assay = "RNA") +
+  theme_bw() + theme(legend.position = "left") +
+  theme(axis.title.x = element_blank()) +
+  theme(panel.grid = element_blank()) +
+  theme(axis.text.x = element_text(angle = 90)) +
+  coord_flip()
+dev.off()
+```
+
+## assigning kidney cell markers
+
+```{r assigning-markers-with-unknowns}
+kidney_int_celltypes <- SetIdent(kidney_int, value = select_resolution)
+kidney_int_celltypes <- RenameIdents(kidney_int,
+  "1" = "PST",
+  "2" = "PCTS1",
+  "3" = "LOH",
+  "4" = "PST",
+  "5" = "fibroblasts",
+  "6" = "PCTS2",
+  "7" = "LOH",
+  "8" = "endothelial",
+  "9" = "endothelial",
+  "10" = "PCTS1",
+  "11" = "endothelial",
+  "12" = "proximal_tubule",
+  "13" = "DCT",
+  "14" = "PST",
+  "15" = "CDPC",
+  "16" = "PCTS2",
+  "17" = "PST",
+  "18" = "DCT",
+  "19" = "PCTS2",
+  "20" = "fibroblasts",
+  "21" = "proximal_tubule",
+  "22" = "CDIC_typeA",
+  "23" = "CDPC",
+  "24" = "CDIC_typeB",
+  "25" = "DLH",
+  "26" = "macrophages",
+  "27" = "macrophages",
+  "28" = "PST",
+  "29" = "PCTS1",
+  "30" = "CDPC",
+  "31" = "DLH",
+  "32" = "fibroblasts",
+  "33" = "DLH",
+  "34" = "proximal_tubule",
+  "35" = "PCTS2",
+  "36" = "podocytes",
+  "37" = "fibroblasts",
+  "38" = "proximal_tubule",
+  "39" = "PCTS2",
+  "40" = "pericytes",
+  "41" = "proximal_tubule",
+  "42" = "macrophages",
+  "43" = "podocytes",
+  "44" = "B_cells",
+  "45" = "LOH",
+  "46" = "endothelial",
+  "47" = "DCT",
+  "48" = "macrophages",
+  "49" = "smooth_muscle_cells"
+)
+kidney_int_celltypes <- AddMetaData(object = kidney_int_celltypes, as.vector(kidney_int_celltypes@active.ident), col.name = "cell_type")
+
+save(kidney_int_celltypes, file = here("data/kidney_integrated_celltypes_postSoup.Rdata"))
+```
+
+
+
+#### Visualizing kidney data with cell types:
+```{r plotting-UMAP-celltypes}
+p1 <- DimPlot(kidney_int_celltypes,
+              reduction = "umap_harmony",
+              group.by = "type",
+              cols = c("control" = "#FE6100",
+                       "heterozygous" = "#FFB000"))
++ theme(text = element_text(size = 20),
+        legend.title = element_text(face = "bold"))
++ labs(color = "Condition", title = NULL)
+
+
+p2 <- DimPlot(kidney_int_celltypes,
+              reduction = "umap_harmony",
+              group.by = "orig.ident")
+
+p3 <- DimPlot(kidney_int_celltypes,
+              reduction = "umap_harmony",
+              group.by = "cell_type",
+              cols = c("B_cells" = "#FFBE1D",
+                       "CDIC_typeA" = "#4E3801",
+                       "CDIC_typeB" = "#EEDF37",
+                       "CDPC" = "#F03F00",
+                       "DCT" = "#6D0404",
+                       "DLH" = "#AA6320",
+                       "endothelial" = "#CF9400",
+                       "fibroblasts" = "#FFC8C4",
+                       "LOH" = "#AA937E",
+                       "macrophages" = "#C70F0F",
+                       "PCTS1" = "#A85A5A",
+                       "podocytes" = "#BD085E",
+                       "PST" = "#948802",
+                       "pericytes" = "#FFE196",
+                       "PCTS2" = "#FF7600",
+                       "proximal_tubule" = "#F8766D",
+                       "smooth_muscle_cells" = "#FFE196"))
++ theme(text = element_text(size = 20),
+        legend.title = element_text(face = "bold"))
++ labs(color = "kidney cell type", title = NULL)
+
+
+png(
+  filename = here("results/figures/kidney_setbp1_UMAP_final_postSoup.png"),
+  width = 1200,
+  height = 600
+)
+p1 + p3
+dev.off()
+
+png(
+  filename = here("results/figures/kidney_setbp1_UMAP_bysample_postSoup.png"),
+  width = 1200,
+  height = 600
+)
+p2
+dev.off()
+
+p1
+p2
+p3
+```
+
+```{r [plotting-nuclei-props}
+png(
+  filename = here("results/figures/kidney_setbp1_nuc_proportion_by_cell_condition_postSoup.png"),
+  width = 1200,
+  height = 600
+)
+
+pt <- table(kidney_int_celltypes@meta.data$cell_type, kidney_int_celltypes@meta.data$type)
+pt <- as.data.frame(pt)
+pt$Var1 <- as.character(pt$Var1)
+pt$Var2 <- as.character(pt$Var2)
+
+
+ggplot(pt, aes(y = Var1, x = Freq, fill = Var2)) +
+  geom_bar(position = "dodge", stat = "identity") +
+  theme_bw(base_size = 15) +
+  ylab("Cell-types") +
+  xlab("Nuclei Counts") +
+  scale_fill_manual(values = c("control" = "#FE6100", "heterozygous" = "#FFB000")) +
+  ggtitle("Comparison of cell-type proportions across conditions") +
+  # scale_fill_manual(values = brewer.pal(12, "Paired")) +
+  theme(legend.title = element_blank(), axis.text.x = element_text(angle = 45))
+dev.off()
+```
+
+
+#### plotting nuclei proportions stacked with cell type markers
+```{r}
+# rename pt vairable V1 to ident:
+colnames(pt) <- c("ident", "Condition", "Freq")
+
+# set plot to save
+png(
+  file = here("results/figures/KidneyFig2AVln_postSoup.png"),
+  width = 2000,
+  height = 3000
+)
+
+# generate plot
+yy <- VlnPlot(kidney_int_celltypes,
+  kidney_features,
+  stack = TRUE,
+  sort = FALSE,
+  flip = TRUE,
+  assay = "RNA",
+  group.by = "cell_type",
+  fill.by = "ident",
+              cols = c("B_cells" = "#FFBE1D",
+                       "CDIC_typeA" = "#4E3801",
+                       "CDIC_typeB" = "#EEDF37",
+                       "CDPC" = "#F03F00",
+                       "DCT" = "#6D0404",
+                       "DLH" = "#AA6320",
+                       "endothelial" = "#CF9400",
+                       "fibroblasts" = "#FFC8C4",
+                       "LOH" = "#AA937E",
+                       "macrophages" = "#C70F0F",
+                       "PCTS1" = "#A85A5A",
+                       "podocytes" = "#BD085E",
+                       "PST" = "#948802",
+                       "pericytes" = "#FFE196",
+                       "PCTS2" = "#FF7600",
+                       "proximal_tubule" = "#F8766D",
+                       "smooth_muscle_cells" = "#FFE196")) +
+  labs(fill = "Cell Type") +
+  theme_bw() +
+  theme(legend.position = "left") +
+  theme(axis.text.x = element_blank()) +
+  theme(axis.title.x = element_blank()) +
+  theme(panel.grid = element_blank()) +
+  theme(strip.text.y.right = element_text(angle = 0))
+
+
+xx <- ggplot(pt, aes(x = ident, y = Freq, fill = Condition)) +
+  geom_bar(position = "dodge", stat = "identity") +
+  ggtitle("Kidney Cortex Cell-type Nuclei Proportions and Identity Markers") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  ylab("Nuclei Counts") +
+  geom_text(aes(label = Freq),
+            position = position_dodge(width = 0.9),
+            vjust = 0.5, angle = 90, hjust = -.1) +
+  scale_fill_manual(values = c("control" = "#FE6100", "heterozygous" = "#FFB000")) +
+  theme_bw() +
+  theme(panel.border = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  theme(axis.text.x = element_blank()) +
+  theme(axis.text.y = element_blank()) +
+  theme(axis.title.x = element_blank()) +
+  theme(axis.ticks = element_blank()) +
+  theme(legend.position = "left")
+
+
+# saving plot to outputs
+xx / yy
+dev.off()
+```
+
+```{r}
+# set plot to save
+png(
+  file = here("results/figures/DotKidneyFig2A_postSoup.png"),
+  width = 3000,
+  height = 2000
+)
+
+
+pt <- table(kidney_int_celltypes@meta.data$cell_type, kidney_int_celltypes$type)
+pt <- as.data.frame(pt)
+pt$Var1 <- as.character(pt$Var1)
+
+# calculate proportions
+stats <- pt %>%
+  group_by(Var2, Var1) %>%
+  summarise(Nb = Freq) %>%
+  mutate(C = sum(Nb)) %>%
+  mutate(prop = Nb / C * 100)
+
+stats$prop <- round(stats$prop, digits = 1)
+
+colnames(stats) <- c("Condition", "Cell_type", "Nb", "C", "prop")
+
+# generate plot
+yy <- DotPlot(kidney_int_celltypes,
+  unique(kidney_features),
+  assay = "RNA",
+  group.by = "cell_type",
+  cols = c("black", "#EECB00")
+) +
+  labs(fill = "Cell Type") +
+  theme_bw() +
+  theme(legend.position = "left") +
+  theme(axis.title.x = element_blank()) +
+  theme(panel.grid = element_blank()) +
+  theme(axis.text.x = element_text(angle = 90)) +
+  coord_flip()
+
+
+xx <- ggplot(stats, aes(x = Cell_type, y = prop, fill = Condition)) +
+  geom_bar(position = "dodge", stat = "identity") +
+  # ggtitle("Kidney Cortex Cell-type Nuclei Proportions and Identity Markers") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  ylab("Nuclei Counts") +
+  geom_text(aes(label = prop),
+            position = position_dodge(width = 0.9),
+            vjust = -0.5,
+            angle = 0) +
+  scale_fill_manual(values = c("control" = "#FE6100", "heterozygous" = "#FFB000")) +
+  theme_bw() +
+  theme(panel.border = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  theme(axis.text.x = element_blank()) +
+  theme(axis.text.y = element_blank()) +
+  theme(axis.title.x = element_blank()) +
+  theme(axis.ticks = element_blank()) +
+  theme(legend.position = "left", plot.margin = margin(0.1))
+
+
+# saving plot to outputs
+xx / yy
+dev.off()
+```
+
+```{r}
+proc.time()
+```
+    user   system  elapsed 
+  83.481   29.549 1024.839 
+  
+```{r}
+sessionInfo()
+```
+R version 4.1.3 (2022-03-10)
+Platform: x86_64-pc-linux-gnu (64-bit)
+Running under: Ubuntu 20.04.5 LTS
+
+Matrix products: default
+BLAS/LAPACK: /usr/lib/x86_64-linux-gnu/openblas-pthread/libopenblasp-r0.3.8.so
+
+locale:
+[1] C
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+[1] dplyr_1.1.0        magrittr_2.0.3     lintr_3.0.2        here_1.0.1         styler_1.9.0       ggplot2_3.4.1      SeuratObject_4.1.3
+[8] Seurat_4.3.0      
+
+loaded via a namespace (and not attached):
+  [1] Rtsne_0.16             colorspace_2.1-0       deldir_1.0-6           ellipsis_0.3.2         ggridges_0.5.4         rprojroot_2.0.3       
+  [7] rstudioapi_0.14        spatstat.data_3.0-0    farver_2.1.1           leiden_0.4.3           listenv_0.9.0          remotes_2.4.2         
+ [13] ggrepel_0.9.3          fansi_1.0.4            xml2_1.3.3             codetools_0.2-18       splines_4.1.3          R.methodsS3_1.8.2     
+ [19] knitr_1.42             polyclip_1.10-4        jsonlite_1.8.4         ica_1.0-3              cluster_2.1.2          png_0.1-8             
+ [25] R.oo_1.25.0            uwot_0.1.14            shiny_1.7.4            sctransform_0.3.5      spatstat.sparse_3.0-0  compiler_4.1.3        
+ [31] httr_1.4.5             Matrix_1.5-3           fastmap_1.1.1          lazyeval_0.2.2         cli_3.6.0              later_1.3.0           
+ [37] htmltools_0.5.4        tools_4.1.3            igraph_1.4.1           gtable_0.3.1           glue_1.6.2             RANN_2.6.1            
+ [43] reshape2_1.4.4         Rcpp_1.0.10            scattermore_0.8        vctrs_0.5.2            spatstat.explore_3.0-6 nlme_3.1-155          
+ [49] progressr_0.13.0       lmtest_0.9-40          spatstat.random_3.1-3  xfun_0.37              stringr_1.5.0          ps_1.7.2              
+ [55] globals_0.16.2         mime_0.12              miniUI_0.1.1.1         lifecycle_1.0.3        irlba_2.3.5.1          goftest_1.2-3         
+ [61] future_1.31.0          MASS_7.3-55            zoo_1.8-11             scales_1.2.1           promises_1.2.0.1       spatstat.utils_3.0-1  
+ [67] rex_1.2.1              parallel_4.1.3         RColorBrewer_1.1-3     yaml_2.3.7             reticulate_1.28        pbapply_1.7-0         
+ [73] gridExtra_2.3          stringi_1.7.12         desc_1.4.2             cyclocomp_1.1.0        rlang_1.0.6            pkgconfig_2.0.3       
+ [79] matrixStats_0.63.0     evaluate_0.20          lattice_0.20-45        ROCR_1.0-11            purrr_1.0.1            tensor_1.5            
+ [85] labeling_0.4.2         patchwork_1.1.2        htmlwidgets_1.6.1      processx_3.8.0         cowplot_1.1.1          tidyselect_1.2.0      
+ [91] parallelly_1.34.0      RcppAnnoy_0.0.20       plyr_1.8.8             R6_2.5.1               generics_0.1.3         pillar_1.8.1          
+ [97] withr_2.5.0            fitdistrplus_1.1-8     survival_3.3-1         abind_1.4-5            sp_1.6-0               tibble_3.1.8          
+[103] future.apply_1.10.0    crayon_1.5.2           KernSmooth_2.23-20     utf8_1.2.3             spatstat.geom_3.0-6    plotly_4.10.1         
+[109] rmarkdown_2.20         grid_4.1.3             data.table_1.14.8      callr_3.7.3            digest_0.6.31          xtable_1.8-4          
+[115] R.cache_0.16.0         tidyr_1.3.0            httpuv_1.6.9           R.utils_2.12.2         munsell_0.5.0          viridisLite_0.4.1     
+
+
+```{r}
+# run style
+style_file(here("src/seurat_scripts/Setbp1_CellTypesKidney_postSoup_05.Rmd"))
+# lintr was run as well
+```
+
+This script is followed by 'Setbp1_DGEkidney_06.Rmd' and network_scripts/Setbp1_PANDA_expression.Rmd to pseudobulk expression input 

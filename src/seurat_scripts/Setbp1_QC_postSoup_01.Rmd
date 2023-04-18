@@ -1,0 +1,627 @@
+---
+title: "Setbp1_QC_postSoup_01"
+author: "Jordan Whitlock"
+date: '2023-04-13'
+output: html_document
+---
+# *Single-nuclei analysis: Quality Control*
+* load in data and create Seurat objects
+* check proportion of mitochondrial and ribosomal genes
+* visualize data feature distribution
+* filter nFeatureRNA and mt
+* check cell cycle scoring
+* re-visualize data feature distribution
+
+## Code: 
+
+Accompanying dry lab notebook for this analysis is here: https://docs.google.com/document/d/1FO_Je9oxbBFF9S_k-8tVF2t4ba88O4C77sw1v7DIFec/edit?usp=sharing
+
+### Checking libraries and working path settings:
+
+```{r setup}
+getwd()
+.libPaths() # "/usr/local/lib/R/site-library" "/usr/local/lib/R/library" "/home/jbarham3/R/x86_64-pc-linux-gnu-library/4.1"
+set.seed(2178)
+```
+
+### Loading in all required libraries
+```{r, load-libraries message=FALSE}
+library(devtools)
+library(magrittr)
+library(readr)
+library(dplyr)
+library(Matrix)
+library(Seurat)
+library(cowplot)
+library(ggplot2)
+library(here)
+library(tidyverse)
+library(gprofiler2)
+library(styler)
+library(lintr)
+```
+
+
+### Load in the Setbp1 data:
+```{r}
+load(here("results/seurat/SoupX/setbp1_soupx_ambientRNA_corrected_seurat.Rdata"))
+```
+
+### Adding in relevant metadata:
+```{r}
+N_objs$K1$type <- "control"
+N_objs$K2$type <- "heterozygous"
+N_objs$K3$type <- "control"
+N_objs$K4$type <- "heterozygous"
+N_objs$K5$type <- "control"
+N_objs$K6$type <- "heterozygous"
+```
+
+### creating merged postSoupX seurat object
+```{r}
+kidney_seurat <- merge(N_objs$K1,
+  c(N_objs$K2, N_objs$K3, N_objs$K4, N_objs$K5, N_objs$K6),
+  add.cell.ids = c(
+    "K1_ctrl",
+    "K2_het",
+    "K3_ctrl",
+    "K4_het",
+    "K5_ctrl",
+    "K6_het"
+  )
+)
+
+# checking that have all 6 biosamples:
+length(levels(kidney_seurat@active.ident)) # 6
+
+# cleaning env
+rm(N_objs)
+
+# running garbage to collect free memory:
+gc()
+```
+
+
+### Perform Quality Control:
+Having the data in a suitable format, we can start calculating some quality metrics. We can for example calculate the percentage of mitochondrial and ribosomal genes per cell and add that to the metadata. This will be helpful to visualize them across different metadata parameters. There are several ways of doing this, and below I manually calculate the proportion of mitochondrial reads and add to the metadata table.
+
+Note from Simple Single Cell workflows (Lun, McCarthy & Marioni, 2017): High proportions are indicative of poor-quality cells (Islam et al. 2014; Ilicic et al. 2016), possibly because of loss of cytoplasmic RNA from perforated cells. The reasoning is that mitochondria are larger than individual transcript molecules and less likely to escape through tears in the cell membrane.
+
+#### Remove mitochondrial genes
+
+Note: PercentageFeatureSet function has grepping out of Mt prefixes built in. It is an automatic way to remove mt genes instead of manually grepping from rownames. (Source: https://nbisweden.github.io/workshop-scRNAseq/labs/compiled/seurat/seurat_01_qc.html )
+
+In the mm10 reference (version 3.0.0) in the Cell Ranger reference files reveals that for whatever reason, the MT genes are labeled with lowercase mt instead. (source: https://www.michaelchimenti.com/2019/03/calculate-mitochondrial-for-mouse-scrna-seq/)
+```{r}
+kidney_seurat <- PercentageFeatureSet(kidney_seurat,
+  "mt-",
+  col.name = "percent_mito"
+)
+
+# check it ran properly
+head(kidney_seurat)
+```
+
+
+#### Calculate proportion of gene expression from ribosomal genes:
+```{r}
+kidney_seurat <- PercentageFeatureSet(kidney_seurat,
+  "^Rp[sl]",
+  col.name = "percent_ribo"
+)
+# check it ran properly
+head(kidney_seurat)
+```
+
+
+### Plot Quality Control metrics just calculated
+```{r}
+feats <- c("nFeature_RNA", "nCount_RNA", "percent_mito", "percent_ribo")
+# violin:
+png(
+  filename = here("results/seurat/QC_01/preQC_metrics_VlnPlot_kidney_postSoup.png"),
+  width = 1000,
+  height = 1000
+)
+VlnPlot(kidney_seurat,
+  group.by = "orig.ident",
+  features = feats,
+  pt.size = 0.1, ncol = 3
+)
+dev.off()
+
+# scatter:
+png(
+  filename = here("results/seurat/QC_01/preQC_metrics_scatter_countsfeatures_kidney_postSoup.png"),
+  width = 1000,
+  height = 1000
+)
+FeatureScatter(kidney_seurat,
+  "nCount_RNA",
+  "nFeature_RNA",
+  group.by = "orig.ident",
+  pt.size = 0.5
+)
+dev.off()
+
+png(
+  filename = here("results/seurat/QC_01/preQC_metrics_scatter_mitoribo_kidney_postSoup.png"),
+  width = 1000,
+  height = 1000
+)
+FeatureScatter(kidney_seurat,
+  "percent_mito",
+  "percent_ribo",
+  group.by = "orig.ident",
+  pt.size = 0.5
+)
+dev.off()
+```
+
+
+##### Visualize the number of cell counts per sample
+```{r}
+# Add number of genes per UMI for each cell to metadata
+kidney_seurat$log10GenesPerUMI <- log10(kidney_seurat$nFeature_RNA) / log10(kidney_seurat$nCount_RNA)
+
+png(
+  filename = here("results/seurat/QC_01/preQC_metrics_nucleicount_bysample_kidney_postSoup.png"),
+  width = 1000,
+  height = 1000
+)
+kidney_seurat@meta.data %>%
+  ggplot(aes(x = orig.ident, fill = orig.ident)) +
+  geom_bar() +
+  theme_classic() +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
+  theme(plot.title = element_text(hjust = 0.5, face = "bold")) +
+  ggtitle("NCells")
+dev.off()
+
+png(
+  filename = here("results/seurat/QC_01/preQC_metrics_nucleicount_bytype_kidney_postSoup.png"),
+  width = 1000,
+  height = 1000
+)
+kidney_seurat@meta.data %>%
+  ggplot(aes(x = orig.ident, fill = type)) +
+  geom_bar() +
+  theme_classic() +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
+  theme(plot.title = element_text(hjust = 0.5, face = "bold")) +
+  ggtitle("NCells")
+dev.off()
+```
+
+
+#### Visualize the number of UMIs/transcripts per cell:
+nUMI = nCount_RNA
+nGene = nFeature_RNA
+
+500 is the minimum threshold for number of UMI counts per cell.
+```{r}
+png(
+  filename = here("results/seurat/QC_01/preQC_metrics_nCount_bysample_kidney_postSoup.png"),
+  width = 1000,
+  height = 1000
+)
+kidney_seurat@meta.data %>%
+  ggplot(aes(color = orig.ident, x = nCount_RNA, fill = orig.ident)) +
+  geom_density(alpha = 0.2) +
+  scale_x_log10() +
+  theme_classic() +
+  ylab("Cell density") +
+  geom_vline(xintercept = 500)
+dev.off()
+
+png(
+  filename = here("results/seurat/QC_01/preQC_metrics_nCount_bytype_kidney_postSoup.png"),
+  width = 1000,
+  height = 1000
+)
+kidney_seurat@meta.data %>%
+  ggplot(aes(color = type, x = nCount_RNA, fill = type)) +
+  geom_density(alpha = 0.2) +
+  scale_x_log10() +
+  theme_classic() +
+  ylab("Cell density") +
+  geom_vline(xintercept = 500)
+dev.off()
+```
+
+
+##### Visualize the distribution of nFeature_RNA (genes) detected per cell via density plot
+```{r}
+png(
+  filename = here("results/seurat/QC_01/preQC_metrics_nFeature_bysample_kidney_postSoup.png"),
+  width = 1000,
+  height = 1000
+)
+kidney_seurat@meta.data %>%
+  ggplot(aes(color = orig.ident, x = nFeature_RNA, fill = orig.ident)) +
+  geom_density(alpha = 0.2) +
+  theme_classic() +
+  scale_x_log10() +
+  geom_vline(xintercept = 300)
+dev.off()
+
+png(
+  filename = here("results/seurat/QC_01/preQC_metrics_nFeature_bytype_kidney_postSoup.png"),
+  width = 1000,
+  height = 1000
+)
+kidney_seurat@meta.data %>%
+  ggplot(aes(color = type, x = nFeature_RNA, fill = type)) +
+  geom_density(alpha = 0.2) +
+  theme_classic() +
+  scale_x_log10() +
+  geom_vline(xintercept = 300)
+dev.off()
+```
+
+
+#### Visualize the distribution of genes detected per cell via boxplot
+```{r}
+png(
+  filename = here("results/seurat/QC_01/preQC_metrics_nCellvsnGenes_kidney_postSoup.png"),
+  width = 1000,
+  height = 1000
+)
+kidney_seurat@meta.data %>%
+  ggplot(aes(x = orig.ident, y = log10(nFeature_RNA), fill = orig.ident)) +
+  geom_boxplot() +
+  theme_classic() +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
+  theme(plot.title = element_text(hjust = 0.5, face = "bold")) +
+  ggtitle("NCells vs NGenes")
+dev.off()
+```
+
+
+#### Visualize the correlation between nFeature_RNA (genes) and nCount_RNA (nuclei)
+```{r}
+# determine whether strong presence of cells with low numbers of genes/UMIs
+png(
+  filename = here("results/seurat/QC_01/preQC_metrics_nFeaturenCountCorrelation_kidney_postSoup.png"),
+  width = 1000,
+  height = 1000
+)
+kidney_seurat@meta.data %>%
+  ggplot(aes(x = nCount_RNA, y = nFeature_RNA, color = percent_mito)) +
+  geom_point() +
+  scale_color_gradient(low = "gray90", high = "black") +
+  stat_smooth(method = lm) +
+  scale_x_log10() +
+  scale_y_log10() +
+  theme_classic() +
+  geom_vline(xintercept = 500) +
+  geom_hline(yintercept = 250) +
+  facet_wrap(~orig.ident)
+dev.off()
+```
+
+
+#### Filter out nFeature_RNA and mt:
+```{r}
+kidney_seurat_filtered <- subset(
+  kidney_seurat,
+  subset = nFeature_RNA >= 1000 & nFeature_RNA <= 15000 & percent_mito < 5
+)
+# 5.0 here because percent_mito is a percent not a ratio.
+```
+
+
+#### Plot genes contributing most to reads:
+```{r}
+png(
+  filename = here("results/seurat/QC_01/postfilt_feature_mito_contrib_genes_kidney_postSoup.png"),
+  width = 1000,
+  height = 1000
+)
+par(mar = c(4, 8, 2, 1))
+C <- kidney_seurat_filtered@assays$RNA@counts
+C <- Matrix::t(Matrix::t(C) / Matrix::colSums(C)) * 100
+C <- as(C, "dgTMatrix")
+most_expressed <- order(apply(C, 1, median), decreasing = TRUE)[20:1]
+boxplot(t(as.matrix(C[most_expressed, ])),
+  cex = 0.1, las = 1,
+  xlab = "% total count per cell in kidney",
+  col = (scales::hue_pal())(20)[20:1], horizontal = TRUE
+)
+dev.off()
+```
+
+
+#### Removing Malat1:
+```{r}
+kidney_seurat_filtered <- kidney_seurat_filtered[!grepl(
+  "Malat1",
+  rownames(kidney_seurat_filtered)
+), ]
+```
+
+
+#### Checking cell cycle scoring
+```{r}
+# Change default from human to mouse, Seurat uses a human list and we are working with mouse data. (code credit: TCH)
+# reading in cell cycle gene list (downloaded from https://github.com/hbc/tinyatlas/blob/master/cell_cycle/Mus_musculus.csv) on 230322
+cell_cycle_gene <- read_csv(here("results/seurat/230322_mouse_cell_cycle_genes.csv"))
+# converting ENSMUSG to Gene Symbol
+symbols <- gconvert(cell_cycle_gene$geneID,
+  organism = "mmusculus",
+  target = "ENTREZGENE",
+  filter_na = FALSE
+)
+symbols <- symbols[, c(2, 5)]
+colnames(symbols) <- c("geneID", "symbol")
+
+mouse_cell_cycle_gene <- merge(cell_cycle_gene, symbols, by = "geneID") %>% .[, c(1, 2, 4)]
+mouse_cell_cycle_gene <- mouse_cell_cycle_gene[order(mouse_cell_cycle_gene$phase), ] %>% .[, c(2, 3)]
+
+# Before running CellCycleScoring the data need to be normalized and log transformed.
+kidney_seurat_filtered <- NormalizeData(kidney_seurat_filtered)
+
+# now check cell cycle scoring
+kidney_seurat_filtered <- CellCycleScoring(
+  object = kidney_seurat_filtered,
+  g2m.features = mouse_cell_cycle_gene[1:54, ],
+  s.features = mouse_cell_cycle_gene[55:97, ]
+)
+
+png(
+  filename = here("results/seurat/QC_01/postfiltQC_cellcycle_genes_kidney_postSoup.png"),
+  width = 1000,
+  height = 1000
+)
+VlnPlot(kidney_seurat_filtered,
+  features = c("S.Score", "G2M.Score"), group.by = "orig.ident",
+  ncol = 4, pt.size = 0.1
+)
+dev.off()
+```
+
+#### Revisualizing QC metrics after data has been filtered:
+
+##### Plot Quality Control metrics just calculated
+```{r}
+feats <- c("nFeature_RNA", "nCount_RNA", "percent_mito", "percent_ribo")
+# violin
+png(
+  filename = here("results/seurat/QC_01/postQC_metrics_VlnPlot_kidney_postSoup.png"),
+  width = 1000,
+  height = 1000
+)
+VlnPlot(
+  kidney_seurat_filtered,
+  group.by = "orig.ident",
+  features = feats,
+  pt.size = 0.1,
+  ncol = 3
+)
+dev.off()
+
+# scatter:
+png(
+  filename = here("results/seurat/QC_01/postQC_metrics_scatter_countsfeatures_kidney_postSoup.png"),
+  width = 1000,
+  height = 1000
+)
+FeatureScatter(
+  kidney_seurat_filtered,
+  "nCount_RNA",
+  "nFeature_RNA",
+  group.by = "orig.ident",
+  pt.size = 0.5
+)
+dev.off()
+
+png(
+  filename = here("results/seurat/QC_01/postQC_metrics_scatter_mitribo_kidney_postSoup.png"),
+  width = 1000,
+  height = 1000
+)
+FeatureScatter(
+  kidney_seurat_filtered,
+  "percent_mito",
+  "percent_ribo",
+  group.by = "orig.ident",
+  pt.size = 0.5
+)
+dev.off()
+```
+
+###### Visualize the number of cell counts per sample
+```{r}
+# Add number of genes per UMI for each cell to metadata -- tells the complexity of the data
+kidney_seurat_filtered$log10GenesPerUMI <- log10(kidney_seurat_filtered$nFeature_RNA) / log10(kidney_seurat_filtered$nCount_RNA)
+
+png(
+  filename = here("results/seurat/QC_01/postQC_metrics_nucleicount_bysample_kidney_postSoup.png"),
+  width = 1000,
+  height = 1000
+)
+kidney_seurat_filtered@meta.data %>%
+  ggplot(aes(x = orig.ident, fill = orig.ident)) +
+  geom_bar() +
+  theme_classic() +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
+  theme(plot.title = element_text(hjust = 0.5, face = "bold")) +
+  ggtitle("NCells")
+dev.off()
+
+png(
+  filename = here("results/seurat/QC_01/postQC_metrics_nucleicount_bytype_kidney_postSoup.png"),
+  width = 1000,
+  height = 1000
+)
+kidney_seurat_filtered@meta.data %>%
+  ggplot(aes(x = orig.ident, fill = type)) +
+  geom_bar() +
+  theme_classic() +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
+  theme(plot.title = element_text(hjust = 0.5, face = "bold")) +
+  ggtitle("NCells")
+dev.off()
+```
+##### Visualize the number of UMIs/transcripts per cell:
+nUMI = nCount_RNA
+nGene = nFeature_RNA
+
+500 is the minimum threshold for number of UMI counts per cell.
+```{r}
+png(
+  filename = here("results/seurat/QC_01/postQC_metrics_nCount_bysample_kidney_postSoup.png"),
+  width = 1000,
+  height = 1000
+)
+kidney_seurat_filtered@meta.data %>%
+  ggplot(aes(color = orig.ident, x = nCount_RNA, fill = orig.ident)) +
+  geom_density(alpha = 0.2) +
+  scale_x_log10() +
+  theme_classic() +
+  ylab("Cell density") +
+  geom_vline(xintercept = 500)
+dev.off()
+
+png(
+  filename = here("results/seurat/QC_01/postQC_metrics_nCount_bytype_kidney_postSoup.png"),
+  width = 1000,
+  height = 1000
+)
+kidney_seurat_filtered@meta.data %>%
+  ggplot(aes(color = type, x = nCount_RNA, fill = type)) +
+  geom_density(alpha = 0.2) +
+  scale_x_log10() +
+  theme_classic() +
+  ylab("Cell density") +
+  geom_vline(xintercept = 500)
+dev.off()
+```
+
+###### Visualize the distribution of nFeature_RNA (genes) detected per cell via density plot
+```{r}
+png(
+  filename = here("results/seurat/QC_01/postQC_metrics_nFeature_bysample_kidney_postSoup.png"),
+  width = 1000,
+  height = 1000
+)
+kidney_seurat_filtered@meta.data %>%
+  ggplot(aes(color = orig.ident, x = nFeature_RNA, fill = orig.ident)) +
+  geom_density(alpha = 0.2) +
+  theme_classic() +
+  scale_x_log10() +
+  geom_vline(xintercept = 300)
+dev.off()
+
+png(
+  filename = here("results/seurat/QC_01/postQC_metrics_nFeature_bytype_kidney_postSoup.png"),
+  width = 1000,
+  height = 1000
+)
+kidney_seurat_filtered@meta.data %>%
+  ggplot(aes(color = type, x = nFeature_RNA, fill = type)) +
+  geom_density(alpha = 0.2) +
+  theme_classic() +
+  scale_x_log10() +
+  geom_vline(xintercept = 300)
+dev.off()
+```
+
+##### Visualize the distribution of genes detected per cell via boxplot
+```{r}
+kidney_seurat_filtered@meta.data %>%
+  ggplot(aes(x = orig.ident, y = log10(nFeature_RNA), fill = orig.ident)) +
+  geom_boxplot() +
+  theme_classic() +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
+  theme(plot.title = element_text(hjust = 0.5, face = "bold")) +
+  ggtitle("NCells vs NGenes")
+```
+
+##### Visualize the correlation between nFeature_RNA (genes) and nCount_RNA (nuclei)
+```{r}
+# determine whether strong presence of cells with low numbers of genes/UMIs
+png(
+  filename = here("results/seurat/QC_01/postQC_metrics_nFeaturenCountCorrelation_kidney_postSoup.png"),
+  width = 1000,
+  height = 1000
+)
+kidney_seurat_filtered@meta.data %>%
+  ggplot(aes(x = nCount_RNA, y = nFeature_RNA, color = percent_mito)) +
+  geom_point() +
+  scale_color_gradient(low = "gray90", high = "black") +
+  stat_smooth(method = lm) +
+  scale_x_log10() +
+  scale_y_log10() +
+  theme_classic() +
+  geom_vline(xintercept = 500) +
+  geom_hline(yintercept = 250) +
+  facet_wrap(~orig.ident)
+dev.off()
+```
+
+#### Saving filtered data as new object:
+Note: this object is just filtered for nCount_RNA, mitochondria, and Malat1. It was normalized and log transformed for cell cycle scoring.
+```{r}
+save(kidney_seurat_filtered, file = here("data/filtered_setbp1_kidney_seurat_postSoup.Rdata"))
+```
+
+```{r}
+proc.time()
+```
+    user   system  elapsed 
+ 301.249  122.335 2786.795
+
+```{r}
+sessionInfo()
+```
+R version 4.1.3 (2022-03-10)
+Platform: x86_64-pc-linux-gnu (64-bit)
+Running under: Ubuntu 20.04.5 LTS
+
+Matrix products: default
+BLAS/LAPACK: /usr/lib/x86_64-linux-gnu/openblas-pthread/libopenblasp-r0.3.8.so
+
+locale:
+[1] C
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+ [1] lintr_3.0.2        styler_1.9.0       gprofiler2_0.2.1   lubridate_1.9.2    forcats_1.0.0      stringr_1.5.0      purrr_1.0.1        tidyr_1.3.0       
+ [9] tibble_3.1.8       tidyverse_2.0.0    here_1.0.1         ggplot2_3.4.1      cowplot_1.1.1      SeuratObject_4.1.3 Seurat_4.3.0       Matrix_1.5-3      
+[17] dplyr_1.1.0        readr_2.1.4        magrittr_2.0.3     devtools_2.4.5     usethis_2.1.6     
+
+loaded via a namespace (and not attached):
+  [1] plyr_1.8.8             igraph_1.4.1           lazyeval_0.2.2         sp_1.6-0               splines_4.1.3          listenv_0.9.0         
+  [7] scattermore_0.8        digest_0.6.31          htmltools_0.5.4        fansi_1.0.4            memoise_2.0.1          tensor_1.5            
+ [13] cluster_2.1.2          ROCR_1.0-11            tzdb_0.3.0             remotes_2.4.2          globals_0.16.2         matrixStats_0.63.0    
+ [19] vroom_1.6.1            R.utils_2.12.2         timechange_0.2.0       spatstat.sparse_3.0-0  prettyunits_1.1.1      colorspace_2.1-0      
+ [25] ggrepel_0.9.3          xfun_0.37              RCurl_1.98-1.10        callr_3.7.3            crayon_1.5.2           jsonlite_1.8.4        
+ [31] progressr_0.13.0       spatstat.data_3.0-0    survival_3.3-1         zoo_1.8-11             glue_1.6.2             polyclip_1.10-4       
+ [37] gtable_0.3.1           leiden_0.4.3           R.cache_0.16.0         pkgbuild_1.3.1         future.apply_1.10.0    abind_1.4-5           
+ [43] scales_1.2.1           spatstat.random_3.1-3  miniUI_0.1.1.1         Rcpp_1.0.10            viridisLite_0.4.1      xtable_1.8-4          
+ [49] reticulate_1.28        bit_4.0.5              profvis_0.3.7          rex_1.2.1              htmlwidgets_1.6.1      httr_1.4.5            
+ [55] RColorBrewer_1.1-3     ellipsis_0.3.2         ica_1.0-3              farver_2.1.1           R.methodsS3_1.8.2      urlchecker_1.0.1      
+ [61] pkgconfig_2.0.3        uwot_0.1.14            deldir_1.0-6           utf8_1.2.3             labeling_0.4.2         tidyselect_1.2.0      
+ [67] rlang_1.0.6            reshape2_1.4.4         later_1.3.0            munsell_0.5.0          tools_4.1.3            cachem_1.0.7          
+ [73] cli_3.6.0              generics_0.1.3         ggridges_0.5.4         evaluate_0.20          fastmap_1.1.1          yaml_2.3.7            
+ [79] goftest_1.2-3          bit64_4.0.5            processx_3.8.0         knitr_1.42             fs_1.6.1               fitdistrplus_1.1-8    
+ [85] RANN_2.6.1             pbapply_1.7-0          future_1.31.0          nlme_3.1-155           mime_0.12              R.oo_1.25.0           
+ [91] xml2_1.3.3             compiler_4.1.3         rstudioapi_0.14        plotly_4.10.1          png_0.1-8              spatstat.utils_3.0-1  
+ [97] stringi_1.7.12         cyclocomp_1.1.0        ps_1.7.2               desc_1.4.2             lattice_0.20-45        vctrs_0.5.2           
+[103] pillar_1.8.1           lifecycle_1.0.3        spatstat.geom_3.0-6    lmtest_0.9-40          RcppAnnoy_0.0.20       bitops_1.0-7          
+[109] data.table_1.14.8      irlba_2.3.5.1          httpuv_1.6.9           patchwork_1.1.2        R6_2.5.1               promises_1.2.0.1      
+[115] KernSmooth_2.23-20     gridExtra_2.3          parallelly_1.34.0      sessioninfo_1.2.2      codetools_0.2-18       MASS_7.3-55           
+[121] pkgload_1.3.2          rprojroot_2.0.3        withr_2.5.0            sctransform_0.3.5      mgcv_1.8-39            parallel_4.1.3        
+[127] hms_1.1.2              grid_4.1.3             rmarkdown_2.20         Rtsne_0.16             spatstat.explore_3.0-6 shiny_1.7.4           
+
+```{r}
+# run style
+style_file(here("src/seurat_scripts/Setbp1_QC_postSoup_01.Rmd"))
+# lintr was run as well
+```
+
+
+Next script: Setbp1_Integration_postSoup_02
