@@ -1,0 +1,82 @@
+---
+title: "Human_PANDA_ppi"
+output: html_document
+date: '2022-11-15'
+---
+# Generating own stringDB ppi input without NetZoo wrapper function:
+generate my own ppi input using the stringDB package without the network zoo wrapper function to figure out why the threshold is not working. 
+
+* Generating PPI Input for Human:
+  * STRING:
+    * The NetZoo package has a nice wrapper function here: https://netzoo.github.io/netZooR/reference/source.PPI.html, however, one cannot change the filtering threshold using this package. Instead I used the stringDB package to pull in the latest version
+    * All that is needed is for the user to specify the input query TFs that an individual would like to search for in the string database. 
+    * Then the species.index must be specified, here I use the mouse NCBI taxon-id (9606; https://string-db.org/cgi/organisms).
+  *Input TFs were obtained from the TF Motif input constructed in Setbp1_PANDA_TFmotif.Rmd called 'mm10_TFmotifs.txt'
+
+## Code: 
+
+Accompanying dry lab notebook for this analysis is here: https://docs.google.com/document/d/1FO_Je9oxbBFF9S_k-8tVF2t4ba88O4C77sw1v7DIFec/edit?usp=sharing
+
+## loading in libraries
+```{r}
+library(STRINGdb)
+library(stringr)
+library(styler)
+library(here)
+set.seed(2178)
+```
+
+## loading in the TF-motif input data (needed as input to construct PPI):
+```{r}
+hg38_TFmotifs <- read.table(here("data/processed/motif_inputs/hg38_TFmotifs.txt"),
+                            sep = "\t")
+```
+
+
+## generate PPI input without threshold 
+Threshold scores go from 0 - 1000 and represent the confidence in the interactions present based on literature and experimental data. The lower, the less stringent. 
+```{r}
+#create a new STRINGdb class with specified version, species and score threshold
+string_db <- STRINGdb$new(version= "11.5",
+                          species=as.numeric(9606),
+                          score_threshold = 0) #version was 11.5 as of 221115, 9606 species index is for homo sapiens
+# create a TF data frame with one column
+TF <-data.frame(hg38_TFmotifs[,1]) #grabs the TF column from this data
+# change the colname to "TF"
+colnames(TF) <- "TF"
+TF <- unique(TF)
+# map the TF to STRINGdb dataset
+TF_mapped <-  string_db$map(TF,
+                            "TF",
+                            removeUnmappedRows=T) #Warning:  we couldn't map to STRING 0% of your identifiers. Setting removeUnmappedRows to TRUE or FALSE doesn't make a difference. 
+# collect the interactions between the TF of interest
+ppi_tmp <- string_db$get_interactions(TF_mapped$STRING_id)[,c(1,2,3)] #contains duplicate data
+ppi_tmp <- unique(ppi_tmp) #removing duplicates
+# store the PPI by using original identifier.
+hg38_ppi <- data.frame(from=TF_mapped[match(ppi_tmp$from,TF_mapped$STRING_id),1],
+                       to=TF_mapped[match(ppi_tmp$to,TF_mapped$STRING_id),1],
+                       score = ppi_tmp$combined_score)
+nrow(hg38_ppi) #70,974
+
+head(hg38_ppi) #creates a dataframe with a "from" and a "to" column for PPI
+```
+
+## saving the final PPI input 
+```{r}
+write.table(hg38_ppi, file = here("data/processed/ppi_inputs/hg38_ppi.txt"), sep = "\t") #save final input data to Cheaha for use in network construction
+```
+
+```{r}
+sessionInfo()
+```
+
+```{r}
+proc.time()
+```
+
+```{r}
+# run style
+style_file(here("src/network_scripts/input_construction/Human_PANDA_ppi.Rmd"))
+# lintr was run as well
+```
+
