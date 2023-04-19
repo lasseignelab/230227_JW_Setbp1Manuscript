@@ -115,7 +115,7 @@ load(here("data/kidney_leiden.Rdata")) # kidney_int
 
 ```{r}
 # harmony
-png(file = here("results/seurat/Clustering_03/kidneyint_res.jpeg"),
+png(file = here("results/seurat/Clustering_03/kidneyint_res_preSoup.jpeg"),
     width = 1000,
     height = 1000)
 DimPlot(kidney_int, reduction = "umap_harmony", group.by = "RNA_snn_res.1.7") +
