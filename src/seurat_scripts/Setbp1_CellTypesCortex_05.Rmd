@@ -102,7 +102,7 @@ plot_grid(
 
   FeaturePlot(cerebral_int, features = c("Gad1", "Synpr"), label = TRUE, reduction = "umap_harmony"), # not inhibitory
   FeaturePlot(cerebral_int, features = c("Slc17a7", "Pcp4"), label = TRUE, reduction = "umap_harmony")
-) # cluster 19 is excitatory neurons
+) # cluster 21 is excitatory neurons
 dev.off()
 ```
 
