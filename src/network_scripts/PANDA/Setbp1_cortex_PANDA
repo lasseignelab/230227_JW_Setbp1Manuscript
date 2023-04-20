@@ -24,3 +24,5 @@ module load R/4.2.0-foss-2021a
 
 #script to call on
 Rscript Setbp1_cortex_PANDA.R
+
+#Note final runtime and job info: Slurm Job_id=20060722 Name=All_cortex Ended, Run time 21:16:52
