@@ -24,3 +24,5 @@ module load R/4.2.0-foss-2021a
 
 #script to call on
 Rscript Setbp1_kidney_PANDA.R
+
+#Note: final runtime and job info Slurm Job_id=20060723 Name=All_kid Ended, Run time 1-10:23:32
