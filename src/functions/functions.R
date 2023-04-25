@@ -376,7 +376,7 @@ geom_split_violin <- function(mapping = NULL, data = NULL, stat = "ydensity", po
 targetingCalc <- function(regNetmatrix, variable_name, edge_weight_name, condition){
   #rearrange dataframe 
   regNetmatrix <- reshape2::melt(regNetmatrix, varnames = c("TF", "gene"), value.name = "edge_weight_name")#melting dataframe
-  print("datframe melted")
+  print("dataframe melted")
   regNetmatrix$edge_weight_name_pos <- ifelse(regNetmatrix$edge_weight_name < 0, 0, regNetmatrix$edge_weight_name) #replacing all negatives as a 0 and storing in new column
   print("subsetting only positive edge weights")
   regNetmatrix <- regNetmatrix[,c(1,2,4)]
