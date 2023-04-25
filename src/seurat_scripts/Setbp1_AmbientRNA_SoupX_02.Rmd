@@ -142,11 +142,7 @@ sc_metadata <- mapply(FUN = function(x,y) {
 
 ```{r}
 # a quick peek at the metadata
-lapply(X = sc_metadata, FUN = function(x) {
-  
-   head(x)
-  
-})
+head(sc_metadata)
 ```
 
 
