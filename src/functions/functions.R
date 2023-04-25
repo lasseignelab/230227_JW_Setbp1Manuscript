@@ -187,7 +187,8 @@ bubbleplot <- function(fea_result_filt){
     geom_point(alpha = 0.7, shape = 21) +
     scale_size(range = c(2, 10), name = "# Genes Matched to Term") + 
     scale_fill_distiller(palette = "Purples") + 
-    labs(x = "Intersection Size", y = "Functional Enrichment Terms")
+    labs(x = "Intersection Size", y = "Functional Enrichment Terms") +
+    theme_minimal()
   return(plot)
 }
 
@@ -374,7 +375,7 @@ geom_split_violin <- function(mapping = NULL, data = NULL, stat = "ydensity", po
 # function targeting-Calc on panda regNet for gene and TF
 targetingCalc <- function(regNetmatrix, variable_name, edge_weight_name, condition){
   #rearrange dataframe 
-  regNetmatrix <- melt(regNetmatrix, varnames = c("TF", "gene"), value.name = "edge_weight_name")#melting dataframe
+  regNetmatrix <- reshape2::melt(regNetmatrix, varnames = c("TF", "gene"), value.name = "edge_weight_name")#melting dataframe
   print("datframe melted")
   regNetmatrix$edge_weight_name_pos <- ifelse(regNetmatrix$edge_weight_name < 0, 0, regNetmatrix$edge_weight_name) #replacing all negatives as a 0 and storing in new column
   print("subsetting only positive edge weights")
