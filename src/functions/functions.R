@@ -187,7 +187,8 @@ bubbleplot <- function(fea_result_filt){
     geom_point(alpha = 0.7, shape = 21) +
     scale_size(range = c(2, 10), name = "# Genes Matched to Term") + 
     scale_fill_distiller(palette = "Purples") + 
-    labs(x = "Intersection Size", y = "Functional Enrichment Terms")
+    labs(x = "Intersection Size", y = "Functional Enrichment Terms") +
+    theme_minimal()
   return(plot)
 }
 
