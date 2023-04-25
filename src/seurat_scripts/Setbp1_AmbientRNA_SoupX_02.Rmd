@@ -110,7 +110,7 @@ N_objs_counts_raw <- lapply(setNames(h5_files_raw,
 
 ## Create the 'SoupChannel' objects
 ```{r, eval=FALSE}
-sc_objs <- mapply(FUN = function(x,y) {
+sc_objs <- mapply(FUN = function(x, y) {
   sc_obj <- SoupChannel(
    tod = x, # droplets/raw
    toc = y, # cells/filtered
@@ -122,7 +122,7 @@ sc_objs <- mapply(FUN = function(x,y) {
 ## Format metadata for 'SoupX'
 Add `cell_type` metadata to the "SoupChannel" objects. Note, however, that all cells __must__ be present in the input metadata, thus some data-wrangling is performed from the `sc_objs` metadata to add any cells that were dropped during the pre-processing under the "cell_dropped" cluster name. 
 ```{r}
-sc_metadata <- mapply(FUN = function(x,y) {
+sc_metadata <- mapply(FUN = function(x, y) {
   # from the sc object, create a new metadata obj since it contains all original cells, and merge with
   # the existing metadata (this will account for any dropped cells falling under NA cluster)
   sc_meta <- x$metaData
@@ -147,17 +147,17 @@ head(sc_metadata)
 
 
 ## Main SoupX workflow steps
-Now add metadata, adjustcounts for ambient RNAs and acquire new filtered counts to be used for downstream analysis
+Now add metadata, adjust counts for ambient RNAs and acquire new filtered counts to be used for downstream analysis
 ```{r soupx-workflow}
 # N_objs_counts are the new filtered and RNA ambient corrected counts
-N_objs_counts <- mapply(FUN = function(x,y) {
+N_objs_counts <- mapply(FUN = function(x, y) {
   sc <- setClusters(x, clusters = setNames(y$seurat_clusters, rownames(y)))
   sc <- autoEstCont(sc)
   # Correcting expression profile
- # round to not have issues with downstream analysis such as pseudobulk etc.
- out_counts <- adjustCounts(sc, roundToInt = TRUE)
+  # round to not have issues with downstream analysis such as pseudobulk etc.
+  out_counts <- adjustCounts(sc, roundToInt = TRUE)
   return(out_counts)
- }, x=sc_objs, y=sc_metadata, SIMPLIFY = FALSE)
+ }, x = sc_objs, y = sc_metadata, SIMPLIFY = FALSE)
 ```
 1618 genes passed tf-idf cut-off and 198 soup quantile filter.  Taking the top 100.
 Using 390 independent estimates of rho.
@@ -205,7 +205,7 @@ save(N_objs_counts, file = here("results/seurat/SoupX/setbp1_soupx_ambientRNA_co
 Now, re-start the standard workflow, but with `SoupX` counts
 Create Seurat objects with RNA assay:
 ```{r, eval=FALSE}
-N_objs <- mapply(FUN = function(x,p) {
+N_objs <- mapply(FUN = function(x, p) {
  seurat_obj <- CreateSeuratObject(
    counts = x,
    assay = "RNA",
@@ -213,7 +213,7 @@ N_objs <- mapply(FUN = function(x,p) {
    min.features = 1,
    project = p)
   return(seurat_obj)
-}, x=N_objs_counts, p=names(N_objs_counts))
+}, x = N_objs_counts, p = names(N_objs_counts))
 ```
 
 
