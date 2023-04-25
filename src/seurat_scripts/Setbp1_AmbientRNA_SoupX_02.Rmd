@@ -53,12 +53,15 @@ load(here("data/kidney_integrated_celltypes.Rdata"))
 Using the pre-processed object, we create a data.frame per sample which contains cell names (original names, thus need to remove suffix Seurat adds) as row names and `cell_type` as metadata to be provided to `SoupX`
 ```{r prepare-metadata-from-annotated}
 metadata_original_obj <- kidney_int_celltypes@meta.data
-#add cell names as a column and remove suffix for now to match
+
+# add cell names as a column and remove suffix for now to match
 metadata_original_obj$cell_names <- rownames(metadata_original_obj)
 metadata_original_obj$cell_names <- sub("*._","", metadata_original_obj$cell_names) %>% sub("^[^_]*_", "", .)
-#add cluster annotation to seurat_cluster to ensure mapping later
+
+# add cluster annotation to seurat_cluster to ensure mapping later
 metadata_original_obj$cluster_num <-  metadata_original_obj$seurat_clusters
 metadata_original_obj$seurat_clusters <-  metadata_original_obj$cell_type
+
 # make list to subset by id- again following the same sample order of original object
 metadata_original_obj_subset <- list(K1 = subset(metadata_original_obj, orig.ident == "K1"),
                                     K2 = subset(metadata_original_obj, orig.ident == "K2"),
@@ -84,18 +87,25 @@ table(kidney_int_celltypes$orig.ident)
 Read in both the RAW and FILTERED Outputs from CellRanger
 ```{r, eval=FALSE}
 h5_files_filtered <- sort(paste0(list.dirs("/data/project/lasseigne_lab/JordanWhitlock/jw_setbp1/introns_processed_data", recursive = FALSE),"/outs/filtered_feature_bc_matrix.h5"))
-h5_files_filtered <- h5_files_filtered[7:12] #grabbing only kidney
+
+h5_files_filtered <- h5_files_filtered[7:12] # grabbing only kidney
+
 h5_files_filtered # example: "/data/project/lasseigne_lab/JordanWhitlock/jw_setbp1/introns_processed_data/K1/outs/filtered_feature_bc_matrix.h5"
+
 h5_files_raw <- sort(paste0(list.dirs("/data/project/lasseigne_lab/JordanWhitlock/jw_setbp1/introns_processed_data", recursive = FALSE),"/outs/raw_feature_bc_matrix.h5"))
+
 h5_files_raw <- h5_files_raw[7:12]
+
 h5_files_raw # example: "/data/project/lasseigne_lab/JordanWhitlock/jw_setbp1/introns_processed_data/K1/outs/raw_feature_bc_matrix.h5"
 # Read 10X hdf5 files
+
 N_objs_counts_filtered <- lapply(setNames(h5_files_filtered,
-                                         make.names(c("K1", "K2", "K3", "K4", "K5", "K6"))),
-                                Read10X_h5)
+                                          make.names(c("K1", "K2", "K3", "K4", "K5"))),
+                                                       Read10X_h5)
+
 N_objs_counts_raw <- lapply(setNames(h5_files_raw,
-                                    make.names(c("K1", "K2", "K3", "K4", "K5", "K6"))),
-                           Read10X_h5)
+                                     make.names(c("K1", "K2", "K3", "K4", "K5", "K6"))),
+                            Read10X_h5)
 ```
 
 ## Create the 'SoupChannel' objects
@@ -106,7 +116,7 @@ sc_objs <- mapply(FUN = function(x,y) {
    toc = y, # cells/filtered
    calcSoupProfile = TRUE)
   return(sc_obj)
- }, x=N_objs_counts_raw, y=N_objs_counts_filtered, SIMPLIFY = FALSE)
+ }, x = N_objs_counts_raw, y = N_objs_counts_filtered, SIMPLIFY = FALSE)
 ```
 
 ## Format metadata for 'SoupX'
@@ -114,20 +124,19 @@ Add `cell_type` metadata to the "SoupChannel" objects. Note, however, that all c
 ```{r}
 sc_metadata <- mapply(FUN = function(x,y) {
   # from the sc object, create a new metadata obj since it contains all original cells, and merge with
- # the existing metadata (this will account for any dropped cells falling under NA cluster)
+  # the existing metadata (this will account for any dropped cells falling under NA cluster)
   sc_meta <- x$metaData
   # add a new variable with the same variable name from seurat object meta which contains cell_names
   sc_meta$cell_names <- rownames(sc_meta)
   # merge with original meta to retain cells lost during pre-processing
- merged_meta <- merge(x = sc_meta, y = y, by = "cell_names", all = TRUE) # `all` to not drop cells
+  merged_meta <- merge(x = sc_meta, y = y, by = "cell_names", all = TRUE) # `all` to not drop cells
   # replace NA with unassigned (SoupX does not allow NA)
   merged_meta$seurat_clusters <- as.character(merged_meta$seurat_clusters)
- merged_meta %>%
-   mutate(seurat_clusters = tidyr::replace_na(seurat_clusters, "cell_droped")) %>%
-   {.} -> merged_meta
-  
+  merged_meta %>%
+    mutate(seurat_clusters = tidyr::replace_na(seurat_clusters, "cell_droped")) %>%
+    {.} -> merged_meta
  return(merged_meta)
- }, x=sc_objs, y=metadata_original_obj_subset, SIMPLIFY = FALSE)
+ }, x = sc_objs, y = metadata_original_obj_subset, SIMPLIFY = FALSE)
 ```
 
 
