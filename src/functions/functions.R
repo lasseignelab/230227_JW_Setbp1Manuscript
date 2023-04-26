@@ -36,6 +36,52 @@ ppi <- function(species_code, score_cutoff, string_version, data){
   return(output)
 }
 
+# function for mouse ppi construction 
+mus_ppi <- function(species_code, score_cutoff, string_version, data){
+  print("creating a new STRINGdb class with specified version, species, and score threshold")
+  string_db <- STRINGdb$new(
+    version = as.character(string_version),
+    species = as.numeric(species_code),
+    score_threshold = score_cutoff
+  ) #
+  # create a TF data frame with one column
+  TF <- data.frame(data[, 1]) # grabs the TF column from this data
+  # change the colname to "TF"
+  colnames(TF) <- "TF"
+  TF <- unique(TF)
+  
+  print("mapping the TFs to STRINGdb dataset")
+  TF_mapped <- string_db$map(TF,
+                             "TF",
+                             removeUnmappedRows = TRUE
+  ) # Warning:  we couldn't map to STRING 0% of your identifiers. Setting removeUnmappedRows to TRUE or FALSE doesn't make a difference.
+  # collect the interactions between the TF of interest
+  ppi_tmp <- string_db$get_interactions(TF_mapped$STRING_id)[, c(1, 2, 3)] # contains duplicate data
+  ppi_tmp <- unique(ppi_tmp) # removing duplicates
+  
+  # store the PPI by using original identifier.
+  output <- data.frame(
+    from = TF_mapped[match(ppi_tmp$from, TF_mapped$STRING_id), 1],
+    to = TF_mapped[match(ppi_tmp$to, TF_mapped$STRING_id), 1],
+    score = ppi_tmp$combined_score
+  )
+  y <- nrow(output) 
+  y
+  
+  x <- head(output) # creates a dataframe with a "from" and a "to" column for PPI
+  x 
+  
+  
+  # All protein names returned are in all capital, even though they are mouse (as specified by 10090 above). R is case sensitive, so need to convert these to be lowercase with first letter capital
+  from <- str_to_title(output$from)
+  to <- str_to_title(output$to)
+  score <- str_to_title(output$score)
+  
+  output <- data.frame(from, to, score)
+  
+  return(output)
+}
+
 # Function-scatterplot
 scatterPlot <- function(
     simMatrix, reducedTerms, size = "score", addLabel = TRUE,
