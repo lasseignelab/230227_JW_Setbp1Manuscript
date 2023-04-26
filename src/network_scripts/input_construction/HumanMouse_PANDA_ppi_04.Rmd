@@ -32,6 +32,7 @@ library(STRINGdb)
 library(stringr)
 library(styler)
 library(here)
+source(here("src/functions/functions.R"))
 set.seed(2178)
 ```
 
