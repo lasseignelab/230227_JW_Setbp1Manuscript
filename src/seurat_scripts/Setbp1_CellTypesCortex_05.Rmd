@@ -45,7 +45,7 @@ set.seed(2178)
 load(here("results/seurat/Markers_04/cerebral_markers.Rdata"))
 ```
 
-*also be sure that the previously generated clustered objects at resolution 0.9 are here if not loaded already, run below chunk:
+*also be sure that the previously generated clustered objects at resolution 1 are here if not loaded already, run below chunk:
 ```{r}
 load(here("data/cerebral_leiden.Rdata"))
 select_resolution <- "RNA_snn_res.1"
