@@ -1,5 +1,5 @@
 ---
-title: "TF_motif_reconstruction"
+title: "HumanMouse_TF_motif_reconstruction_03"
 output: html_document
 date: '2023-01-23'
 output:     
@@ -40,7 +40,7 @@ set.seed(2178)
 # Load input files
 
 ## Human
-Note: The previous TF_motif input was generated in the 'Setbp1_PANDA_TFmotif.Rmd'
+Note: The previous TF_motif input was generated in the 'Human_PANDA_TFmotif_02.Rmd'
 ```{r load-previous-TF-motif}
 hu_motif <- read.table(file = here("data/processed/motif_inputs/hg38_TFmotifs.txt"), sep = "\t") # load in motif data
 ```
@@ -54,7 +54,7 @@ trrust_hu <- read_tsv(file = here("data/unprocessed/trrust_rawdata.human.tsv"), 
 ```
 
 ## Mouse
-Note: The previous TF_motif input was generated in the 'Setbp1_PANDA_TFmotif.Rmd'
+Note: The previous TF_motif input was generated in the 'Mouse_PANDA_TFmotif_02.Rmd'
 ```{r load-previous-TF-motif}
 mus_motif <- read.table(file = here("data/processed/motif_inputs/mm10_TFmotifs.txt"), sep = "\t") # load in motif data
 ```
