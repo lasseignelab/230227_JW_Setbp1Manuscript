@@ -1,5 +1,5 @@
 ---
-title: "Mosue_PANDA_TFmotif_01"
+title: "Mouse_PANDA_TFmotif_01"
 author: "Jordan Whitlock"
 date: '2022-09-06'
 output: html_document
@@ -19,7 +19,7 @@ While mapping motifs to genes, there are three genes that do not have a gene sym
 * ENSMUSG00000044690
 
 
-Note: The TF Motif input is needed in order to construct string PPI inputs for the network analysis. This script precedes the HumanMouse_TF_motif_reconstructed_03.Rmd and HumanMouse_PANDA_ppi_04.Rmd. The output generated here is needed as an input for these scripts analysis. 
+Note: The TF Motif input is needed in order to construct string PPI inputs for the network analysis. This script precedes the HumanMouse_TF_motif_enrichment_03.Rmd and HumanMouse_PANDA_ppi_04.Rmd. The output generated here is needed as an input for these scripts analysis. 
 
 ## Code: 
 

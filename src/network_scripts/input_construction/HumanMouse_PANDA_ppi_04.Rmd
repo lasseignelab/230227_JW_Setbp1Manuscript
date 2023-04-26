@@ -37,6 +37,7 @@ set.seed(2178)
 ```
 
 ## loading in the TF-motif input data (needed as input to construct PPI for both species):
+These inputs were generated in the HUmanMouse_TF_motif_enrichment.Rmd
 ```{r}
 hu_motif_all <- read.table(here("data/processed/motif_inputs/hu_motif_all.txt"),
   sep = "\t")
