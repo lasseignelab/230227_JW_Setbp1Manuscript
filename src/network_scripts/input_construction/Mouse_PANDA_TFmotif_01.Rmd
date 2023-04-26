@@ -50,7 +50,7 @@ prior_network <- read.table(here("data/unprocessed/mm10_reseq_-750_250_1e-4.txt"
 MotifIDs <- str_split(mouse_motif$MotifID, "\\_", simplify = TRUE)[, 1] # grab list of IDs without version
 mouse_motif$MotifID <- MotifIDs # set list of cleaned up IDs and MotifID column values
 
-# remove parantheses and other characters from TF info so that TF only contains name of TF:
+# remove parentheses and other characters from TF info so that TF only contains name of TF:
 TFs <- str_split(mouse_motif$TF_Info, "\\_", simplify = TRUE)[, 1] # splits every column value out by separator and only grabs the gene names
 TFs <- gsub("[()]", "", TFs) # removes genes from ()
 mouse_motif$TF_Info <- TFs
@@ -71,7 +71,7 @@ mm10_TFmotifs <- inner_join(mouse_motif,
   by = "MotifID"
 ) # generate final input data for PANDA
 
-mm10_TFmotifs <- subset(mm10_TFmotifs, select = -c(MotifID)) # drop interaction information and Motif IDs, because all interactions are present (represetned as a 1) and this information is not needed for PANDA input
+mm10_TFmotifs <- subset(mm10_TFmotifs, select = -c(MotifID)) # drop interaction information and Motif IDs, because all interactions are present (represented as a 1) and this information is not needed for PANDA input
 write.table(mm10_TFmotifs,
   file = here("data/processed/motif_inputs/mm10_TFmotifs.txt"),
   sep = "\t"
