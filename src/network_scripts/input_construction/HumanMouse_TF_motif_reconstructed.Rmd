@@ -9,8 +9,23 @@ output:
       toc_float: true
 ---
 
-Goal: Reconstruct TF-motif input to include additional resources and be more comprehensive. 
-*See detailed overview here: https://docs.google.com/document/d/1se-hztBXdYIbF0T0E9zNQFXX6Cib3F_KvdzrOId0NI4/edit?usp=sharing
+Goal: Reconstruct TF-motif input to include publicly available ChIP-seq data from MsigDB, interactions from TRRUST, and SIGNOR 
+* Step 1: Load previously generated TF-motif input data for both species and Setbp1 ChIP-seq data from GTRD
+* Step 2: Filter SIGNOR data for higher confidence in interactions 
+* Step 3: Enrich TF-motif with Setbp1 ChIP-seq data and save
+
+TRRUST v.2.0 (2017)
+* Human: https://www.grnpedia.org/trrust/data/trrust_rawdata.human.tsv
+* Mouse: https://www.grnpedia.org/trrust/data/trrust_rawdata.mouse.tsv
+TRRUST is a manually curated reference database of human and mouse TF-target interactions. 
+
+SIGNOR 3.0 (2023)
+* Human and Mouse: https://signor.uniroma2.it/downloads.php 
+SIGNOR is a database of manually annotated relationships between human proteins and known chemicals and their biological relevance. Interactions included were limited to only gene-protein interactions that are classified as "transcriptional regulation" in order to construct the TF-motif input data. SIGNOR scores range from 0.1 - 1.0 and were filtered to only include interactions with a score of at least 0.4. This threshold was based on previously published SIGNOR 3.0 score update, showing the proportion of components and scores, and whether their interaction is annotated to a pathway (https://www.syngoportal.org/convert) After filtration, all scores were converted to 1. This is because all other TF-motif inputs have a binary 1/0 scoring system where 1 indicates a reaction that is present and 0 an interaction that is not. This is done in an effort to avoid bias in network construction, weighting some interactions as more important than others so that expression is the main driver or regulation in PANDA construction. 
+
+MSIGDB ChIP-seq data
+* GTRD Setbp1 Target Genes: https://www.gsea-msigdb.org/gsea/msigdb/cards/SETBP1_TARGET_GENES.html
+There are 188 interactions for human with Sebtp1 found in the GTRD ChIP-seq experiments for SETBP1. Data was wrangled and converted using SYNGO (https://www.syngoportal.org/convert) to mouse IDs. When converted to mouse orthologs, this number changes to 157 (not all human symbols have a mouse equivalent)
 
 # Setup
 ```{r loading-libraries, results='hide'}
@@ -22,7 +37,9 @@ library(lintr)
 set.seed(2178)
 ```
 
-# Create Human (Homo Sapiens) Input:
+# Load input files
+
+## Human
 Note: The previous TF_motif input was generated in the 'Setbp1_PANDA_TFmotif.Rmd'
 ```{r load-previous-TF-motif}
 hu_motif <- read.table(file = here("data/processed/motif_inputs/hg38_TFmotifs.txt"), sep = "\t") # load in motif data
@@ -30,7 +47,34 @@ hu_motif <- read.table(file = here("data/processed/motif_inputs/hg38_TFmotifs.tx
 
 ```{r load-human-SIGNOR}
 signor_hu <- read_tsv(file = here("data/unprocessed/SIGNOR_all_human_data_23_01_23.tsv"), col_names = TRUE) # load in motif data
+```
 
+```{r load-human-TRRUST}
+trrust_hu <- read_tsv(file = here("data/unprocessed/trrust_rawdata.human.tsv"), col_names = "X") # load in motif data
+```
+
+## Mouse
+Note: The previous TF_motif input was generated in the 'Setbp1_PANDA_TFmotif.Rmd'
+```{r load-previous-TF-motif}
+mus_motif <- read.table(file = here("data/processed/motif_inputs/mm10_TFmotifs.txt"), sep = "\t") # load in motif data
+```
+
+```{r load-mouse-SIGNOR}
+signor_mus <- read_tsv(file = here("data/unprocessed/SIGNOR_all_data_M_musculus_23_01_23.tsv"), col_names = TRUE) # load in motif data
+```
+
+```{r load-mouse-TRRUST}
+trrust_mus <- read_tsv(file = here("data/unprocessed/trrust_rawdata.mouse.tsv"), col_names = "X") # load in motif data
+```
+
+## Load in Setbp1 data from MSIGDB:
+```{r}
+SETBP1geneset_syngo <- read_csv(here("data/unprocessed/SETBP1genset_syngo.csv"))
+```
+
+
+# Create Human (Homo Sapiens) Input:
+```{r filter-human-SIGNOR}
 # filter for only "trasncriptional regulation" and score >= 0.4, and proteins:
 signor_hu <- signor_hu[signor_hu$MECHANISM == "transcriptional regulation", ] %>%
   filter(., rowSums(is.na(.)) != ncol(.)) %>%
@@ -44,9 +88,7 @@ colnames(signor_hu) <- c("TF_Info", "Motif", "interaction")
 signor_hu$interaction <- 1
 ```
 
-```{r load-human-TRRUST}
-trrust_hu <- read_tsv(file = here("data/unprocessed/trrust_rawdata.human.tsv"), col_names = "X") # load in motif data
-
+```{r wrangle-human-TRRUST}
 colnames(trrust_hu) <- c("TF_Info", "Motif", "mechanism", "PMID")
 trrust_hu <- trrust_hu[, c(1:2)]
 trrust_hu$interaction <- 1
@@ -56,15 +98,24 @@ trrust_hu$interaction <- 1
 hu_motif_all <- unique(rbind(hu_motif, signor_hu) %>% rbind(., trrust_hu))
 ```
 
-# Create Mouse (Musc Musculus) Input:
-Note: The previous TF_motif input was generated in the 'Setbp1_PANDA_TFmotif.Rmd'
-```{r load-previous-TF-motif}
-mus_motif <- read.table(file = here("data/processed/motif_inputs/mm10_TFmotifs.txt"), sep = "\t") # load in motif data
+```{r manually-add-SETBP1-chipseq-human}
+msig <- matrix(NA, nrow = 188, ncol = 3)
+msig <- data.frame(msig)
+colnames(msig) <- c("TF_Info", "Motif", "interaction")
+msig$Motif <- SETBP1geneset_syngo$query # add in geneset data
+msig$TF_Info <- "SETBP1"
+msig$interaction <- 1
+
+# merge
+hu_motif_all <- unique(rbind(hu_motif_all, msig))
 ```
 
-```{r load-mouse-SIGNOR}
-signor_mus <- read_tsv(file = here("data/unprocessed/SIGNOR_all_data_M_musculus_23_01_23.tsv"), col_names = TRUE) # load in motif data
+```{r save-human}
+write.table(hu_motif_all, file = here("data/processed/motif_inputs/hu_motif_all.txt"), sep = "\t")
+```
 
+# Create Mouse (Musc Musculus) Input:
+```{r filter-mouse-SIGNOR}
 # filter for only "trasncriptional regulation" and score >= 0.4, and proteins:
 signor_mus <- signor_mus[signor_mus$MECHANISM == "transcriptional regulation", ] %>%
   filter(., rowSums(is.na(.)) != ncol(.)) %>%
@@ -78,9 +129,7 @@ colnames(signor_mus) <- c("TF_Info", "Motif", "interaction")
 signor_mus$interaction <- 1
 ```
 
-```{r load-mouse-TRRUST}
-trrust_mus <- read_tsv(file = here("data/unprocessed/trrust_rawdata.mouse.tsv"), col_names = "X") # load in motif data
-
+```{r wrangle-mouse-TRRUST}
 colnames(trrust_mus) <- c("TF_Info", "Motif", "mechanism", "PMID")
 trrust_mus <- trrust_mus[, c(1:2)]
 trrust_mus$interaction <- 1
@@ -90,23 +139,7 @@ trrust_mus$interaction <- 1
 mus_motif_all <- unique(rbind(mus_motif, signor_mus) %>% rbind(., trrust_mus))
 ```
 
-```{r manually-add-SETBP1-chipseq}
-# load in Setbp1 data from MSIGDB:
-SETBP1geneset_syngo <- read_csv(here("data/processed/msigdb/SETBP1genset_syngo.csv"))
-msig <- matrix(NA, nrow = 188, ncol = 3)
-msig <- data.frame(msig)
-colnames(msig) <- c("TF_Info", "Motif", "interaction")
-msig$Motif <- SETBP1geneset_syngo$query # add in geneset data
-msig$TF_Info <- "SETBP1"
-msig$interaction <- 1
-
-# merge
-hu_motif_all <- unique(rbind(hu_motif_all, msig))
-```
-
-```{r manually-add-Setbp1-chipseq}
-# load in Setbp1 data from MSIGDB:
-SETBP1geneset_syngo <- read_csv(here("data/processed/msigdb/SETBP1genset_syngo.csv"))
+```{r manually-add-Setbp1-chipseq-mouse}
 mus_msig <- matrix(NA, nrow = 157, ncol = 3)
 mus_msig <- data.frame(mus_msig)
 colnames(mus_msig) <- c("TF_Info", "Motif", "interaction")
@@ -119,27 +152,25 @@ mus_msig$interaction <- 1
 mus_motif_all <- unique(rbind(mus_motif_all, mus_msig))
 ```
 
-# Save Outputs once:
-```{r save-human}
-write.table(hu_motif_all, file = here("data/processed/motif_inputs/hu_motif_all.txt"), sep = "\t")
-```
-
 ```{r save-mouse}
 write.table(mus_motif_all, file = here("data/processed/motif_inputs/mus_motif_all.txt"), sep = "\t")
 ```
 
+# Style file and lint file
 ```{r}
 # run style
 style_file(here("src/network_scripts/input_construction/HumanMouse_TF_motif_reconstructed.Rmd"))
 # lintr was run as well
 ```
 
+# Processing time
 ```{r}
 proc.time()
 ```
    user  system elapsed 
 143.345  25.066 449.363
 
+# Session information
 ```{r}
 sessionInfo()
 ```
