@@ -1,6 +1,6 @@
 README
 ================
-2023-03-02
+2023-04-26
 
 **EDIT THIS DOCUMENT, NOT README.md**
 
@@ -29,27 +29,65 @@ your results with descriptions for all scripts
 ### Scripts:
 
     ## src
+    ## +-- ELISA_scripts
+    ## |   +-- 230314_ELISA_test.Rmd
+    ## |   \-- 230315_ELISA_BCA.Rmd
     ## +-- README
+    ## +-- cellranger_scripts
+    ## |   +-- J13_cellranger
+    ## |   +-- J15_cellranger
+    ## |   +-- J1_cellranger
+    ## |   +-- J2_cellranger
+    ## |   +-- J3_cellranger
+    ## |   +-- J4_cellranger
+    ## |   +-- K1_cellranger
+    ## |   +-- K2_cellranger
+    ## |   +-- K3_cellranger
+    ## |   +-- K4_cellranger
+    ## |   +-- K5_cellranger
+    ## |   \-- K6_cellranger
     ## +-- functions
     ## |   \-- functions.R
     ## +-- network_scripts
-    ## |   \-- differential_targeting
-    ## |       \-- Setbp1_DiffTargetingCortex_01.Rmd
+    ## |   +-- PANDA
+    ## |   |   +-- All_cortex.err
+    ## |   |   +-- All_cortex.out
+    ## |   |   +-- All_kidney.err
+    ## |   |   +-- All_kidney.out
+    ## |   |   +-- Setbp1_cortex_PANDA
+    ## |   |   +-- Setbp1_cortex_PANDA.R
+    ## |   |   +-- Setbp1_kidney_PANDA
+    ## |   |   \-- Setbp1_kidney_PANDA.R
+    ## |   +-- community_detection
+    ## |   |   \-- Setbp1_Communities_02.Rmd
+    ## |   +-- differential_targeting
+    ## |   |   +-- Setbp1_DiffTargetingCortex_01.Rmd
+    ## |   |   \-- Setbp1_DiffTargetingKidney_01.Rmd
+    ## |   \-- input_construction
+    ## |       +-- HumanMouse_PANDA_ppi_04.Rmd
+    ## |       +-- HumanMouse_TF_motif_enrichment_03.Rmd
+    ## |       +-- Human_PANDA_TFmotif_02.Rmd
+    ## |       +-- MouseSetbp1_PANDA_expression_05.Rmd
+    ## |       \-- Mouse_PANDA_TFmotif_01.Rmd
     ## \-- seurat_scripts
-    ##     +-- Setbp1_CellTypesCortex_06.Rmd
-    ##     +-- Setbp1_CellTypesKidney_06.Rmd
-    ##     +-- Setbp1_Clustering_04.Rmd
-    ##     +-- Setbp1_Clustering_leiden_04
-    ##     +-- Setbp1_Clustering_leiden_04.R
+    ##     +-- Setbp1_AmbientRNA_SoupX_02.Rmd
+    ##     +-- Setbp1_CellTypesCortex_05.Rmd
+    ##     +-- Setbp1_CellTypesKidney_SoupX_01.Rmd
+    ##     +-- Setbp1_CellTypesKidney_postSoup_05.Rmd
+    ##     +-- Setbp1_Clustering_03.Rmd
+    ##     +-- Setbp1_Clustering_postSoup_03.Rmd
     ##     +-- Setbp1_Cortex_subclustering.Rmd
-    ##     +-- Setbp1_DGEcortex_07.Rmd
-    ##     +-- Setbp1_DGEkidney_07.Rmd
-    ##     +-- Setbp1_DoubletFinder_02.Rmd
-    ##     +-- Setbp1_Integration_03.Rmd
-    ##     +-- Setbp1_MarkersCortex_05.Rmd
-    ##     +-- Setbp1_MarkersKidney_05.Rmd
-    ##     +-- Setbp1_PathwayAnalysisCortexKidney_08.Rmd
-    ##     \-- Setbp1_QC_01.Rmd
+    ##     +-- Setbp1_DGEcortex_06.Rmd
+    ##     +-- Setbp1_DGEkidney_06.Rmd
+    ##     +-- Setbp1_Integration_02.Rmd
+    ##     +-- Setbp1_Integration_postSoup_02.Rmd
+    ##     +-- Setbp1_MarkersCortex_04.Rmd
+    ##     +-- Setbp1_MarkersKidney_04.Rmd
+    ##     +-- Setbp1_MarkersKidney_postSoup_04.Rmd
+    ##     +-- Setbp1_PathwayAnalysisCortexKidney_07.Rmd
+    ##     +-- Setbp1_QC_01.Rmd
+    ##     +-- Setbp1_QC_postSoup_01.Rmd
+    ##     \-- Setbp1_target_list_construction.Rmd
 
 ## Authors
 
@@ -64,7 +102,7 @@ Wilk, Vishal H. Oza, Brittany N. Lasseigne
 
 ## Funding
 
-CMDB T32 Lasseigne Lab Start Up Funds
+CMDB T32 CPAM U54 Lasseigne Lab Start Up Funds
 
 ## Acknowledgements
 

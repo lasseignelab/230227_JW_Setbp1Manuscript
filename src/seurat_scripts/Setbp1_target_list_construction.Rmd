@@ -1,0 +1,92 @@
+---
+title: "Setbp1_targets"
+output: html_document
+date: '2023-02-16'
+---
+
+* Obtained gene list of targets from msigdb SETBP1 target list (https://www.gsea-msigdb.org/gsea/msigdb/human/download_geneset.jsp?geneSetName=SETBP1_TARGET_GENES&fileType=TSV). The target list stored in cheaha at '221018_Setbp1_msigdb_targets.csv' at /data/user/jbarham3/2302227_JW_Setbp1Manuscript/results/seurat/, then converted from mouse to human using bioDBnet Ortho GUI. Results are in file '221019_bioDBnet_dbOrtho_msigdb.txt'
+* Additional genes were compiled from the below resources into '221019_bioDBnet_dbOrtho_lit_signor.txt':
+1. the literature (papers here): HCF1, KMT2A, PHF8, PHF6, SET, HOXA9, HOXA10, PP2A, HMGA1, PHF6, BMP5, PDE4D, ERPP4, RUNX1, TCF4, BCL11A, DNTT, MYB, MYC, CEBPB, PARP1, TAF1A, ANP32A, AKT, HMG2, TREX1, NME1, APEX1
+2. Signor:
+* Human: SET, HOXA9, HOXA10
+
+The final target list is composed of 228 Human genes mapped to 682 mouse orthologs/aliases.
+
+```{r}
+set.seed(2178)
+library(here)
+library(styler)
+library(lintr)
+library(stringr)
+library(tidyr)
+```
+
+
+Mouse lit and Signor genes were manually added when all lists were merged below:
+```{r}
+# generate dataframe for human genes from literature, and signor converted to mouse using bioDBnet (INCLUDING SYNONYMS)
+lms <- read.table(here("results/seurat/221019_bioDBnet_dbOrtho_lit_signor.txt"), sep = "\t", header = TRUE)
+
+t <- str_split(lms$Gene.Symbol.and.Synonyms, "; ") # separate ;
+d2 <- do.call(rbind, t) # make single matrix
+d2 <- pivot_longer(as.data.frame(d2), cols = 1:17, values_to = "genes") # rearrange to pivot longer
+lms <- as.data.frame(unique(d2$genes)) # make final dataframe for lit  and signor mouse symbols
+lms <- lms[!apply(lms == "", 1, all),] #removing blank
+
+# generate dataframe for human genes from msigdb convereted to mouse using bioDBnnet (INCLUDING SYNONYMS)
+m <- read.table(here("results/seurat/221019_bioDBnet_dbOrtho_msigdb.txt"), sep = "\t", header = TRUE)
+m <- m[, 1:2] # remove X empty column
+
+t <- str_split(m$Gene.Symbol.and.Synonyms, "; ") # separate ;
+d2 <- do.call(rbind, t) # make single matrix
+d2 <- pivot_longer(as.data.frame(d2), cols = 1:16, values_to = "genes") # rearrange to pivot longer
+m <- as.data.frame(unique(d2$genes)) # make final dataframe for lit and signor mouse symbols
+m <- m[!apply(m == "", 1, all),] # removing blank
+
+# create dataframe with mouse and signor genes (signor is the same in mouse as it is in human):
+ms <- as.data.frame(c("Nap1l2", "Anp32a"))
+colnames(ms) <- "gene"
+
+# join all dataframes into a giant gene set for Setbp1 interactors:
+setbp1_genes <- union(lms, m)
+setbp1_genes <- union(setbp1_genes, ms)
+setbp1_genes <- unlist(setbp1_genes, recursive = FALSE)
+setbp1_genes <- gsub(" ", "", setbp1_genes) # removing spaces in elements of vector list
+setbp1_genes <- (unique(setbp1_genes)) # 228 human genes, mapped to 682 mouse ortholologs/aliases
+
+setbp1_genes <- as.data.frame(setbp1_genes)
+
+write.csv(setbp1_genes, file = here("results/seurat/setbp1_targets.csv")) # written out once then commented out
+```
+
+```{r}
+sessionInfo()
+```
+R version 4.1.3 (2022-03-10)
+Platform: x86_64-pc-linux-gnu (64-bit)
+Running under: Ubuntu 20.04.5 LTS
+
+Matrix products: default
+BLAS/LAPACK: /usr/lib/x86_64-linux-gnu/openblas-pthread/libopenblasp-r0.3.8.so
+
+locale:
+[1] C
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+[1] tidyr_1.3.0   stringr_1.5.0 lintr_3.0.2   styler_1.9.0  here_1.0.1   
+
+loaded via a namespace (and not attached):
+ [1] compiler_4.1.3    pillar_1.8.1      R.methodsS3_1.8.2 R.utils_2.12.2    remotes_2.4.2     tools_4.1.3       digest_0.6.31     tibble_3.1.8      lifecycle_1.0.3  
+[10] R.cache_0.16.0    pkgconfig_2.0.3   rlang_1.0.6       rex_1.2.1         cli_3.6.0         rstudioapi_0.14   xfun_0.37         cyclocomp_1.1.0   withr_2.5.0      
+[19] dplyr_1.1.0       knitr_1.42        xml2_1.3.3        desc_1.4.2        generics_0.1.3    vctrs_0.5.2       tidyselect_1.2.0  rprojroot_2.0.3   glue_1.6.2       
+[28] R6_2.5.1          processx_3.8.0    fansi_1.0.4       callr_3.7.3       purrr_1.0.1       magrittr_2.0.3    ps_1.7.2          utf8_1.2.3        stringi_1.7.12   
+[37] lazyeval_0.2.2    crayon_1.5.2      R.oo_1.25.0  
+
+```{r}
+# run style
+style_file(here("src/seurat_scripts/Setbp1_target_list_construction.Rmd"))
+# lintr was run as well
+```

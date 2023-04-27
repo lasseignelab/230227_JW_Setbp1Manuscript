@@ -1,40 +1,133 @@
-# Function-define-pK
-define_pK <- function(sample){
-  sweep_res_list <- paramSweep_v3(sample, PCs = 1:30, sct = FALSE)
-  sweep_stats <- summarizeSweep(sweep_res_list, GT = FALSE)
-  bcmvn <- find.pK(sweep_stats)
-  pK <- as.numeric(as.character(bcmvn$pK))
-  BCmetric <- bcmvn$BCmetric
-  pK_choose <- pK[which(BCmetric %in% max(BCmetric))]
+# function ppi construction
+ppi <- function(species_code, score_cutoff, string_version, data){
+  print("creating a new STRINGdb class with specified version, species, and score threshold")
+  string_db <- STRINGdb$new(
+    version = as.character(string_version),
+    species = as.numeric(species_code),
+    score_threshold = score_cutoff
+  ) #
+  # create a TF data frame with one column
+  TF <- data.frame(data[, 1]) # grabs the TF column from this data
+  # change the colname to "TF"
+  colnames(TF) <- "TF"
+  TF <- unique(TF)
   
-  par(mar = c(5, 4, 4, 8) + 1, cex.main = 1.2, font.main = 2)
-  plot(x = pK, y = BCmetric, pch = 16, type = "b",
-       col = "blue", lty = 1)
-  abline(v = pK_choose, lwd = 2, col = "red", lty = 2)
-  title("The BCmvn distributions")
-  text(pK_choose, max(BCmetric), as.character(pK_choose), pos = 4, col = "red")
+  print("mapping the TFs to STRINGdb dataset")
+  TF_mapped <- string_db$map(TF,
+                             "TF",
+                             removeUnmappedRows = TRUE
+  ) # Warning:  we couldn't map to STRING 0% of your identifiers. Setting removeUnmappedRows to TRUE or FALSE doesn't make a difference.
+  # collect the interactions between the TF of interest
+  ppi_tmp <- string_db$get_interactions(TF_mapped$STRING_id)[, c(1, 2, 3)] # contains duplicate data
+  ppi_tmp <- unique(ppi_tmp) # removing duplicates
+  
+  # store the PPI by using original identifier.
+  output <- data.frame(
+    from = TF_mapped[match(ppi_tmp$from, TF_mapped$STRING_id), 1],
+    to = TF_mapped[match(ppi_tmp$to, TF_mapped$STRING_id), 1],
+    score = ppi_tmp$combined_score
+  )
+  y <- nrow(output) 
+  y
+  
+  x <- head(output) # creates a dataframe with a "from" and a "to" column for PPI
+  x 
+  
+  return(output)
 }
 
-# Function-remove-doublets
-doublet_removal <- function(sample, expected, pK){
-  # define the expected number of doublets in nuclei.
-  nExp <- round(ncol(sample) * expected)  # expect 10.2% doublets
-  sample <- doubletFinder_v3(sample, pN = 0.25, pK = pK, nExp = nExp, PCs = 1:30)
+# function for mouse ppi construction 
+mus_ppi <- function(species_code, score_cutoff, string_version, data){
+  print("creating a new STRINGdb class with specified version, species, and score threshold")
+  string_db <- STRINGdb$new(
+    version = as.character(string_version),
+    species = as.numeric(species_code),
+    score_threshold = score_cutoff
+  ) #
+  # create a TF data frame with one column
+  TF <- data.frame(data[, 1]) # grabs the TF column from this data
+  # change the colname to "TF"
+  colnames(TF) <- "TF"
+  TF <- unique(TF)
   
-  # name of the DF prediction can change, so extract the correct column name.
-  DF.name <- colnames(sample@meta.data)[grepl("DF.classification", colnames(sample@meta.data))]
-  plot1 <- cowplot::plot_grid(ncol = 2, DimPlot(sample, group.by = "orig.ident") + NoAxes(),
-                              DimPlot(sample, group.by = DF.name) + NoAxes())
-  plot(plot1)
-  VlnPlot(sample, features = "nFeature_RNA", group.by = DF.name, pt.size = 0.1)
-  #REMOVE DOUBLETS:
-  sample <- sample[, sample@meta.data[, DF.name] == "Singlet"]
-  assign("no_doublets", sample, envir = globalenv())
-  #revisualize:
-  plot2 <- cowplot::plot_grid(ncol = 2, DimPlot(sample, group.by = "orig.ident") + NoAxes(),
-                              DimPlot(sample, group.by = DF.name) + NoAxes())
-  plot(plot2)
+  print("mapping the TFs to STRINGdb dataset")
+  TF_mapped <- string_db$map(TF,
+                             "TF",
+                             removeUnmappedRows = TRUE
+  ) # Warning:  we couldn't map to STRING 0% of your identifiers. Setting removeUnmappedRows to TRUE or FALSE doesn't make a difference.
+  # collect the interactions between the TF of interest
+  ppi_tmp <- string_db$get_interactions(TF_mapped$STRING_id)[, c(1, 2, 3)] # contains duplicate data
+  ppi_tmp <- unique(ppi_tmp) # removing duplicates
+  
+  # store the PPI by using original identifier.
+  output <- data.frame(
+    from = TF_mapped[match(ppi_tmp$from, TF_mapped$STRING_id), 1],
+    to = TF_mapped[match(ppi_tmp$to, TF_mapped$STRING_id), 1],
+    score = ppi_tmp$combined_score
+  )
+  y <- nrow(output) 
+  y
+  
+  x <- head(output) # creates a dataframe with a "from" and a "to" column for PPI
+  x 
+  
+  
+  # All protein names returned are in all capital, even though they are mouse (as specified by 10090 above). R is case sensitive, so need to convert these to be lowercase with first letter capital
+  from <- str_to_title(output$from)
+  to <- str_to_title(output$to)
+  score <- str_to_title(output$score)
+  
+  output <- data.frame(from, to, score)
+  
+  return(output)
 }
+
+# Function-scatterplot
+scatterPlot <- function(
+    simMatrix, reducedTerms, size = "score", addLabel = TRUE,
+    labelSize = 3) {
+  if (!all(sapply(c("ggplot2", "ggrepel"), requireNamespace,
+                  quietly = TRUE
+  ))) {
+    stop("Packages ggplot2, ggrepel and/or its dependencies not available. ",
+         "Consider installing them before using this function.",
+         call. = FALSE
+    )
+  }
+  x <- cmdscale(as.matrix(as.dist(1 - simMatrix)),
+                eig = TRUE,
+                k = 2
+  )
+  df <- cbind(as.data.frame(x$points), reducedTerms[match(
+    rownames(x$points),
+    reducedTerms$go
+  ), c("term", "parent", "parentTerm", "size")])
+  p <- ggplot2::ggplot(df, ggplot2::aes(x = "V1", y = "V2", color = "parentTerm")) +
+    ggplot2::geom_point(ggplot2::aes(size = size), alpha = 0.5) +
+    ggplot2::scale_color_discrete(guide = "none") +
+    ggplot2::scale_size_continuous(
+      guide = "none",
+      range = c(0, 25)
+    ) +
+    ggplot2::scale_x_continuous(name = "") +
+    ggplot2::scale_y_continuous(name = "") +
+    ggplot2::theme_minimal() +
+    ggplot2::theme(
+      axis.text.x = ggplot2::element_blank(),
+      axis.text.y = ggplot2::element_blank()
+    )
+  if (addLabel) {
+    p + ggrepel::geom_label_repel(aes(label = "parentTerm"),
+                                  data = subset(df, parent == rownames(df)), box.padding = grid::unit(
+                                    0.5,
+                                    "lines"
+                                  ), size = labelSize, max.overlaps = 20
+    )
+  } else {
+    p
+  }
+}
+
 
 # aggregate matrix function
 ##Matrix.utils function not loading into Docker, so grabbed source code (https://rdrr.io/cran/Matrix.utils/src/R/Matrix.utils.R)
@@ -178,7 +271,8 @@ bubbleplot <- function(fea_result_filt){
     geom_point(alpha = 0.7, shape = 21) +
     scale_size(range = c(2, 10), name = "# Genes Matched to Term") + 
     scale_fill_distiller(palette = "Purples") + 
-    labs(x = "Intersection Size", y = "Functional Enrichment Terms")
+    labs(x = "Intersection Size", y = "Functional Enrichment Terms") +
+    theme_minimal()
   return(plot)
 }
 
@@ -360,4 +454,110 @@ geom_split_violin <- function(mapping = NULL, data = NULL, stat = "ydensity", po
     position = position, show.legend = show.legend, inherit.aes = inherit.aes,
     params = list(trim = trim, scale = scale, draw_quantiles = draw_quantiles, na.rm = na.rm, ...)
   )
+}
+
+# function targeting-Calc on panda regNet for gene and TF
+targetingCalc <- function(regNetmatrix, variable_name, edge_weight_name, condition){
+  #rearrange dataframe 
+  regNetmatrix <- reshape2::melt(regNetmatrix, varnames = c("TF", "gene"), value.name = "edge_weight_name")#melting dataframe
+  print("dataframe melted")
+  regNetmatrix$edge_weight_name_pos <- ifelse(regNetmatrix$edge_weight_name < 0, 0, regNetmatrix$edge_weight_name) #replacing all negatives as a 0 and storing in new column
+  print("subsetting only positive edge weights")
+  regNetmatrix <- regNetmatrix[,c(1,2,4)]
+  regNetmatrix
+  
+  #calculate gene targeting
+  print("calculating gene targeting")
+  Gene.targeting <- aggregate(.~gene, regNetmatrix[-1], sum) #removing TF column and calculating targeting for all edge weights and when edge weight is only positive
+  #set column names based on condition
+  print("renaming columns")
+  if(condition == "het"){
+    colnames(Gene.targeting) <- c("gene", "het_edge_weight_pos")
+    print("plotting gene targeting score distribution")
+    png(file = paste0(here("results/diff_targeting/"), variable_name, condition, "_GeneTargetingScoresDist.png"),
+        width = 1000,
+        height = 1000)
+      hist(Gene.targeting$het_edge_weight_pos)
+      dev.off()
+  } else {
+    colnames(Gene.targeting) <- c("gene", "ctrl_edge_weight_pos")
+    print("plotting gene targeting score distribution")
+    png(file = paste0(here("results/diff_targeting/"), variable_name, condition, "_GeneTargetingScoresDist.png"),
+        width = 1000,
+        height = 1000)
+    hist(Gene.targeting$ctrl_edge_weight_pos)
+    dev.off()
+  }
+  #reassign variable 
+  print("assigning variable name to object")
+  variable_name <- as.character(variable_name)
+  assign(paste0(variable_name, "_gene_targeting_", condition), Gene.targeting, envir = .GlobalEnv)
+  print("gene targeting calculation complete")
+  
+  #calculate TF targeting
+  print("calculating TF targeting")
+  TF.targeting <- aggregate(.~TF, regNetmatrix[-2], sum) #same as above but for TF instead of gene
+  #set column names based on condition
+  print("renaming columns")
+  if(condition == "het"){
+    colnames(TF.targeting) <- c("TF", "het_edge_weight_pos")
+    print("plotting TF targeting score distribution")
+    png(file = paste0(here("results/diff_targeting/"), variable_name, condition, "_TFTargetingScoresDist.png"),
+        width = 1000,
+        height = 1000)
+    hist(TF.targeting$het_edge_weight_pos)
+    dev.off()
+  } else {
+    colnames(TF.targeting) <- c("TF", "ctrl_edge_weight_pos")
+    print("plotting TF targeting score distribution")
+    png(file = paste0(here("results/diff_targeting/"), variable_name, condition, "_TFTargetingScoresDist.png"),
+        width = 1000,
+        height = 1000)
+    hist(TF.targeting$ctrl_edge_weight_pos)
+    dev.off()
+  }
+  #reassign variable
+  print("assigning variable name to object")
+  variable_name <- as.character(variable_name)
+  assign(paste0(variable_name, "_TF_targeting_", condition), TF.targeting, envir = .GlobalEnv)
+  print("TF targeting calculation complete")
+}
+
+# function-targeting_heatmap; used in targeting
+targeting_heatmap <- function(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title){
+  #plotting all 
+  ##grabbing metadata and annotations
+  meta <- as.data.frame(colnames(data))
+  colnames(meta) <- meta_colname
+  rownames(meta) <- meta[,1]
+  
+  ##set heatmap annotations
+  heat.anno = HeatmapAnnotation(df = meta, show_annotation_name = TRUE, col = annotation_colors)
+  
+  ##ensure column order matches annotation table
+  data <- data[,rownames(meta), drop = FALSE]
+  
+  ##convert data to matrix
+  mat <- as.matrix(data)
+  
+  ##plot heatmap 
+  png(filename = plot_path,
+      width = 1000,
+      height = 1000)
+  print(Heatmap(mat,
+                col = colorRampPalette(brewer.pal(8,"Blues")) (25),
+                heatmap_legend_param = list(title = "targeting score"),
+                cluster_rows = TRUE,
+                cluster_columns = TRUE,
+                column_order = NULL,
+                show_row_dend = TRUE,
+                show_column_dend = TRUE,
+                show_row_names = FALSE,
+                show_column_names = FALSE,
+                use_raster = TRUE,
+                raster_device = c("png"),
+                bottom_annotation = NULL,
+                top_annotation = heat.anno,
+                column_title = plot_title, row_title = rowtitle, row_title_side = "right"))
+  dev.off()
 }
