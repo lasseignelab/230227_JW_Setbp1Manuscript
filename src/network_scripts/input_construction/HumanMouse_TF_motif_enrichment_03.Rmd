@@ -75,7 +75,7 @@ SETBP1geneset_syngo <- read_csv(here("data/unprocessed/SETBP1genset_syngo.csv"))
 
 # Create Human (Homo Sapiens) Input:
 ```{r filter-human-SIGNOR}
-# filter for only "trasncriptional regulation" and score >= 0.4, and proteins:
+# filter for only "transcriptional regulation" and score >= 0.4, and proteins:
 signor_hu <- signor_hu[signor_hu$MECHANISM == "transcriptional regulation", ] %>%
   filter(., rowSums(is.na(.)) != ncol(.)) %>%
   filter(., TYPEA == "protein") %>%
@@ -114,9 +114,9 @@ hu_motif_all <- unique(rbind(hu_motif_all, msig))
 write.table(hu_motif_all, file = here("data/processed/motif_inputs/hu_motif_all.txt"), sep = "\t")
 ```
 
-# Create Mouse (Musc Musculus) Input:
+# Create Mouse (Mus Musculus) Input:
 ```{r filter-mouse-SIGNOR}
-# filter for only "trasncriptional regulation" and score >= 0.4, and proteins:
+# filter for only "transcriptional regulation" and score >= 0.4, and proteins:
 signor_mus <- signor_mus[signor_mus$MECHANISM == "transcriptional regulation", ] %>%
   filter(., rowSums(is.na(.)) != ncol(.)) %>%
   filter(., TYPEA == "protein") %>%

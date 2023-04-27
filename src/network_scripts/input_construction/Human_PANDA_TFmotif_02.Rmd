@@ -6,7 +6,7 @@ date: '2022-11-15'
 
 # Generating own CIS-BP Tf-Motif input:
 
-* Grabbing TF-Motif Input for Mus Musculus (Mouse):
+* Grabbing TF-Motif Input for Homo Sapiens (Human):
   * Accessed 221115 from Kimberly Glass Resources "PANDA-ready Motif Mappings" (https://sites.google.com/a/channing.harvard.edu/kimberlyglass/tools/resources)
   * The resource contains a Human Motif Scan (file name: Homo_sapiens_motifinfo.txt) for hg38 here that contains the TF and its MOTIF ID: https://drive.google.com/file/d/1MlPiAmOxu4mTd4nW9zMygzK1U9F8XB0M/view
   * Additionally a Prior Network (file name: hg38_reseq_-750_250_1e-4.txt) is provided that contains MOTIF IDs and the gene that they bind to here: https://drive.google.com/file/d/1Wmw64hZOIoIrdeE2XjUulmbFp2RArcFa/view
@@ -28,7 +28,7 @@ set.seed(2178)
 ```
 
 
-Programatically read the .txt files into R (see notes and script in accompanying dry lab notebook referenced above). Need to map the MOTIF IDs in the prior network and their corresponding genes to the MOTIF IDs in the Mouse Motif Scan to create a final input dataset that contains the following columns: "gene", "TF", "1/0" where the 1 indicates the releationship being present (final input dataset should be all 1's)
+Programatically read the .txt files into R (see notes and script in accompanying dry lab notebook referenced above). Need to map the MOTIF IDs in the prior network and their corresponding genes to the MOTIF IDs in the Human Motif Scan to create a final input dataset that contains the following columns: "gene", "TF", "1/0" where the 1 indicates the relationship being present (final input dataset should be all 1's)
 
 ```{r}
 # load in the data from Glass Resource:
@@ -36,13 +36,13 @@ human_motif <- read.table(here("data/unprocessed/Homo_sapiens_motifinfo.txt"), h
 prior_network <- read.table(here("data/unprocessed/hg38_refseq_-750_250_1e-4.txt")) # does not have column headers
 ```
 
-### Clean up mouse_motif input data:
+### Clean up human_motif input data:
 ```{r}
 # remove the version numbers on Motif IDs from MotifID column:
 MotifIDs <- str_split(human_motif$MotifID, "\\_", simplify = TRUE)[, 1] # grab list of IDs without version
 human_motif$MotifID <- MotifIDs # set list of cleaned up IDs and MotifID column values
 
-# remove parantheses and other characters from TF info so that TF only contains name of TF:
+# remove parentheses and other characters from TF info so that TF only contains name of TF:
 TFs <- str_split(human_motif$TF_Info, "\\_", simplify = TRUE)[, 1] # splits every column value out by separator and only grabs the gene names
 TFs <- gsub("[()]", "", TFs) # removes genes from ()
 human_motif$TF_Info <- TFs
@@ -60,7 +60,7 @@ head(prior_network)
 ```{r}
 hg38_TFmotifs <- inner_join(human_motif, prior_network, by = "MotifID") # generate final input data for PANDA
 
-hg38_TFmotifs <- subset(hg38_TFmotifs, select = -c(MotifID)) # drop interaction information and Motif IDs, because all interactions are present (represetned as a 1) and this information is not needed for PANDA input
+hg38_TFmotifs <- subset(hg38_TFmotifs, select = -c(MotifID)) # drop interaction information and Motif IDs, because all interactions are present (represented as a 1) and this information is not needed for PANDA input
 write.table(hg38_TFmotifs, file = here("data/processed/motif_inputs/hg38_TFmotifs.txt"), sep = "\t") # save final input data to Cheaha for use in network construction
 ```
 
