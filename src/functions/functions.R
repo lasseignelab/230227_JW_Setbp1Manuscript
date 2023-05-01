@@ -524,7 +524,7 @@ targetingCalc <- function(regNetmatrix, variable_name, edge_weight_name, conditi
 }
 
 # function-targeting_heatmap; used in targeting
-targeting_heatmap <- function(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title){
+targeting_heatmap <- function(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title, show_names = FALSE, width = 1000, height = 1000){
   #plotting all 
   ##grabbing metadata and annotations
   meta <- as.data.frame(colnames(data))
@@ -542,8 +542,8 @@ targeting_heatmap <- function(annotation_colors, data, meta_colname, plot_path, 
   
   ##plot heatmap 
   png(filename = plot_path,
-      width = 1000,
-      height = 1000)
+      width = width,
+      height = height)
   print(Heatmap(mat,
                 col = colorRampPalette(brewer.pal(8,"Blues")) (25),
                 heatmap_legend_param = list(title = "targeting score"),
@@ -552,7 +552,7 @@ targeting_heatmap <- function(annotation_colors, data, meta_colname, plot_path, 
                 column_order = NULL,
                 show_row_dend = TRUE,
                 show_column_dend = TRUE,
-                show_row_names = FALSE,
+                show_row_names = show_names,
                 show_column_names = FALSE,
                 use_raster = TRUE,
                 raster_device = c("png"),
