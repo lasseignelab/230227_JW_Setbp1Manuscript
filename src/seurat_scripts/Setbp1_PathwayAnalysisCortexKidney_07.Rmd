@@ -219,7 +219,7 @@ for (i in cell_types) {
 save(cortex_UP_result_list, file = here("results/seurat/Pathways_07/cortex_het_fea_DGE_UP.Rdata"))
 
 # downregulated:
-cell_types <- unique(het_cortex_DEGS$celltype) # total of 7
+cell_types <- unique(het_cortex_DEGS$celltype) # total of 8
 het_cortex_DEGS_DOWN <- het_cortex_DEGS %>% filter(diffexpressed == "DOWN")
 cortex_DOWN_result_list <- list()
 for (i in cell_types) {
@@ -304,9 +304,6 @@ for (i in cell_types) {
 save(kidney_DOWN_result_list, file = here("results/seurat/Pathways_07/kidney_het_fea_DGE_DOWN.Rdata"))
 ```
 
-
-
-
 #### Running FEA for grofiler2 with Setbp1 target gene set:
 
 ```{r loading-setbp1-targets}
@@ -346,7 +343,8 @@ for (i in cell_types) {
       scale_fill_distiller(palette = "Purples") +
       labs(x = "Direction", y = "Functional Enrichment Terms") +
       ggtitle(paste0("Pathways Associated with Differentially Expressed Target Genes in ", i)) +
-      theme(plot.title = element_text(hjust = 0.5, size = 12))
+      theme(plot.title = element_text(hjust = 0.5, size = 12)) + 
+      theme_minimal()
     # finish plotting ----------
     print(plot)
     dev.off()
