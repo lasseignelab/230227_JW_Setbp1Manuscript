@@ -445,7 +445,7 @@ save(macro,
 
 bcell <- as.data.frame(control_kidney_agg$B_cells)
 save(bcell,
-  file = here("data/processed/expression_inputs/Bcel_controlkidneyexpression.Rdata")
+  file = here("data/processed/expression_inputs/Bcell_controlkidneyexpression.Rdata")
 )
 
 podo <- as.data.frame(control_kidney_agg$podocytes)
