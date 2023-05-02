@@ -107,11 +107,11 @@ bcell_het <- bcell_het[bcell_het$cluster == "heterozygous", ]
 # add column to data to indicate if DE or not:
 bcell_het$diffexpressed <- "NO"
 # if log2Foldchange > 0.1 and pvalue < 0.05, set as "UP"
-bcell_het$diffexpressed[bcell_het$avg_log2FC > 0.1 & 
-                           bcell_het$p_val < 0.05] <- "UP"
+bcell_het$diffexpressed[bcell_het$avg_log2FC > 0.1 &
+  bcell_het$p_val < 0.05] <- "UP"
 # if log2Foldchange < -0.1 and pvalue < 0.05, set as "DOWN"
-bcell_het$diffexpressed[bcell_het$avg_log2FC < -0.1 & 
-                           bcell_het$p_val < 0.05] <- "DOWN"
+bcell_het$diffexpressed[bcell_het$avg_log2FC < -0.1 &
+  bcell_het$p_val < 0.05] <- "DOWN"
 ```
 
 ---Collecting Duct Intercalating Cells Type A---
@@ -137,11 +137,11 @@ CDIC_typeA_het <- CDIC_typeA_het[CDIC_typeA_het$cluster == "heterozygous", ]
 
 CDIC_typeA_het$diffexpressed <- "NO"
 # if log2Foldchange > 0.1 and pvalue < 0.05, set as "UP"
-CDIC_typeA_het$diffexpressed[CDIC_typeA_het$avg_log2FC > 0.1 & 
-                           CDIC_typeA_het$p_val < 0.05] <- "UP"
+CDIC_typeA_het$diffexpressed[CDIC_typeA_het$avg_log2FC > 0.1 &
+  CDIC_typeA_het$p_val < 0.05] <- "UP"
 # if log2Foldchange < -0.1 and pvalue < 0.05, set as "DOWN"
-CDIC_typeA_het$diffexpressed[CDIC_typeA_het$avg_log2FC < -0.1 & 
-                           CDIC_typeA_het$p_val < 0.05] <- "DOWN"
+CDIC_typeA_het$diffexpressed[CDIC_typeA_het$avg_log2FC < -0.1 &
+  CDIC_typeA_het$p_val < 0.05] <- "DOWN"
 ```
 
 
@@ -168,11 +168,11 @@ CDIC_typeB_het <- CDIC_typeB_het[CDIC_typeB_het$cluster == "heterozygous", ]
 # add column to data to indicate if DE or not:
 CDIC_typeB_het$diffexpressed <- "NO"
 # if log2Foldchange > 0.1 and pvalue < 0.05, set as "UP"
-CDIC_typeB_het$diffexpressed[CDIC_typeB_het$avg_log2FC > 0.1 & 
-                           CDIC_typeB_het$p_val < 0.05] <- "UP"
+CDIC_typeB_het$diffexpressed[CDIC_typeB_het$avg_log2FC > 0.1 &
+  CDIC_typeB_het$p_val < 0.05] <- "UP"
 # if log2Foldchange < -0.1 and pvalue < 0.05, set as "DOWN"
-CDIC_typeB_het$diffexpressed[CDIC_typeB_het$avg_log2FC < -0.1 & 
-                           CDIC_typeB_het$p_val < 0.05] <- "DOWN"
+CDIC_typeB_het$diffexpressed[CDIC_typeB_het$avg_log2FC < -0.1 &
+  CDIC_typeB_het$p_val < 0.05] <- "DOWN"
 ```
 
 ---Collecting Duct Principal Cells---
@@ -198,11 +198,11 @@ CDPC_het <- CDPC_het[CDPC_het$cluster == "heterozygous", ]
 # add column to data to indicate if DE or not:
 CDPC_het$diffexpressed <- "NO"
 # if log2Foldchange > 0.1 and pvalue < 0.05, set as "UP"
-CDPC_het$diffexpressed[CDPC_het$avg_log2FC > 0.1 & 
-                          CDPC_het$p_val < 0.05] <- "UP"
+CDPC_het$diffexpressed[CDPC_het$avg_log2FC > 0.1 &
+  CDPC_het$p_val < 0.05] <- "UP"
 # if log2Foldchange < -0.1 and pvalue < 0.05, set as "DOWN"
-CDPC_het$diffexpressed[CDPC_het$avg_log2FC < -0.1 & 
-                          CDPC_het$p_val < 0.05] <- "DOWN"
+CDPC_het$diffexpressed[CDPC_het$avg_log2FC < -0.1 &
+  CDPC_het$p_val < 0.05] <- "DOWN"
 ```
 
 
@@ -286,11 +286,11 @@ endo_het <- endo_het[endo_het$cluster == "heterozygous", ]
 # add column to data to indicate if DE or not:
 endo_het$diffexpressed <- "NO"
 # if log2Foldchange > 0.1 and pvalue < 0.05, set as "UP"
-endo_het$diffexpressed[endo_het$avg_log2FC > 0.1 & 
-                         endo_het$p_val < 0.05] <- "UP"
+endo_het$diffexpressed[endo_het$avg_log2FC > 0.1 &
+  endo_het$p_val < 0.05] <- "UP"
 # if log2Foldchange < -0.1 and pvalue < 0.05, set as "DOWN"
-endo_het$diffexpressed[endo_het$avg_log2FC < -0.1 & 
-                         endo_het$p_val < 0.05] <- "DOWN"
+endo_het$diffexpressed[endo_het$avg_log2FC < -0.1 &
+  endo_het$p_val < 0.05] <- "DOWN"
 ```
 
 ---Fibroblasts---
@@ -317,11 +317,11 @@ fibro_het <- fibro_het[fibro_het$cluster == "heterozygous", ]
 # add column to data to indicate if DE or not:
 fibro_het$diffexpressed <- "NO"
 # if log2Foldchange > 0.1 and pvalue < 0.05, set as "UP"
-fibro_het$diffexpressed[fibro_het$avg_log2FC > 0.1 & 
-                          fibro_het$p_val < 0.05] <- "UP"
+fibro_het$diffexpressed[fibro_het$avg_log2FC > 0.1 &
+  fibro_het$p_val < 0.05] <- "UP"
 # if log2Foldchange < -0.1 and pvalue < 0.05, set as "DOWN"
-fibro_het$diffexpressed[fibro_het$avg_log2FC < -0.1 & 
-                          fibro_het$p_val < 0.05] <- "DOWN"
+fibro_het$diffexpressed[fibro_het$avg_log2FC < -0.1 &
+  fibro_het$p_val < 0.05] <- "DOWN"
 ```
 
 
@@ -378,11 +378,11 @@ macro_het <- macro_het[macro_het$cluster == "heterozygous", ]
 # add column to data to indicate if DE or not:
 macro_het$diffexpressed <- "NO"
 # if log2Foldchange > 0.1 and pvalue < 0.05, set as "UP"
-macro_het$diffexpressed[macro_het$avg_log2FC > 0.1 & 
-                          macro_het$p_val < 0.05] <- "UP"
+macro_het$diffexpressed[macro_het$avg_log2FC > 0.1 &
+  macro_het$p_val < 0.05] <- "UP"
 # if log2Foldchange < -0.1 and pvalue < 0.05, set as "DOWN"
-macro_het$diffexpressed[macro_het$avg_log2FC < -0.1 & 
-                          macro_het$p_val < 0.05] <- "DOWN"
+macro_het$diffexpressed[macro_het$avg_log2FC < -0.1 &
+  macro_het$p_val < 0.05] <- "DOWN"
 ```
 
 ---Proximal Convoluted Tubule Segment 1---
@@ -409,11 +409,11 @@ PCTS1_het <- PCTS1_het[PCTS1_het$cluster == "heterozygous", ]
 # add column to data to indicate if DE or not:
 PCTS1_het$diffexpressed <- "NO"
 # if log2Foldchange > 0.1 and pvalue < 0.05, set as "UP"
-PCTS1_het$diffexpressed[PCTS1_het$avg_log2FC > 0.1 & 
-                           PCTS1_het$p_val < 0.05] <- "UP"
+PCTS1_het$diffexpressed[PCTS1_het$avg_log2FC > 0.1 &
+  PCTS1_het$p_val < 0.05] <- "UP"
 # if log2Foldchange < -0.1 and pvalue < 0.05, set as "DOWN"
-PCTS1_het$diffexpressed[PCTS1_het$avg_log2FC < -0.1 & 
-                           PCTS1_het$p_val < 0.05] <- "DOWN"
+PCTS1_het$diffexpressed[PCTS1_het$avg_log2FC < -0.1 &
+  PCTS1_het$p_val < 0.05] <- "DOWN"
 ```
 
 
@@ -443,11 +443,11 @@ podo_het <- podo_het[podo_het$cluster == "heterozygous", ]
 # add column to data to indicate if DE or not:
 podo_het$diffexpressed <- "NO"
 # if log2Foldchange > 0.1 and pvalue < 0.05, set as "UP"
-podo_het$diffexpressed[podo_het$avg_log2FC > 0.1 & 
-                         podo_het$p_val < 0.05] <- "UP"
+podo_het$diffexpressed[podo_het$avg_log2FC > 0.1 &
+  podo_het$p_val < 0.05] <- "UP"
 # if log2Foldchange < -0.1 and pvalue < 0.05, set as "DOWN"
-podo_het$diffexpressed[podo_het$avg_log2FC < -0.1 & 
-                         podo_het$p_val < 0.05] <- "DOWN"
+podo_het$diffexpressed[podo_het$avg_log2FC < -0.1 &
+  podo_het$p_val < 0.05] <- "DOWN"
 ```
 
 
@@ -463,7 +463,6 @@ PST_data <- FindAllMarkers(PST,
   assay = "RNA"
 )
 head(PST_data, n = 5)
-
 ```
 
 
@@ -510,11 +509,11 @@ pericytes_het <- pericytes_het[pericytes_het$cluster == "heterozygous", ]
 # add column to data to indicate if DE or not:
 pericytes_het$diffexpressed <- "NO"
 # if log2Foldchange > 0.1 and pvalue < 0.05, set as "UP"
-pericytes_het$diffexpressed[pericytes_het$avg_log2FC > 0.1 & 
-                              pericytes_het$p_val < 0.05] <- "UP"
+pericytes_het$diffexpressed[pericytes_het$avg_log2FC > 0.1 &
+  pericytes_het$p_val < 0.05] <- "UP"
 # if log2Foldchange < -0.1 and pvalue < 0.05, set as "DOWN"
-pericytes_het$diffexpressed[pericytes_het$avg_log2FC < -0.1 & 
-                              pericytes_het$p_val < 0.05] <- "DOWN"
+pericytes_het$diffexpressed[pericytes_het$avg_log2FC < -0.1 &
+  pericytes_het$p_val < 0.05] <- "DOWN"
 ```
 
 ---PCTS2---
@@ -541,11 +540,11 @@ PCTS2_het <- PCTS2_het[PCTS2_het$cluster == "heterozygous", ]
 # add column to data to indicate if DE or not:
 PCTS2_het$diffexpressed <- "NO"
 # if log2Foldchange > 0.1 and pvalue < 0.05, set as "UP"
-PCTS2_het$diffexpressed[PCTS2_het$avg_log2FC > 0.1 & 
-                              PCTS2_het$p_val < 0.05] <- "UP"
+PCTS2_het$diffexpressed[PCTS2_het$avg_log2FC > 0.1 &
+  PCTS2_het$p_val < 0.05] <- "UP"
 # if log2Foldchange < -0.1 and pvalue < 0.05, set as "DOWN"
-PCTS2_het$diffexpressed[PCTS2_het$avg_log2FC < -0.1 & 
-                              PCTS2_het$p_val < 0.05] <- "DOWN"
+PCTS2_het$diffexpressed[PCTS2_het$avg_log2FC < -0.1 &
+  PCTS2_het$p_val < 0.05] <- "DOWN"
 ```
 
 ---smcs---
@@ -572,11 +571,11 @@ smcs_het <- smcs_het[smcs_het$cluster == "heterozygous", ]
 # add column to data to indicate if DE or not:
 smcs_het$diffexpressed <- "NO"
 # if log2Foldchange > 0.1 and pvalue < 0.05, set as "UP"
-smcs_het$diffexpressed[smcs_het$avg_log2FC > 0.1 & 
-                              smcs_het$p_val < 0.05] <- "UP"
+smcs_het$diffexpressed[smcs_het$avg_log2FC > 0.1 &
+  smcs_het$p_val < 0.05] <- "UP"
 # if log2Foldchange < -0.1 and pvalue < 0.05, set as "DOWN"
-smcs_het$diffexpressed[smcs_het$avg_log2FC < -0.1 & 
-                              smcs_het$p_val < 0.05] <- "DOWN"
+smcs_het$diffexpressed[smcs_het$avg_log2FC < -0.1 &
+  smcs_het$p_val < 0.05] <- "DOWN"
 ```
 
 ---prox_tubule---
@@ -603,11 +602,11 @@ prox_tubule_het <- prox_tubule_het[prox_tubule_het$cluster == "heterozygous", ]
 # add column to data to indicate if DE or not:
 prox_tubule_het$diffexpressed <- "NO"
 # if log2Foldchange > 0.1 and pvalue < 0.05, set as "UP"
-prox_tubule_het$diffexpressed[prox_tubule_het$avg_log2FC > 0.1 & 
-                              prox_tubule_het$p_val < 0.05] <- "UP"
+prox_tubule_het$diffexpressed[prox_tubule_het$avg_log2FC > 0.1 &
+  prox_tubule_het$p_val < 0.05] <- "UP"
 # if log2Foldchange < -0.1 and pvalue < 0.05, set as "DOWN"
-prox_tubule_het$diffexpressed[prox_tubule_het$avg_log2FC < -0.1 & 
-                              prox_tubule_het$p_val < 0.05] <- "DOWN"
+prox_tubule_het$diffexpressed[prox_tubule_het$avg_log2FC < -0.1 &
+  prox_tubule_het$p_val < 0.05] <- "DOWN"
 ```
 
 Outputs at log2FC of 0.1:
@@ -727,23 +726,26 @@ annotation_colors <- list(
     "control" = "#FE6100",
     "heterozygous" = "#FFB000"
   ),
-  "cell_type" = c("B_cells" = "#FFBE1D",
-                  "CDIC_typeA" = "#4E3801",
-                  "CDIC_typeB" = "#EEDF37",
-                  "CDPC" = "#F03F00",
-                  "DCT" = "#6D0404",
-                  "DLH" = "#AA6320",
-                  "endothelial" = "#CF9400",
-                  "fibroblasts" = "#FFC8C4",
-                  "LOH" = "#AA937E",
-                  "macrophages" = "#C70F0F",
-                  "PCTS1" = "#A85A5A",
-                  "podocytes" = "#BD085E",
-                  "PST" = "#948802",
-                  "pericytes" = "#FFE196",
-                  "PCTS2" = "#FF7600",
-                  "proximal_tubule" = "#F8766D",
-                  "smooth_muscle_cells" = "#FFE196"))
+  "cell_type" = c(
+    "B_cells" = "#FFBE1D",
+    "CDIC_typeA" = "#4E3801",
+    "CDIC_typeB" = "#EEDF37",
+    "CDPC" = "#F03F00",
+    "DCT" = "#6D0404",
+    "DLH" = "#AA6320",
+    "endothelial" = "#CF9400",
+    "fibroblasts" = "#FFC8C4",
+    "LOH" = "#AA937E",
+    "macrophages" = "#C70F0F",
+    "PCTS1" = "#A85A5A",
+    "podocytes" = "#BD085E",
+    "PST" = "#948802",
+    "pericytes" = "#FFE196",
+    "PCTS2" = "#FF7600",
+    "proximal_tubule" = "#F8766D",
+    "smooth_muscle_cells" = "#FFE196"
+  )
+)
 
 # set heatmap annotations:
 heat.anno <- HeatmapAnnotation(
