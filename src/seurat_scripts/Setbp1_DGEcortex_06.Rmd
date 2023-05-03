@@ -82,15 +82,15 @@ head(excitatory_neurons_data, n = 5)
 ```
 
 ```{r}
-excitatory_neurons_het <- excitatory_neurons_data[excitatory_neurons_data$p_val < 0.5 & excitatory_neurons_data$avg_log2FC > 0.1 | excitatory_neurons_data$avg_log2FC < -0.1, ]
+excitatory_neurons_het <- excitatory_neurons_data[excitatory_neurons_data$p_val_adj < 0.5 & excitatory_neurons_data$avg_log2FC > 0.1 | excitatory_neurons_data$avg_log2FC < -0.1, ]
 excitatory_neurons_het <- excitatory_neurons_het[excitatory_neurons_het$cluster == "heterozygous", ]
 
 # add column to data to indicate if DE or not:
 excitatory_neurons_het$diffexpressed <- "NO"
 # if log2Foldchange > 0.1 and pvalue < 0.05, set as "UP"
-excitatory_neurons_het$diffexpressed[excitatory_neurons_het$avg_log2FC > 0.1 & excitatory_neurons_het$p_val < 0.05] <- "UP"
+excitatory_neurons_het$diffexpressed[excitatory_neurons_het$avg_log2FC > 0.1 & excitatory_neurons_het$p_val_adj < 0.05] <- "UP"
 # if log2Foldchange < -0.1 and pvalue < 0.05, set as "DOWN"
-excitatory_neurons_het$diffexpressed[excitatory_neurons_het$avg_log2FC < -0.1 & excitatory_neurons_het$p_val < 0.05] <- "DOWN"
+excitatory_neurons_het$diffexpressed[excitatory_neurons_het$avg_log2FC < -0.1 & excitatory_neurons_het$p_val_adj < 0.05] <- "DOWN"
 ```
 
 
@@ -105,15 +105,15 @@ head(inhibitory_neurons_data, n = 5)
 ```
 
 ```{r}
-inhibitory_neurons_het <- inhibitory_neurons_data[inhibitory_neurons_data$p_val < 0.5 & inhibitory_neurons_data$avg_log2FC > 0.1 | inhibitory_neurons_data$avg_log2FC < -0.1, ]
+inhibitory_neurons_het <- inhibitory_neurons_data[inhibitory_neurons_data$p_val_adj < 0.5 & inhibitory_neurons_data$avg_log2FC > 0.1 | inhibitory_neurons_data$avg_log2FC < -0.1, ]
 inhibitory_neurons_het <- inhibitory_neurons_het[inhibitory_neurons_het$cluster == "heterozygous", ]
 
 # add column to data to indicate if DE or not:
 inhibitory_neurons_het$diffexpressed <- "NO"
 # if log2Foldchange > 0.1 and pvalue < 0.05, set as "UP"
-inhibitory_neurons_het$diffexpressed[inhibitory_neurons_het$avg_log2FC > 0.1 & inhibitory_neurons_het$p_val < 0.05] <- "UP"
+inhibitory_neurons_het$diffexpressed[inhibitory_neurons_het$avg_log2FC > 0.1 & inhibitory_neurons_het$p_val_adj < 0.05] <- "UP"
 # if log2Foldchange < -0.1 and pvalue < 0.05, set as "DOWN"
-inhibitory_neurons_het$diffexpressed[inhibitory_neurons_het$avg_log2FC < -0.1 & inhibitory_neurons_het$p_val < 0.05] <- "DOWN"
+inhibitory_neurons_het$diffexpressed[inhibitory_neurons_het$avg_log2FC < -0.1 & inhibitory_neurons_het$p_val_adj < 0.05] <- "DOWN"
 ```
 
 
@@ -127,15 +127,15 @@ head(astrocytes_data, n = 5)
 ```
 
 ```{r}
-astrocytes_het <- astrocytes_data[astrocytes_data$p_val < 0.5 & astrocytes_data$avg_log2FC > 0.1 | astrocytes_data$avg_log2FC < -0.1, ]
+astrocytes_het <- astrocytes_data[astrocytes_data$p_val_adj < 0.5 & astrocytes_data$avg_log2FC > 0.1 | astrocytes_data$avg_log2FC < -0.1, ]
 astrocytes_het <- astrocytes_het[astrocytes_het$cluster == "heterozygous", ]
 
 # add column to data to indicate if DE or not:
 astrocytes_het$diffexpressed <- "NO"
 # if log2Foldchange > 0.1 and pvalue < 0.05, set as "UP"
-astrocytes_het$diffexpressed[astrocytes_het$avg_log2FC > 0.1 & astrocytes_het$p_val < 0.05] <- "UP"
+astrocytes_het$diffexpressed[astrocytes_het$avg_log2FC > 0.1 & astrocytes_het$p_val_adj < 0.05] <- "UP"
 # if log2Foldchange < -0.1 and pvalue < 0.05, set as "DOWN"
-astrocytes_het$diffexpressed[astrocytes_het$avg_log2FC < -0.1 & astrocytes_het$p_val < 0.05] <- "DOWN"
+astrocytes_het$diffexpressed[astrocytes_het$avg_log2FC < -0.1 & astrocytes_het$p_val_adj < 0.05] <- "DOWN"
 ```
 
 
@@ -149,15 +149,15 @@ head(microglia_data, n = 5)
 ```
 
 ```{r}
-microglia_het <- microglia_data[microglia_data$p_val < 0.5 & microglia_data$avg_log2FC > 0.1 | microglia_data$avg_log2FC < -0.1, ]
+microglia_het <- microglia_data[microglia_data$p_val_adj < 0.5 & microglia_data$avg_log2FC > 0.1 | microglia_data$avg_log2FC < -0.1, ]
 microglia_het <- microglia_het[microglia_het$cluster == "heterozygous", ]
 
 # add column to data to indicate if DE or not:
 microglia_het$diffexpressed <- "NO"
 # if log2Foldchange > 0.1 and pvalue < 0.05, set as "UP"
-microglia_het$diffexpressed[microglia_het$avg_log2FC > 0.1 & microglia_het$p_val < 0.05] <- "UP"
+microglia_het$diffexpressed[microglia_het$avg_log2FC > 0.1 & microglia_het$p_val_adj < 0.05] <- "UP"
 # if log2Foldchange < -0.1 and pvalue < 0.05, set as "DOWN"
-microglia_het$diffexpressed[microglia_het$avg_log2FC < -0.1 & microglia_het$p_val < 0.05] <- "DOWN"
+microglia_het$diffexpressed[microglia_het$avg_log2FC < -0.1 & microglia_het$p_val_adj < 0.05] <- "DOWN"
 ```
 
 
@@ -171,15 +171,15 @@ head(mural_cells_data, n = 5)
 ```
 
 ```{r}
-mural_cells_het <- mural_cells_data[mural_cells_data$p_val < 0.5 & mural_cells_data$avg_log2FC > 0.1 | mural_cells_data$avg_log2FC < -0.1, ]
+mural_cells_het <- mural_cells_data[mural_cells_data$p_val_adj < 0.5 & mural_cells_data$avg_log2FC > 0.1 | mural_cells_data$avg_log2FC < -0.1, ]
 mural_cells_het <- mural_cells_het[mural_cells_het$cluster == "heterozygous", ]
 
 # add column to data to indicate if DE or not:
 mural_cells_het$diffexpressed <- "NO"
 # if log2Foldchange > 0.1 and pvalue < 0.05, set as "UP"
-mural_cells_het$diffexpressed[mural_cells_het$avg_log2FC > 0.1 & mural_cells_het$p_val < 0.05] <- "UP"
+mural_cells_het$diffexpressed[mural_cells_het$avg_log2FC > 0.1 & mural_cells_het$p_val_adj < 0.05] <- "UP"
 # if log2Foldchange < -0.1 and pvalue < 0.05, set as "DOWN"
-mural_cells_het$diffexpressed[mural_cells_het$avg_log2FC < -0.1 & mural_cells_het$p_val < 0.05] <- "DOWN"
+mural_cells_het$diffexpressed[mural_cells_het$avg_log2FC < -0.1 & mural_cells_het$p_val_adj < 0.05] <- "DOWN"
 ```
 
 ---opcs---
@@ -192,15 +192,15 @@ head(opcs_data, n = 5)
 ```
 
 ```{r}
-opcs_het <- opcs_data[opcs_data$p_val < 0.5 & opcs_data$avg_log2FC > 0.1 | opcs_data$avg_log2FC < -0.1, ]
+opcs_het <- opcs_data[opcs_data$p_val_adj < 0.5 & opcs_data$avg_log2FC > 0.1 | opcs_data$avg_log2FC < -0.1, ]
 opcs_het <- opcs_het[opcs_het$cluster == "heterozygous", ]
 
 # add column to data to indicate if DE or not:
 opcs_het$diffexpressed <- "NO"
 # if log2Foldchange > 0.1 and pvalue < 0.05, set as "UP"
-opcs_het$diffexpressed[opcs_het$avg_log2FC > 0.1 & opcs_het$p_val < 0.05] <- "UP"
+opcs_het$diffexpressed[opcs_het$avg_log2FC > 0.1 & opcs_het$p_val_adj < 0.05] <- "UP"
 # if log2Foldchange < -0.1 and pvalue < 0.05, set as "DOWN"
-opcs_het$diffexpressed[opcs_het$avg_log2FC < -0.1 & opcs_het$p_val < 0.05] <- "DOWN"
+opcs_het$diffexpressed[opcs_het$avg_log2FC < -0.1 & opcs_het$p_val_adj < 0.05] <- "DOWN"
 ```
 
 
@@ -214,15 +214,15 @@ head(oligodendrocytes_data, n = 5)
 ```
 
 ```{r}
-oligodendrocytes_het <- oligodendrocytes_data[oligodendrocytes_data$p_val < 0.5 & oligodendrocytes_data$avg_log2FC > 0.1 | oligodendrocytes_data$avg_log2FC < -0.1, ]
+oligodendrocytes_het <- oligodendrocytes_data[oligodendrocytes_data$p_val_adj < 0.5 & oligodendrocytes_data$avg_log2FC > 0.1 | oligodendrocytes_data$avg_log2FC < -0.1, ]
 oligodendrocytes_het <- oligodendrocytes_het[oligodendrocytes_het$cluster == "heterozygous", ]
 
 # add column to data to indicate if DE or not:
 oligodendrocytes_het$diffexpressed <- "NO"
 # if log2Foldchange > 0.1 and pvalue < 0.05, set as "UP"
-oligodendrocytes_het$diffexpressed[oligodendrocytes_het$avg_log2FC > 0.1 & oligodendrocytes_het$p_val < 0.05] <- "UP"
+oligodendrocytes_het$diffexpressed[oligodendrocytes_het$avg_log2FC > 0.1 & oligodendrocytes_het$p_val_adj < 0.05] <- "UP"
 # if log2Foldchange < -0.1 and pvalue < 0.05, set as "DOWN"
-oligodendrocytes_het$diffexpressed[oligodendrocytes_het$avg_log2FC < -0.1 & oligodendrocytes_het$p_val < 0.05] <- "DOWN"
+oligodendrocytes_het$diffexpressed[oligodendrocytes_het$avg_log2FC < -0.1 & oligodendrocytes_het$p_val_adj < 0.05] <- "DOWN"
 ```
 
 ---fibroblasts---
@@ -236,15 +236,15 @@ head(fibroblasts_data, n = 5)
 
 
 ```{r}
-fibroblasts_het <- fibroblasts_data[fibroblasts_data$p_val < 0.5 & fibroblasts_data$avg_log2FC > 0.1 | fibroblasts_data$avg_log2FC < -0.1, ]
+fibroblasts_het <- fibroblasts_data[fibroblasts_data$p_val_adj < 0.5 & fibroblasts_data$avg_log2FC > 0.1 | fibroblasts_data$avg_log2FC < -0.1, ]
 fibroblasts_het <- fibroblasts_het[fibroblasts_het$cluster == "heterozygous", ]
 
 # add column to data to indicate if DE or not:
 fibroblasts_het$diffexpressed <- "NO"
 # if log2Foldchange > 0.1 and pvalue < 0.05, set as "UP"
-fibroblasts_het$diffexpressed[fibroblasts_het$avg_log2FC > 0.1 & fibroblasts_het$p_val < 0.05] <- "UP"
+fibroblasts_het$diffexpressed[fibroblasts_het$avg_log2FC > 0.1 & fibroblasts_het$p_val_adj < 0.05] <- "UP"
 # if log2Foldchange < -0.1 and pvalue < 0.05, set as "DOWN"
-fibroblasts_het$diffexpressed[fibroblasts_het$avg_log2FC < -0.1 & fibroblasts_het$p_val < 0.05] <- "DOWN"
+fibroblasts_het$diffexpressed[fibroblasts_het$avg_log2FC < -0.1 & fibroblasts_het$p_val_adj < 0.05] <- "DOWN"
 ```
 
 
@@ -324,7 +324,12 @@ resource:
 cerebral_subset <- DEGs_cerebralcells[DEGs_cerebralcells$gene %in% setbp1_genes, ]
 
 # grab just log2fc values from DEG matrix, keep rownames and then order (below) by rowname
-genes_mat <- cerebral_subset[, c("avg_log2FC", "cell_type", "gene", "cluster"), drop = FALSE]
+genes_mat <- cerebral_subset[, c("avg_log2FC", "cell_type", "gene", "cluster", "p_val_adj"), drop = FALSE]
+
+# filtering for significant values
+genes_mat <- genes_mat[genes_mat$p_val_adj < 0.5, ]
+genes_mat <- genes_mat[, -5]
+
 genes_pivot <- pivot_wider(genes_mat, names_from = c("cell_type", "cluster"), values_from = "avg_log2FC", names_repair = "minimal")
 genes_pivot[is.na(genes_pivot)] <- 0
 rownames <- genes_pivot$gene # add gene names as rownames
