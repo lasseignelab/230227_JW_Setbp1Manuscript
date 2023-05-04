@@ -62,7 +62,7 @@ cortex_list <- list(
 )
 
 # wrangling data
-colval <- c("p_val", "gene", "diffexpressed")
+colval <- c("p_val_adj", "gene", "diffexpressed")
 cortex_list <- lapply(cortex_list, function(x) x[, intersect(names(x), colval), drop = FALSE])
 
 ## grab list names
@@ -117,7 +117,7 @@ kidney_list <- list(
 
 
 # wrangling data
-colval <- c("p_val", "gene", "diffexpressed")
+colval <- c("p_val_adj", "gene", "diffexpressed")
 kidney_list <- lapply(kidney_list, function(x) x[, intersect(names(x), colval), drop = FALSE])
 
 ## grab list names
@@ -138,7 +138,7 @@ write.csv(het_kidney_DEGS, file = here("results/seurat/Pathways_07/het_kidney_DE
 ```
 
 #### Pathway Analysis Function (gprofiler2)
-*credit to Tabea and Lizzy for some function help, assitance with pathway analysis and code review, also received help from lizzy finding gene sets in msigdbr for me and going through GSEA vs FEA and the analytical difference to consider* 
+*credit to Tabea and Lizzy for some function help, assistance with pathway analysis and code review, also received help from lizzy finding gene sets in msigdbr for me and going through GSEA vs FEA and the analytical difference to consider* 
 
 Arguments needed to be passed to the function
 * organism; can be "hsapiens" or "mmusculus", must be specified
@@ -191,8 +191,9 @@ Explanation for bonferroni correction selection is here: https://www.biostars.or
 prefiltered genes to be upregulated geenes or downregulated genes and then used same forloop as before
 ```{r}
 # upregulated:
-cell_types <- unique(het_cortex_DEGS$celltype) # total of 7
+cell_types <- unique(het_cortex_DEGS$celltype) # total of 8
 het_cortex_DEGS_UP <- het_cortex_DEGS %>% filter(diffexpressed == "UP")
+het_cortex_DEGS_UP <- het_cortex_DEGS_UP[het_cortex_DEGS_UP$p_val_adj < 0.5, ]
 
 cortex_UP_result_list <- list()
 
@@ -210,17 +211,23 @@ for (i in cell_types) {
   # plot dotplot and add title based on input variable ----------
   plot <- bubbleplot(fea_result_filt) +
     ggtitle(paste0("Top 50 Upregulated Pathways Associated with Predicted Target Genes in ", i)) +
-    theme(plot.title = element_text(hjust = 0.5, size = 12))
+    theme(plot.title = element_text(hjust = 0.5, size = 12)) +
+    theme_minimal()
   # finish plotting ----------
   print(plot)
   dev.off()
 }
 
+# note: no DEGs for mural_cells
+
 save(cortex_UP_result_list, file = here("results/seurat/Pathways_07/cortex_het_fea_DGE_UP.Rdata"))
 
 # downregulated:
 cell_types <- unique(het_cortex_DEGS$celltype) # total of 8
+
 het_cortex_DEGS_DOWN <- het_cortex_DEGS %>% filter(diffexpressed == "DOWN")
+het_cortex_DEGS_DOWN <- het_cortex_DEGS_DOWN[het_cortex_DEGS_DOWN$p_val_adj < 0.5, ]
+
 cortex_DOWN_result_list <- list()
 for (i in cell_types) {
   # filter genes by cell type ----------
@@ -236,7 +243,8 @@ for (i in cell_types) {
   # plot dotplot and add title based on input variable ----------
   plot <- bubbleplot(fea_result_filt) +
     ggtitle(paste0("Top 50 Downregulated Pathways Associated with Predicted Target Genes in ", i)) +
-    theme(plot.title = element_text(hjust = 0.5, size = 12))
+    theme(plot.title = element_text(hjust = 0.5, size = 12)) +
+    theme_minimal()
   # finish plotting ----------
   print(plot)
   dev.off()
@@ -252,6 +260,8 @@ prefiltered genes to be upregulated geenes or downregulated genes and then used 
 # upregulated:
 cell_types <- unique(het_kidney_DEGS$celltype) # total of 14
 het_kidney_DEGS_UP <- het_kidney_DEGS %>% filter(diffexpressed == "UP")
+het_kidney_DEGS_UP <- het_kidney_DEGS_UP[het_kidney_DEGS_UP$p_val_adj < 0.5, ]
+
 kidney_UP_result_list <- list()
 
 for (i in cell_types) {
@@ -268,7 +278,8 @@ for (i in cell_types) {
   # plot dotplot and add title based on input variable ----------
   plot <- bubbleplot(fea_result_filt) +
     ggtitle(paste0("Top 50 Upregulated Pathways Associated with Predicted Target Genes in ", i)) +
-    theme(plot.title = element_text(hjust = 0.5, size = 12))
+    theme(plot.title = element_text(hjust = 0.5, size = 12)) +
+    theme_minimal()
   # finish plotting ----------
   print(plot)
   dev.off()
@@ -278,7 +289,10 @@ save(kidney_UP_result_list, file = here("results/seurat/Pathways_07/kidney_het_f
 
 # downregulated:
 cell_types <- unique(het_kidney_DEGS$celltype) # total of 14
+
 het_kidney_DEGS_DOWN <- het_kidney_DEGS %>% filter(diffexpressed == "DOWN")
+het_kidney_DEGS_DOWN <- het_kidney_DEGS_DOWN[het_kidney_DEGS_DOWN$p_val_adj < 0.5, ]
+
 kidney_DOWN_result_list <- list()
 
 for (i in cell_types) {
@@ -295,7 +309,8 @@ for (i in cell_types) {
   # plot dotplot and add title based on input variable ----------
   plot <- bubbleplot(fea_result_filt) +
     ggtitle(paste0("Top 50 Downregulated Pathways Associated with Predicted Target Genes in ", i)) +
-    theme(plot.title = element_text(hjust = 0.5, size = 12))
+    theme(plot.title = element_text(hjust = 0.5, size = 12)) +
+    theme_minimal()
   # finish plotting ----------
   print(plot)
   dev.off()
@@ -317,15 +332,21 @@ setbp1_genes <- append(setbp1_genes, "Setbp1")
 prefiltered genes to be upregulated genes or downregulated genes and then used same forloop as before
 ```{r}
 # up and down side by side
-cell_types <- unique(het_kidney_DEGS$celltype) # total of 14
+cell_types <- unique(het_kidney_DEGS$celltype) # total of 17
+
+het_kidney_DEGS <- het_kidney_DEGS[het_kidney_DEGS$p_val_adj < 0.5, ]
+
+het_kidney_DEGS <- het_kidney_DEGS[het_kidney_DEGS$diffexpressed != "NO", ]
+
 for (i in cell_types) {
   # filter genes by cell type ----------
   genes <- het_kidney_DEGS %>% filter(celltype == i)
+
   # filter 'genes' input
   targets <- filter(genes, gene %in% setbp1_genes)
 
   # submit genes to pathway analysis function ----------
-  if (nrow(targets) > 0) {
+  if (nrow(targets) > 2) {
     fea_res <- combined_fea_set(genes = targets, organism = "mmusculus")
 
     # plot dotplot and add title based on input variable ----------
@@ -343,21 +364,33 @@ for (i in cell_types) {
       scale_fill_distiller(palette = "Purples") +
       labs(x = "Direction", y = "Functional Enrichment Terms") +
       ggtitle(paste0("Pathways Associated with Differentially Expressed Target Genes in ", i)) +
-      theme(plot.title = element_text(hjust = 0.5, size = 12)) + 
+      theme(plot.title = element_text(hjust = 0.5, size = 12)) +
       theme_minimal()
     # finish plotting ----------
     print(plot)
     dev.off()
+  } else if (nrow(targets) < 3 & nrow(targets) > 0) {
+    (print(paste("too few DEG in", i, "use fea not combined_fea")))
   } else {
     (print(paste("no DE targets in", i)))
   }
 }
 ```
-
+[1] "no DE targets in bcell"
+[1] "too few DEG in CDICA use fea not combined_fea"
+[1] "too few DEG in CDICB use fea not combined_fea"
+[1] "no DE targets in pericytes"
+[1] "too few DEG in podocytes use fea not combined_fea"
+[1] "no DE targets in smooth_muscle_cells"
 
 ```{r}
 # up and down side by side
 cell_types <- unique(het_cortex_DEGS$celltype) # total of 14
+
+het_cortex_DEGS <- het_cortex_DEGS[het_cortex_DEGS$p_val_adj < 0.5, ]
+
+het_cortex_DEGS <- het_cortex_DEGS[het_cortex_DEGS$diffexpressed != "NO", ]
+
 for (i in cell_types) {
   # filter genes by cell type ----------
   genes <- het_cortex_DEGS %>% filter(celltype == i)
@@ -365,7 +398,7 @@ for (i in cell_types) {
   targets <- filter(genes, gene %in% setbp1_genes)
 
   # submit genes to pathway analysis function ----------
-  if (nrow(targets) > 0) {
+  if (nrow(targets) > 2) {
     fea_res <- combined_fea_set(genes = targets, organism = "mmusculus")
     # set png to save plot to ----------
     png(paste0(here("results/seurat/Pathways_07/"), "FEA_Setbp1targetspathways_cortex_", i, ".png"),
@@ -383,16 +416,24 @@ for (i in cell_types) {
       scale_fill_distiller(palette = "Purples") +
       labs(x = "Direction", y = "Functional Enrichment Terms") +
       ggtitle(paste0("Pathways Associated with Differentially Expressed Target Genes in ", i)) +
-      theme(plot.title = element_text(hjust = 0.5, size = 12))
+      theme(plot.title = element_text(hjust = 0.5, size = 12)) +
+      theme_minimal()
     # finish plotting ----------
     print(plot)
     dev.off()
+  } else if (nrow(targets) < 3 & nrow(targets) > 0) {
+    (print(paste("too few DEG in", i, "use fea not combined_fea")))
   } else {
     (print(paste("no DE targets in", i)))
-  } # none in mural_cells
+  }
 }
 ```
-Note: [1] "no DE targets in mural_cells"
+[1] "too few DEG in microglia use fea not combined_fea"
+[1] "no DE targets in opcs"
+[1] "too few DEG in oligodendrocytes use fea not combined_fea"
+[1] "too few DEG in astrocytes use fea not combined_fea"
+[1] "no DE targets in mural_cells"
+[1] "no DE targets in fibroblasts"
 
 ```{r}
 # run style
