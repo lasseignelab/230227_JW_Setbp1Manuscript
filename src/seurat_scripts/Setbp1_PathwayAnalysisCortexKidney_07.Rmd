@@ -330,7 +330,7 @@ setbp1_genes <- append(setbp1_genes, "Setbp1")
 
 #### Looking at upregulated and downregulated for kidney
 prefiltered genes to be upregulated genes or downregulated genes and then used same forloop as before
-```{r}
+```{r targets-combined-kidney}
 # up and down side by side
 cell_types <- unique(het_kidney_DEGS$celltype) # total of 17
 
@@ -383,7 +383,76 @@ for (i in cell_types) {
 [1] "too few DEG in podocytes use fea not combined_fea"
 [1] "no DE targets in smooth_muscle_cells"
 
-```{r}
+Investigating cell types with too few Setbp1 target DEGs for kidney with fea:
+```{r targets-fea-kidney}
+cell_types <- c("CDICA", "CDICB", "podocytes")
+
+# upregulated setbp1 targets:
+het_kidney_DEGS_UP <- het_kidney_DEGS %>% filter(diffexpressed == "UP")
+het_kidney_DEGS_UP <- het_kidney_DEGS_UP[het_kidney_DEGS_UP$p_val_adj < 0.5, ]
+het_kidney_DEGS_UP <- het_kidney_DEGS_UP[het_kidney_DEGS_UP$diffexpressed != "NO", ]
+
+for (i in cell_types) {
+  # filter genes by cell type ----------
+  genes <- het_kidney_DEGS_UP %>% filter(celltype == i)
+  # filter 'genes' input
+  targets <- filter(genes, gene %in% setbp1_genes)
+  if (nrow(targets) > 0){
+    # submit genes to pathway analysis function ----------
+  fea_result_filt <- fea_DGE(genes = targets$gene, organism = "mmusculus")
+  # set png to save plot to ----------
+  png(paste0(here("results/seurat/Pathways_07/"), "FEA_SETBP1targetspathways_up_", i, ".png"),
+    width = 1000, height = 1000
+  )
+  # plot dotplot and add title based on input variable ----------
+  plot <- bubbleplot(fea_result_filt) +
+    ggtitle(paste0("Upregulated Pathways Associated with Predicted Setbp1 Target Genes in ", i)) +
+    theme(plot.title = element_text(hjust = 0.5, size = 12)) +
+    theme_minimal()
+  # finish plotting ----------
+  print(plot)
+  dev.off()
+  } else {
+    print(paste0("no upregulated Setbp1 targets in ", i))
+  }
+}
+
+# downregulated:
+het_kidney_DEGS_DOWN <- het_kidney_DEGS %>% filter(diffexpressed == "DOWN")
+het_kidney_DEGS_DOWN <- het_kidney_DEGS_DOWN[het_kidney_DEGS_DOWN$p_val_adj < 0.5, ]
+het_kidney_DEGS_DOWN <- het_kidney_DEGS_DOWN[het_kidney_DEGS_DOWN$diffexpressed != "NO", ]
+
+for (i in cell_types) {
+  # filter genes by cell type ----------
+  genes <- het_kidney_DEGS_DOWN %>% filter(celltype == i)
+  # filter 'genes' input
+  targets <- filter(genes, gene %in% setbp1_genes)
+  if (nrow(targets) > 0) {
+    # submit genes to pathway analysis function ----------
+  fea_result_filt <- fea_DGE(genes = targets$gene, organism = "mmusculus")
+  # set png to save plot to ----------
+  png(paste0(here("results/seurat/Pathways_07/"), "FEA_SETBP1targetspathways_down_", i, ".png"),
+    width = 1000, height = 1000
+  )
+  # plot dotplot and add title based on input variable ----------
+  plot <- bubbleplot(fea_result_filt) +
+    ggtitle(paste0("Downregulated Pathways Associated with Predicted Setbp1 Target Genes in ", i)) +
+    theme(plot.title = element_text(hjust = 0.5, size = 12)) +
+    theme_minimal()
+  # finish plotting ----------
+  print(plot)
+  dev.off()
+  } else {
+    print(paste0("no downregulated Setbp1 targets in ", i))
+  }
+  
+}
+```
+[1] "no downregulated Setbp1 targets in CDICA"
+[1] "no downregulated Setbp1 targets in CDICB"
+[1] "no downregulated Setbp1 targets in podocytes"
+
+```{r targets-combined-cortex}
 # up and down side by side
 cell_types <- unique(het_cortex_DEGS$celltype) # total of 14
 
@@ -434,6 +503,74 @@ for (i in cell_types) {
 [1] "too few DEG in astrocytes use fea not combined_fea"
 [1] "no DE targets in mural_cells"
 [1] "no DE targets in fibroblasts"
+
+Investigating cell types with too few Setbp1 target DEGs for cortex with fea:
+```{r targets-fea-cortex}
+cell_types <- c("microglia", "oligodendrocytes", "astrocytes")
+
+# upregulated setbp1 targets:
+het_cortex_DEGS_UP <- het_cortex_DEGS %>% filter(diffexpressed == "UP")
+het_cortex_DEGS_UP <- het_cortex_DEGS_UP[het_cortex_DEGS_UP$p_val_adj < 0.5, ]
+het_cortex_DEGS_UP <- het_cortex_DEGS_UP[het_cortex_DEGS_UP$diffexpressed != "NO", ]
+
+for (i in cell_types) {
+  # filter genes by cell type ----------
+  genes <- het_cortex_DEGS_UP %>% filter(celltype == i)
+  # filter 'genes' input
+  targets <- filter(genes, gene %in% setbp1_genes)
+  if (nrow(targets) > 0){
+    # submit genes to pathway analysis function ----------
+  fea_result_filt <- fea_DGE(genes = targets$gene, organism = "mmusculus")
+  # set png to save plot to ----------
+  png(paste0(here("results/seurat/Pathways_07/"), "FEA_SETBP1targetspathways_up_", i, ".png"),
+    width = 1000, height = 1000
+  )
+  # plot dotplot and add title based on input variable ----------
+  plot <- bubbleplot(fea_result_filt) +
+    ggtitle(paste0("Upregulated Pathways Associated with Predicted Setbp1 Target Genes in ", i)) +
+    theme(plot.title = element_text(hjust = 0.5, size = 12)) +
+    theme_minimal()
+  # finish plotting ----------
+  print(plot)
+  dev.off()
+  } else {
+    print(paste0("no upregulated Setbp1 targets in ", i))
+  }
+}
+
+# downregulated:
+het_cortex_DEGS_DOWN <- het_cortex_DEGS %>% filter(diffexpressed == "DOWN")
+het_cortex_DEGS_DOWN <- het_cortex_DEGS_DOWN[het_cortex_DEGS_DOWN$p_val_adj < 0.5, ]
+het_cortex_DEGS_DOWN <- het_cortex_DEGS_DOWN[het_cortex_DEGS_DOWN$diffexpressed != "NO", ]
+
+for (i in cell_types) {
+  # filter genes by cell type ----------
+  genes <- het_cortex_DEGS_DOWN %>% filter(celltype == i)
+  # filter 'genes' input
+  targets <- filter(genes, gene %in% setbp1_genes)
+  if (nrow(targets) > 0) {
+    # submit genes to pathway analysis function ----------
+  fea_result_filt <- fea_DGE(genes = targets$gene, organism = "mmusculus")
+  # set png to save plot to ----------
+  png(paste0(here("results/seurat/Pathways_07/"), "FEA_SETBP1targetspathways_down_", i, ".png"),
+    width = 1000, height = 1000
+  )
+  # plot dotplot and add title based on input variable ----------
+  plot <- bubbleplot(fea_result_filt) +
+    ggtitle(paste0("Downregulated Pathways Associated with Predicted Setbp1 Target Genes in ", i)) +
+    theme(plot.title = element_text(hjust = 0.5, size = 12)) +
+    theme_minimal()
+  # finish plotting ----------
+  print(plot)
+  dev.off()
+  } else {
+    print(paste0("no downregulated Setbp1 targets in ", i))
+  }
+  
+}
+```
+[1] "no downregulated Setbp1 targets in microglia"
+[1] "no downregulated Setbp1 targets in oligodendrocytes"
 
 ```{r}
 # run style
