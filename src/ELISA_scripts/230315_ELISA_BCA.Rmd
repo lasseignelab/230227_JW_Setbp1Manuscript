@@ -16,7 +16,7 @@ library(lintr)
 library(tidyr)
 ```
 
-```{r load-results}
+```{r load-exp-results}
 ELISA <- read_csv(here("results/ELISA/230315_jw_setbp1ELISA.csv"))
 BCA <- read_csv(here("results/ELISA/230315_jw_setbp1BCA.csv"))
 ```
@@ -71,9 +71,11 @@ sample_concentrations
 setbp1ELISA_data <- rbind(measurements, sample_concentrations)
 
 setbp1ELISA_data <- as.data.frame(t(setbp1ELISA_data))
-setbp1ELISA_data$sample_ID <- c("standard", "standard", "standard", "standard",
-                                "standard", "standard", "cerebral cortex het",
-                                "cerebral cortex WT", "kidney het", "kidney WT")
+setbp1ELISA_data$sample_ID <- c(
+  "standard", "standard", "standard", "standard",
+  "standard", "standard", "cerebral cortex het",
+  "cerebral cortex WT", "kidney het", "kidney WT"
+)
 colnames(setbp1ELISA_data) <- c("OD", "concentration", "sample_ID")
 
 # plot data
@@ -148,9 +150,11 @@ sample_concentrations <- unlist(as.vector(sample_concentrations))
 sample_concentrations
 
 # wrangle and format concentrations
-sample_ID <- c("cortex_het", "cortex_het", "cortex_het", "cortex_wt",
-               "cortex_wt", "cortex_wt", "kidney_het", "kidney_het",
-               "kidney_het", "kidney_wt", "kidney_wt", "kidney_wt")
+sample_ID <- c(
+  "cortex_het", "cortex_het", "cortex_het", "cortex_wt",
+  "cortex_wt", "cortex_wt", "kidney_het", "kidney_het",
+  "kidney_het", "kidney_wt", "kidney_wt", "kidney_wt"
+)
 rep_conc_ELISA <- as.data.frame(cbind(sample_ID, as.numeric(sample_concentrations)))
 
 # plot data
@@ -172,10 +176,12 @@ ggplot(data = rep_conc_ELISA, aes(
     width = 0.2
   ) +
   ggtitle("Setbp1 Protein Concentration") +
-  scale_fill_manual(values = c("kidney_wt" = "#FE6100",
-                               "kidney_het" = "#FFB000",
-                               "cortex_het" = "#5F9EFD",
-                               "cortex_wt" = "#644DD4"))
+  scale_fill_manual(values = c(
+    "kidney_wt" = "#FE6100",
+    "kidney_het" = "#FFB000",
+    "cortex_het" = "#5F9EFD",
+    "cortex_wt" = "#644DD4"
+  ))
 dev.off()
 ```
 
@@ -226,9 +232,11 @@ sample_concentrations
 setbp1BCA_data <- rbind(measurements[, c(1:5, 9:12)], sample_concentrations)
 
 setbp1BCA_data <- as.data.frame(t(setbp1BCA_data))
-setbp1BCA_data$sample_ID <- c("standard", "standard", "standard", "standard",
-                              "standard", "cerebral cortex het",
-                              "cerebral cortex WT", "kidney het", "kidney WT")
+setbp1BCA_data$sample_ID <- c(
+  "standard", "standard", "standard", "standard",
+  "standard", "cerebral cortex het",
+  "cerebral cortex WT", "kidney het", "kidney WT"
+)
 colnames(setbp1BCA_data) <- c("OD", "concentration", "sample_ID")
 
 # plot data
@@ -315,10 +323,12 @@ ggplot(data = rep_conc_BCA, aes(
   y = sample_concentrations,
   fill = sample_ID
 )) +
-  scale_fill_manual(values = c("kidney_wt" = "#FE6100",
-                               "kidney_het" = "#FFB000",
-                               "cortex_het" = "#5F9EFD",
-                               "cortex_wt" = "#644DD4")) +
+  scale_fill_manual(values = c(
+    "kidney_wt" = "#FE6100",
+    "kidney_het" = "#FFB000",
+    "cortex_het" = "#5F9EFD",
+    "cortex_wt" = "#644DD4"
+  )) +
   geom_boxplot() +
   geom_point() +
   theme_bw() +
@@ -353,15 +363,19 @@ concentrations_ug_mL$Setbp1_prop <- concentrations_ug_mL$ELISA_ug_mL / concentra
 concentrations_ug_mL$Setbp1_percent <- concentrations_ug_mL$Setbp1_prop * 100 # converting to a percent
 
 ggplot(concentrations_ug_mL, aes(y = Setbp1_percent, x = sample_ID, fill = sample_ID)) +
-  scale_fill_manual(values = c("kidney_wt" = "#FE6100",
-                               "kidney_het" = "#FFB000",
-                               "cortex_het" = "#5F9EFD",
-                               "cortex_wt" = "#644DD4")) +
+  scale_fill_manual(values = c(
+    "kidney_wt" = "#FE6100",
+    "kidney_het" = "#FFB000",
+    "cortex_het" = "#5F9EFD",
+    "cortex_wt" = "#644DD4"
+  )) +
   geom_bar(stat = "identity") +
   theme_bw() +
   geom_signif(
-    comparisons = list(c("cerebral cortex WT", "cerebral cortex het"),
-                       c("kidney WT", "kidney het")),
+    comparisons = list(
+      c("cerebral cortex WT", "cerebral cortex het"),
+      c("kidney WT", "kidney het")
+    ),
     map_signif_level = TRUE
   )
 ```
@@ -388,10 +402,12 @@ png(here("results/ELISA/setbp1_percent_total_protein_barplot.png"),
 ggplot(concentrations_ug_mL, aes(y = Setbp1_percent, x = sample_ID, fill = sample_ID)) +
   geom_bar(stat = "identity") +
   theme_bw() +
-  scale_fill_manual(values = c("kidney_wt" = "#FE6100",
-                               "kidney_het" = "#FFB000",
-                               "cortex_het" = "#5F9EFD",
-                               "cortex_wt" = "#644DD4")) +
+  scale_fill_manual(values = c(
+    "kidney_wt" = "#FE6100",
+    "kidney_het" = "#FFB000",
+    "cortex_het" = "#5F9EFD",
+    "cortex_wt" = "#644DD4"
+  )) +
   ggtitle("Proportion of Total Protein") +
   ylab("percent of Setb1p protein") +
   xlab("Group")
@@ -416,8 +432,10 @@ concentrations_ug_mL$Setbp1_percent <- concentrations_ug_mL$Setbp1_prop * 100 # 
 
 # caluclate a p-value and plot with singificance indicated
 compare_means(Setbp1_percent ~ sample_ID, concentrations_ug_mL, method = "t.test")
-my_comparisons <- list(c("cortex_het", "cortex_wt"),
-                       c("kidney_het", "kidney_wt"), c("cortex_het", "kidney_het"))
+my_comparisons <- list(
+  c("cortex_het", "cortex_wt"),
+  c("kidney_het", "kidney_wt"), c("cortex_het", "kidney_het")
+)
 
 png(here("results/ELISA/setbp1_percent_total_protein_boxplot.png"),
   width = 1000, height = 1000
@@ -429,10 +447,12 @@ ggplot(data = concentrations_ug_mL, aes(
   add = "jitter",
   legend = "none"
 )) +
-  scale_fill_manual(values = c("kidney_wt" = "#FE6100",
-                               "kidney_het" = "#FFB000",
-                               "cortex_het" = "#5F9EFD",
-                               "cortex_wt" = "#644DD4")) +
+  scale_fill_manual(values = c(
+    "kidney_wt" = "#FE6100",
+    "kidney_het" = "#FFB000",
+    "cortex_het" = "#5F9EFD",
+    "cortex_wt" = "#644DD4"
+  )) +
   geom_boxplot() +
   geom_point() +
   theme_bw() +
