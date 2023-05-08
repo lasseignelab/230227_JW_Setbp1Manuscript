@@ -9,7 +9,7 @@ output:
       toc_float: true
 ---
 
-This analysis comes after 'Setbp1_CellTypesKidney_05.Rmd' and precedes 'Setbp1_PathwayAnalysisCortexKidney_07.Rmd'
+This analysis comes after 'Setbp1_CellTypesKidney_postSoup_05.Rmd' and precedes 'Setbp1_PathwayAnalysisCortexKidney_07.Rmd'
 
 # *Single-nuclei analysis: Identify DEG in Kidney data*
 

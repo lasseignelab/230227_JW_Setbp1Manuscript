@@ -71,7 +71,7 @@ kidney_seurat <- merge(N_objs$K1,
   )
 )
 
-# checking that have all 6 biosamples:
+# checking that I have all 6 biosamples:
 length(levels(kidney_seurat@active.ident)) # 6
 
 # cleaning env
