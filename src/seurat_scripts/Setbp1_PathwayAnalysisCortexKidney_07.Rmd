@@ -200,22 +200,26 @@ cortex_UP_result_list <- list()
 for (i in cell_types) {
   # filter genes by cell type ----------
   genes <- as.list(het_cortex_DEGS_UP %>% filter(celltype == i))
-  # submit genes to pathway analysis function ----------
-  fea_result_filt <- fea_DGE(genes = genes, organism = "mmusculus")
-  # storing results ----------
-  cortex_UP_result_list[[i]] <- fea_result_filt
-  # set png to save plot to ----------
-  png(paste0(here("results/seurat/Pathways_07/"), "FEA_pathways_up_", i, ".png"),
-    width = 1000, height = 1000
-  )
-  # plot dotplot and add title based on input variable ----------
-  plot <- bubbleplot(fea_result_filt) +
-    ggtitle(paste0("Top 50 Upregulated Pathways Associated with Predicted Target Genes in ", i)) +
-    theme(plot.title = element_text(hjust = 0.5, size = 12)) +
-    theme_minimal()
-  # finish plotting ----------
-  print(plot)
-  dev.off()
+  if (length(genes$gene > 0)) {
+    # submit genes to pathway analysis function ----------
+    fea_result_filt <- fea_DGE(genes = genes, organism = "mmusculus")
+    # storing results ----------
+    cortex_UP_result_list[[i]] <- fea_result_filt
+    # set png to save plot to ----------
+    png(paste0(here("results/seurat/Pathways_07/"), "FEA_pathways_up_", i, ".png"),
+      width = 1000, height = 1000
+    )
+    # plot dotplot and add title based on input variable ----------
+    plot <- bubbleplot(fea_result_filt) +
+      ggtitle(paste0("Top 50 Upregulated Pathways Associated with Predicted Target Genes in ", i)) +
+      theme(plot.title = element_text(hjust = 0.5, size = 12)) +
+      theme_minimal()
+    # finish plotting ----------
+    print(plot)
+    dev.off()  
+  } else {
+    print(paste0("No genes for ", i))
+  }
 }
 
 # note: no DEGs for mural_cells
@@ -232,22 +236,26 @@ cortex_DOWN_result_list <- list()
 for (i in cell_types) {
   # filter genes by cell type ----------
   genes <- as.list(het_cortex_DEGS_DOWN %>% filter(celltype == i))
-  # submit genes to pathway analysis function ----------
-  fea_result_filt <- fea_DGE(genes = genes, organism = "mmusculus")
-  # storing results ----------
-  cortex_DOWN_result_list[[i]] <- fea_result_filt
-  # set png to save plot to ----------
-  png(paste0(here("results/seurat/Pathways_07/"), "FEA_pathways_down_", i, ".png"),
-    width = 1000, height = 1000
-  )
-  # plot dotplot and add title based on input variable ----------
-  plot <- bubbleplot(fea_result_filt) +
-    ggtitle(paste0("Top 50 Downregulated Pathways Associated with Predicted Target Genes in ", i)) +
-    theme(plot.title = element_text(hjust = 0.5, size = 12)) +
-    theme_minimal()
-  # finish plotting ----------
-  print(plot)
-  dev.off()
+  if (length(genes$gene > 0)) {
+    # submit genes to pathway analysis function ----------
+    fea_result_filt <- fea_DGE(genes = genes, organism = "mmusculus")
+    # storing results ----------
+    cortex_DOWN_result_list[[i]] <- fea_result_filt
+    # set png to save plot to ----------
+    png(paste0(here("results/seurat/Pathways_07/"), "FEA_pathways_down_", i, ".png"),
+      width = 1000, height = 1000
+    )
+    # plot dotplot and add title based on input variable ----------
+    plot <- bubbleplot(fea_result_filt) +
+      ggtitle(paste0("Top 50 Downregulated Pathways Associated with Predicted Target Genes in ", i)) +
+      theme(plot.title = element_text(hjust = 0.5, size = 12)) +
+      theme_minimal()
+    # finish plotting ----------
+    print(plot)
+    dev.off()
+  } else {
+    print(paste0("No genes for ", i))
+  }
 }
 
 save(cortex_DOWN_result_list, file = here("results/seurat/Pathways_07/cortex_het_fea_DGE_DOWN.Rdata"))
@@ -267,22 +275,26 @@ kidney_UP_result_list <- list()
 for (i in cell_types) {
   # filter genes by cell type ----------
   genes <- as.list(het_kidney_DEGS_UP %>% filter(celltype == i))
-  # submit genes to pathway analysis function ----------
-  fea_result_filt <- fea_DGE(genes = genes, organism = "mmusculus")
-  # storing results ----------
-  kidney_UP_result_list[[i]] <- fea_result_filt
-  # set png to save plot to ----------
-  png(paste0(here("results/seurat/Pathways_07/"), "FEA_pathways_up_", i, ".png"),
-    width = 1000, height = 1000
-  )
-  # plot dotplot and add title based on input variable ----------
-  plot <- bubbleplot(fea_result_filt) +
-    ggtitle(paste0("Top 50 Upregulated Pathways Associated with Predicted Target Genes in ", i)) +
-    theme(plot.title = element_text(hjust = 0.5, size = 12)) +
-    theme_minimal()
-  # finish plotting ----------
-  print(plot)
-  dev.off()
+  if (length(genes$gene > 0)) {
+    # submit genes to pathway analysis function ----------
+    fea_result_filt <- fea_DGE(genes = genes, organism = "mmusculus")
+    # storing results ----------
+    kidney_UP_result_list[[i]] <- fea_result_filt
+    # set png to save plot to ----------
+    png(paste0(here("results/seurat/Pathways_07/"), "FEA_pathways_up_", i, ".png"),
+      width = 1000, height = 1000
+    )
+    # plot dotplot and add title based on input variable ----------
+    plot <- bubbleplot(fea_result_filt) +
+      ggtitle(paste0("Top 50 Upregulated Pathways Associated with Predicted Target Genes in ", i)) +
+      theme(plot.title = element_text(hjust = 0.5, size = 12)) +
+      theme_minimal()
+    # finish plotting ----------
+    print(plot)
+    dev.off()
+  } else {
+    print(paste0("No genes for ", i))
+  }
 }
 
 save(kidney_UP_result_list, file = here("results/seurat/Pathways_07/kidney_het_fea_DGE_UP.Rdata"))
@@ -298,22 +310,26 @@ kidney_DOWN_result_list <- list()
 for (i in cell_types) {
   # filter genes by cell type ----------
   genes <- as.list(het_kidney_DEGS_DOWN %>% filter(celltype == i))
-  # submit genes to pathway analysis function ----------
-  fea_result_filt <- fea_DGE(genes = genes, organism = "mmusculus")
-  # storing results ----------
-  kidney_DOWN_result_list[[i]] <- fea_result_filt
-  # set png to save plot to ----------
-  png(paste0(here("results/seurat/Pathways_07/"), "FEA_pathways_down_", i, ".png"),
-    width = 1000, height = 1000
-  )
-  # plot dotplot and add title based on input variable ----------
-  plot <- bubbleplot(fea_result_filt) +
-    ggtitle(paste0("Top 50 Downregulated Pathways Associated with Predicted Target Genes in ", i)) +
-    theme(plot.title = element_text(hjust = 0.5, size = 12)) +
-    theme_minimal()
-  # finish plotting ----------
-  print(plot)
-  dev.off()
+  if (length(genes$gene > 0)) {
+    # submit genes to pathway analysis function ----------
+    fea_result_filt <- fea_DGE(genes = genes, organism = "mmusculus")
+    # storing results ----------
+    kidney_DOWN_result_list[[i]] <- fea_result_filt
+    # set png to save plot to ----------
+    png(paste0(here("results/seurat/Pathways_07/"), "FEA_pathways_down_", i, ".png"),
+      width = 1000, height = 1000
+    )
+    # plot dotplot and add title based on input variable ----------
+    plot <- bubbleplot(fea_result_filt) +
+      ggtitle(paste0("Top 50 Downregulated Pathways Associated with Predicted Target Genes in ", i)) +
+      theme(plot.title = element_text(hjust = 0.5, size = 12)) +
+      theme_minimal()
+    # finish plotting ----------
+    print(plot)
+    dev.off()
+  } else {
+    print(paste0("No genes for ", i))
+  }
 }
 
 save(kidney_DOWN_result_list, file = here("results/seurat/Pathways_07/kidney_het_fea_DGE_DOWN.Rdata"))
