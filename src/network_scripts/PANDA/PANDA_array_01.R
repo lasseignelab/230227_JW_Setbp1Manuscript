@@ -1,4 +1,5 @@
 # NOTE: be sure to run this script to set up list of files BEFORE constructing networks with 'PANDA_array_02.sh' bash script.
+set.seed(2178)
 
 ##Load libraries
 library(here)

@@ -35,12 +35,9 @@ export SINGULARITYENV_USER='jbarham3'
 cd ${wd}
 
 #array file of cell type specific expression inputs for PANDA
-SAMPLE_LIST="${wd}/results/array_inputs/Setbp1_PANDA_files.txt" #note: make sure path and file name are correct
-#SAMPLE_LIST="${wd}/results/array_inputs/Setbp1_PANDA_rds_files.txt" #note: make sure path and file name are correct, this is for .rds files
+SAMPLE_LIST="${wd}/results/array_inputs/Setbp1_PANDA_files_array.txt" #note: make sure path and file name are correct
 SAMPLE_ARRAY=(`cat ${SAMPLE_LIST}`) # parantheses instruct bash to create a shell array of strings from SAMPLE_LIST
 INPUT=`echo ${SAMPLE_ARRAY[$SLURM_ARRAY_TASK_ID]}` #extracts a single input from the array and prints (using echo) it into INPUT variable, each single input is then assigned an array number by $SLURM_TASK_ID
 
-#INPUT=$(sed -n "${SLURM_ARRAY_TASK_ID}p" ${wd}/results/array_inputs/Setbp1_PANDA_files.txt) #attempting to grab one line at a time 
-
 # NOTE: may want to add '--cleanenv --no-home ' before -B below, also difference between 1.0.0.sif and 1.01.sif is 1.0.1 has igraph installed
-singularity exec --cleanenv --no-home -B ${wd} ${wd}/bin/PANDA_docker/setbp1_manuscript_panda_1.0.1_latest.sif Rscript --vanilla ${src}/PANDA.R ${INPUT} # here vanilla ensures only the script is run and environment is kept clean
+singularity exec --cleanenv --containall -B ${wd} ${wd}/bin/PANDA_docker/setbp1_manuscript_panda_1.0.1_latest.sif Rscript --vanilla ${src}/PANDA.R ${INPUT} # here vanilla ensures only the script is run and environment is kept clean
