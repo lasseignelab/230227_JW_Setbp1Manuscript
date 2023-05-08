@@ -30,7 +30,7 @@ measurements <- t(colMeans(ELISA[, -c(7:8)]))
 blanks <- ELISA[, c(7:8)]
 blanks$sum <- rowSums(blanks)
 blank <- colSums(blanks) / 6
-blank <- blank[3] / 6
+blank <- blank[3]
 
 
 # subtract blank from measurement
