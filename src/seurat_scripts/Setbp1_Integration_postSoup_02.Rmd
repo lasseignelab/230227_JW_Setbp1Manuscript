@@ -30,7 +30,7 @@ library(styler)
 library(lintr)
 ```
 
-# Load in the objects after QC
+# Load in the object after QC
 ```{r}
 load(here("data/filtered_setbp1_kidney_seurat_postSoup.Rdata"))
 ```
