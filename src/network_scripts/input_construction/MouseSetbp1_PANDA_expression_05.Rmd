@@ -385,7 +385,7 @@ table(heterozygous_kidney_sce$cluster_id, heterozygous_kidney_sce$orig.ident)
 # control matrices ----------
 pericytes <- as.data.frame(control_kidney_agg$pericytes)
 save(pericytes,
-  file = here("data/processed/expression_inputs/perciytes_controlkidneyexpression.Rdata")
+  file = here("data/processed/expression_inputs/pericytes_controlkidneyexpression.Rdata")
 )
 
 LOH <- as.data.frame(control_kidney_agg$LOH)
