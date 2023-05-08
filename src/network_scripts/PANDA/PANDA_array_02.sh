@@ -1,6 +1,6 @@
 #!/bin/bash
 ## run the Rscript PANDA.R and schedule this job to SLURM with
-## `sbatch PANDA.sh`
+## `sbatch PANDA_array_02.sh`
 
 #SBATCH --job-name=PANDA
 #SBATCH --mail-type=ALL
@@ -17,8 +17,6 @@
 #SBATCH --error=%x_%A_%a.err
 #SBATCH --array=0-49 #50 cell type inputs total across both conditions, 16 cortex and 34 kidney
 
-
-
 ########################################
 ### PUT YOUR COMMANDS BELOW THIS BOX ###
 ########################################
@@ -31,15 +29,18 @@ wd="/data/user/jbarham3/230227_JW_Setbp1Manuscript"
 src="/data/user/jbarham3/230227_JW_Setbp1Manuscript/src/network_scripts/PANDA" #be sure that your subdirectories are structured the same
 
 export SINGULARITYENV_PASSWORD='pass'
-export SINGULARITYENV_USER='user'
+export SINGULARITYENV_USER='jbarham3'
 
 #code to execute docker and script for analysis
 cd ${wd}
 
 #array file of cell type specific expression inputs for PANDA
 SAMPLE_LIST="${wd}/results/array_inputs/Setbp1_PANDA_files.txt" #note: make sure path and file name are correct
+#SAMPLE_LIST="${wd}/results/array_inputs/Setbp1_PANDA_rds_files.txt" #note: make sure path and file name are correct, this is for .rds files
 SAMPLE_ARRAY=(`cat ${SAMPLE_LIST}`) # parantheses instruct bash to create a shell array of strings from SAMPLE_LIST
-INPUT=`echo ${CELL_LIST[$SLURM_ARRAY_TASK_ID]}` #extracts a single input from the array and prints (using echo) it into INPUT variable, each single input is then assigned an array number by $SLURM_TASK_ID
+INPUT=`echo ${SAMPLE_ARRAY[$SLURM_ARRAY_TASK_ID]}` #extracts a single input from the array and prints (using echo) it into INPUT variable, each single input is then assigned an array number by $SLURM_TASK_ID
 
+#INPUT=$(sed -n "${SLURM_ARRAY_TASK_ID}p" ${wd}/results/array_inputs/Setbp1_PANDA_files.txt) #attempting to grab one line at a time 
 
-singularity exec --cleanenv --no-home -B ${wd} ${wd}/bin/PANDA_docker/setbp1_manuscript_panda_1.0.0_latest.sif Rscript --vanilla ${src}/PANDA.R ${INPUT} # here vanilla ensures only the script is run and environment is kept clean
+# NOTE: may want to add '--cleanenv --no-home ' before -B below, also difference between 1.0.0.sif and 1.01.sif is 1.0.1 has igraph installed
+singularity exec --cleanenv --no-home -B ${wd} ${wd}/bin/PANDA_docker/setbp1_manuscript_panda_1.0.1_latest.sif Rscript --vanilla ${src}/PANDA.R ${INPUT} # here vanilla ensures only the script is run and environment is kept clean
