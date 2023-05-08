@@ -42,7 +42,7 @@
 "/data/user/jbarham3/230227_JW_Setbp1Manuscript/data/processed/expression_inputs/oligodendrocytes_heterozygouscortexexpression.Rdata"
 "/data/user/jbarham3/230227_JW_Setbp1Manuscript/data/processed/expression_inputs/opcs_controlcortexexpression.Rdata"
 "/data/user/jbarham3/230227_JW_Setbp1Manuscript/data/processed/expression_inputs/opcs_heterozygouscortexexpression.Rdata"
-"/data/user/jbarham3/230227_JW_Setbp1Manuscript/data/processed/expression_inputs/perciytes_controlkidneyexpression.Rdata"
+"/data/user/jbarham3/230227_JW_Setbp1Manuscript/data/processed/expression_inputs/pericytes_controlkidneyexpression.Rdata"
 "/data/user/jbarham3/230227_JW_Setbp1Manuscript/data/processed/expression_inputs/pericytes_heterozygouskidneyexpression.Rdata"
 "/data/user/jbarham3/230227_JW_Setbp1Manuscript/data/processed/expression_inputs/podocytes_controlkidneyexpression.Rdata"
 "/data/user/jbarham3/230227_JW_Setbp1Manuscript/data/processed/expression_inputs/podocytes_heterozygouskidneyexpression.Rdata"
