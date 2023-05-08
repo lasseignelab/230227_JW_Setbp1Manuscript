@@ -4,8 +4,8 @@ author: "Jordan Whitlock"
 date: '2023-04-14'
 output: html_document
 ---
-\
-This analysis comes after 'Setbp1_Clustering_postSoup_03.Rmd' and precedes 'Setbp1_CellTypesKidney_postSoup_04.Rmd'
+
+This analysis comes after 'Setbp1_Clustering_postSoup_03.Rmd' and precedes 'Setbp1_CellTypesKidney_postSoup_05.Rmd'
 
 # *Single-nuclei analysis: FindMarkers Kidney*
 * Loading libraries
