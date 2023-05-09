@@ -188,7 +188,7 @@ classes: None
 Explanation for bonferroni correction selection is here: https://www.biostars.org/p/267078/#:~:text=The%20Bonferroni%20correction%20is%20important,obtain%20an%20expected%20error%20rate.
 
 #### Looking at upregulated and downregulated enrichment for cortex
-prefiltered genes to be upregulated geenes or downregulated genes and then used same forloop as before
+prefiltered genes to be upregulated genes or downregulated genes and then used same for loop as before
 ```{r}
 # upregulated:
 cell_types <- unique(het_cortex_DEGS$celltype) # total of 8
@@ -263,7 +263,7 @@ save(cortex_DOWN_result_list, file = here("results/seurat/Pathways_07/cortex_het
 
 
 #### Looking at upregulated and downregulated for kidney 
-prefiltered genes to be upregulated geenes or downregulated genes and then used same forloop as before
+prefiltered genes to be upregulated genes or downregulated genes and then used same for loop as before
 ```{r}
 # upregulated:
 cell_types <- unique(het_kidney_DEGS$celltype) # total of 14
