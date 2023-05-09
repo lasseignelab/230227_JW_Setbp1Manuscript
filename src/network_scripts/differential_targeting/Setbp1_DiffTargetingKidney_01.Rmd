@@ -46,11 +46,10 @@ for (i in files){
 }
 ```
 
-## Visualizing edge weight distributions filtered and unfiltered
 ```{r}
-#writing function for below data wrangling 
-files
+files #34 total
 ```
+
 ## Visualizing edge weight distributions filtered and unfiltered
 ```{r visualize-distribution-of-unfiltered-regNet-scores}
 #grabbing object names
@@ -105,58 +104,6 @@ ggplot(data=merged_control, aes(x=edge_weight,
 dev.off()
 ```
 
-
-```{r visualize-distribution-of-unfiltered-ctrl-regNet-scores}
-Bcell.melt <- as.data.frame(melt(Bcell.control.regNet, varnames = c("TF", "gene"), value.name = "ctrl_edge_weight"))#melting dataframe
-Bcell.melt <- as.data.frame(Bcell.melt[,3])
-colnames(Bcell.melt) <- "edge_weight"
-Bcell.melt$cell_type <- "Bcell"
-
-astrocytes.melt <- as.data.frame(melt(astrocytes.control.regNet, varnames = c("TF", "gene"), value.name = "ctrl_edge_weight"))#melting dataframe
-astrocytes.melt <- as.data.frame(astrocytes.melt[,3])
-colnames(astrocytes.melt) <- "edge_weight"
-astrocytes.melt$cell_type <- "astrocytes"
-
-mural.melt <- as.data.frame(melt(mural.control.regNet, varnames = c("TF", "gene"), value.name = "ctrl_edge_weight"))#melting dataframe
-mural.melt <- as.data.frame(mural.melt[,3])
-colnames(mural.melt) <- "edge_weight"
-mural.melt$cell_type <- "mural"
-
-opcs.melt <- as.data.frame(melt(opcs.control.regNet, varnames = c("TF", "gene"), value.name = "ctrl_edge_weight"))#melting dataframe
-opcs.melt <- as.data.frame(opcs.melt[,3])
-colnames(opcs.melt) <- "edge_weight"
-opcs.melt$cell_type <- "opcs"
-
-microglia.melt <- as.data.frame(melt(microglia.control.regNet, varnames = c("TF", "gene"), value.name = "ctrl_edge_weight"))#melting dataframe
-microglia.melt <- as.data.frame(microglia.melt[,3])
-colnames(microglia.melt) <- "edge_weight"
-microglia.melt$cell_type <- "microglia"
-
-inhibitory.neurons.melt <- as.data.frame(melt(inhibitory.neurons.control.regNet, varnames = c("TF", "gene"), value.name = "ctrl_edge_weight"))#melting dataframe
-inhibitory.neurons.melt <- as.data.frame(inhibitory.neurons.melt[,3])
-colnames(inhibitory.neurons.melt) <- "edge_weight"
-inhibitory.neurons.melt$cell_type <- "inhibitory.neurons"
-
-excitatory.neurons.melt <- as.data.frame(melt(excitatory.neurons.control.regNet, varnames = c("TF", "gene"), value.name = "ctrl_edge_weight"))#melting dataframe
-excitatory.neurons.melt <- as.data.frame(excitatory.neurons.melt[,3])
-colnames(excitatory.neurons.melt) <- "edge_weight"
-excitatory.neurons.melt$cell_type <- "excitatory.neurons"
-
-fibro.melt <- as.data.frame(melt(fibro_cortex.control.regNet, varnames = c("TF", "gene"), value.name = "ctrl_edge_weight"))#melting dataframe
-fibro.melt <- as.data.frame(fibro.melt[,3])
-colnames(fibro.melt) <- "edge_weight"
-fibro.melt$cell_type <- "fibro"
-
-merged <- bind_rows(mural.melt, microglia.melt, opcs.melt, excitatory.neurons.melt, inhibitory.neurons.melt, oligodendrocytes.melt, astrocytes.melt, fibro.melt)
-
-png(filename = here("results/diff_targeting/cortex_regNet_edgeweight_dist_ctrl.png"),
-    width = 1000,
-    height = 500)
-ggplot(data=merged, aes(x=edge_weight, group=cell_type, color=cell_type)) +
-    geom_density(adjust=1.5, alpha=.4) + ggtitle("Distribution of regNet edge weights in control Cerebral Cortex") + theme_bw() + scale_color_manual(values = c("#6968B4", "#DC71FA", "#0a2f6f", "#00BBDB","#C216B7","#027461","#7997FF","#00C1AA"))
-dev.off()
-```
-
 Note: all negative edge weights were changed to 0
 ```{r visualize-distribution-of-filtered-het-regNet-scores}
 #grabbing only positive edge weights
@@ -164,7 +111,7 @@ merged_het_pos <- merged_het[merged_het$edge_weight > 0,]
 merged_control_pos <- merged_control[merged_control$edge_weight > 0,]
 
 #plotting only positive het edge weights
-png(filename = here("results/diff_targeting/cortex_regNet_edgeweight_filtered_dist_het.png"),
+png(filename = here("results/diff_targeting/kidney_regNet_edgeweight_filtered_dist_het.png"),
     width = 1000,
     height = 500)
 ggplot(data=merged_het_pos, aes(x=edge_weight, group=cell_type, color=cell_type)) +
@@ -172,10 +119,10 @@ ggplot(data=merged_het_pos, aes(x=edge_weight, group=cell_type, color=cell_type)
 dev.off()
 
 #plotting only positive ctrl edge weights
-png(filename = here("results/diff_targeting/cortex_regNet_edgeweight_filtered_dist_ctrl.png"),
+png(filename = here("results/diff_targeting/kidney_regNet_edgeweight_filtered_dist_ctrl.png"),
     width = 1000,
     height = 500)
-ggplot(data=merged_control_post, aes(x=edge_weight, group=cell_type, color=cell_type)) +
+ggplot(data=merged_control_pos, aes(x=edge_weight, group=cell_type, color=cell_type)) +
     geom_density(adjust=1.5, alpha=.4) + ggtitle("Distribution of regNet edge weights >0 in control Kidney Cortex") + theme_bw() + scale_color_manual(values = c("#FFBE1D", "#4E3801", "#EEDF37", "#F03F00", "#6D0404", "#AA6320", "#CF9400", "#FFC8C4", "#AA937E", "#C70F0F", "#A85A5A", "#BD085E", "#948802", "#FFE196", "#FF7600", "#F8766D", "#FFE196"))
 dev.off()
 ```
@@ -188,46 +135,25 @@ Gene targeting score, a numerical score representing the extent to which a gene 
 * condition: The group the data is from, in this instance it is ctrl or het.
 
 ```{r calc-targeting}
-for (i in control_networks){
-  targetingCalc(regNetmatrix = paste0(i, ".regNet"), variable_name = sub("_control.*", "", i), edge_weight_name = ctrl_edge_weight, condition = "ctrl")
+for (i in networks){
+  if (grepl("_control", i) == TRUE){
+    targetingCalc(regNetmatrix = get(paste0(i, ".regNet")), variable_name = sub("_control.*", "", i), edge_weight_name = ctrl_edge_weight, condition = "ctrl")
+  } else if (grepl("_heterozygous", i) == TRUE){
+    targetingCalc(regNetmatrix = get(paste0(i, ".regNet")), variable_name = sub("_heterozygous.*", "", i), edge_weight_name = het_edge_weight, condition = "het")
+  }
 }
-
-#astro targeting
-targetingCalc(regNetmatrix = astrocytes.control.regNet, variable_name = "astro", edge_weight_name = ctrl_edge_weight, condition = "ctrl")
-targetingCalc(regNetmatrix = astrocytes.heterozygous.regNet, variable_name = "astro", edge_weight_name = het_edge_weight, condition = "het")
-#micro
-targetingCalc(regNetmatrix = microglia.control.regNet, variable_name = "micro", edge_weight_name = ctrl_edge_weight, condition = "ctrl")
-targetingCalc(regNetmatrix = microglia.heterozygous.regNet, variable_name = "micro", edge_weight_name = het_edge_weight, condition = "het")
-#fibro
-targetingCalc(regNetmatrix = fibro_cortex.control.regNet, variable_name = "fibro", edge_weight_name = ctrl_edge_weight, condition = "ctrl")
-targetingCalc(regNetmatrix = fibro_cortex.heterozygous.regNet, variable_name = "fibro", edge_weight_name = het_edge_weight, condition = "het")
-#excitatory
-targetingCalc(regNetmatrix = excitatory.neurons.control.regNet, variable_name = "excitatory", edge_weight_name = ctrl_edge_weight, condition = "ctrl")
-targetingCalc(regNetmatrix = excitatory.neurons.heterozygous.regNet, variable_name = "excitatory", edge_weight_name = het_edge_weight, condition = "het")
-#inhibitory
-targetingCalc(regNetmatrix = inhibitory.neurons.control.regNet, variable_name = "inhibitory", edge_weight_name = ctrl_edge_weight, condition = "ctrl")
-targetingCalc(regNetmatrix = inhibitory.neurons.heterozygous.regNet, variable_name = "inhibitory", edge_weight_name = het_edge_weight, condition = "het")
-#mural
-targetingCalc(regNetmatrix = mural.control.regNet, variable_name = "mural", edge_weight_name = ctrl_edge_weight, condition = "ctrl")
-targetingCalc(regNetmatrix = mural.heterozygous.regNet, variable_name = "mural", edge_weight_name = het_edge_weight, condition = "het")
-#oligo
-targetingCalc(regNetmatrix = oligodendrocytes.control.regNet, variable_name = "oligo", edge_weight_name = ctrl_edge_weight, condition = "ctrl")
-targetingCalc(regNetmatrix = oligodendrocytes.heterozygous.regNet, variable_name = "oligo", edge_weight_name = het_edge_weight, condition = "het")
-#opcs
-targetingCalc(regNetmatrix = opcs.control.regNet, variable_name = "opcs", edge_weight_name = ctrl_edge_weight, condition = "ctrl")
-targetingCalc(regNetmatrix = opcs.heterozygous.regNet, variable_name = "opcs", edge_weight_name = het_edge_weight, condition = "het")
 ```
 
 Confirm targeting is being calculated as suspected by validating with alternate method. Distributions are the same when calculated by aggregate or sums:
 ```{r comparing-alternate-targeting-score-calc}
-pdf(here("results/diff_targeting/cortex_alt_targeting_calc.pdf"))
+pdf(here("results/diff_targeting/kidney_alt_targeting_calc.pdf"))
 #HETEROZYGOUS----------------------
 #visualize current distribution
-hist(astro_TF_targeting_het$het_edge_weight_pos)
+hist(Bcell_gene_targeting_het$het_edge_weight_pos)
 
 #checking alt targeting calc method distribution matches
-dim(astrocytes.heterozygous.regNet)
-pos <- as.data.frame(pmax(astrocytes.heterozygous.regNet, 0))
+dim(Bcell_heterozygous.regNet) # 1080 20429
+pos <- as.data.frame(pmax(Bcell_heterozygous.regNet, 0))
 TF_t_het <- as.data.frame(rowSums(pos))
 TF_t_het$TF <- rownames(pos)
 hist(TF_t_het$`rowSums(pos)`)
@@ -237,11 +163,11 @@ hist(G_t_het$`colSums(pos)`)
 
 #CONTROL----------------------
 #visualize current distribution
-hist(astro_TF_targeting_ctrl$ctrl_edge_weight_pos)
+hist(Bcell_gene_targeting_ctrl$ctrl_edge_weight_pos)
 
 #checking alt targeting calc method distribution matches
-dim(astrocytes.control.regNet)
-pos <- as.data.frame(pmax(astrocytes.control.regNet, 0))
+dim(Bcell_control.regNet)# 1080 20429
+pos <- as.data.frame(pmax(Bcell_control.regNet, 0))
 TF_t_ctrl <- as.data.frame(rowSums(pos))
 TF_t_ctrl$TF <- rownames(pos)
 hist(TF_t_ctrl$`rowSums(pos)`)
@@ -253,471 +179,441 @@ dev.off()
 
 ## combine ctrl and het to into single data frame 
 ```{r wrangling-data-to-combine}
-# Astro ----------
-TF_targeting_astro <- merge(astro_TF_targeting_ctrl, astro_TF_targeting_het, by = "TF") #combine dataframes 
-Gene_targeting_astro <- merge(astro_gene_targeting_ctrl, astro_gene_targeting_het, by = "gene") #combine dataframes 
+cell_names <- networks[grep("_control", networks)] %>% sub("_control.*", "", .)
+cell_names #17 total for kidney, note: this will not work if your cell types are different across conditions
 
-# micro ----------
-TF_targeting_micro <- merge(micro_TF_targeting_ctrl, micro_TF_targeting_het, by = "TF") #combine dataframes 
-Gene_targeting_micro <- merge(micro_gene_targeting_ctrl, micro_gene_targeting_het, by = "gene") #combine dataframes 
+targeting_list <- list() #generating empty list
 
-# inhibitory ----------
-TF_targeting_inhibitory <- merge(inhibitory_TF_targeting_ctrl, inhibitory_TF_targeting_het, by = "TF") #combine dataframes 
-Gene_targeting_inhibitory <- merge(inhibitory_gene_targeting_ctrl, inhibitory_gene_targeting_het, by = "gene") #combine dataframes 
-
-# excitatory ----------
-TF_targeting_excitatory <- merge(excitatory_TF_targeting_ctrl, inhibitory_TF_targeting_het, by = "TF") #combine dataframes 
-Gene_targeting_excitatory <- merge(excitatory_gene_targeting_ctrl, excitatory_gene_targeting_het, by = "gene") #combine dataframes 
-
-# oligodendrocyte ----------
-TF_targeting_oligodendrocyte <- merge(oligo_TF_targeting_ctrl, oligo_TF_targeting_het, by = "TF") #combine dataframes 
-Gene_targeting_oligodendrocyte <- merge(oligo_gene_targeting_ctrl, oligo_gene_targeting_het, by = "gene") #combine dataframes 
-
-# opcs ----------
-TF_targeting_opcs <- merge(opcs_TF_targeting_ctrl, opcs_TF_targeting_het, by = "TF") #combine dataframes
-Gene_targeting_opcs <- merge(opcs_gene_targeting_ctrl, opcs_gene_targeting_het, by = "gene") #combine dataframes 
-
-# mural ----------
-TF_targeting_mural <- merge(mural_TF_targeting_ctrl, mural_TF_targeting_het, by = "TF") #combine dataframes 
-Gene_targeting_mural <- merge(mural_gene_targeting_ctrl, mural_gene_targeting_het, by = "gene") #combine dataframes 
-
-# fibro ----------
-TF_targeting_fibro <- merge(fibro_TF_targeting_ctrl, fibro_TF_targeting_het, by = "TF") #combine dataframes 
-Gene_targeting_fibro <- merge(fibro_gene_targeting_ctrl, fibro_gene_targeting_het, by = "gene") #combine dataframes 
+for (i in cell_names){
+  #TF targeting
+  x <- get(paste0(i, "_TF_targeting_ctrl"))
+  y <- get(paste0(i, "_TF_targeting_het"))
+  TF_targeting <- merge(x, y, by = "TF") #combine dataframes 
+  targeting_list[[paste0("TF_targeting_", i)]] <- TF_targeting
+  
+  #gene targeting
+  x <- get(paste0(i, "_gene_targeting_ctrl"))
+  y <- get(paste0(i, "_gene_targeting_het"))
+  gene_targeting <- merge(x, y, by = "gene") #combine dataframes 
+  targeting_list[[paste0("Gene_targeting_", i)]] <- gene_targeting
+}
 ```
 
 # Investigate targeting differences across Het cell types:
 ```{r constructing-het-targeting-matrix}
-TF_targeting_all_het <- merge(TF_targeting_astro[,c(1,3)], TF_targeting_excitatory[,c(1,3)], by = "TF")
-TF_targeting_all_het <- merge(TF_targeting_all_het, TF_targeting_inhibitory[,c(1,3)], by = "TF")
-TF_targeting_all_het <- merge(TF_targeting_all_het, TF_targeting_micro[,c(1,3)], by = "TF")
-TF_targeting_all_het <- merge(TF_targeting_all_het, TF_targeting_mural[,c(1,3)], by = "TF")
-TF_targeting_all_het <- merge(TF_targeting_all_het, TF_targeting_oligodendrocyte[,c(1,3)], by = "TF")
-TF_targeting_all_het <- merge(TF_targeting_all_het, TF_targeting_opcs[,c(1,3)], by = "TF")
-TF_targeting_all_het <- merge(TF_targeting_all_het, TF_targeting_fibro[,c(1,3)], by = "TF")
+#grabbing all het targeting scores for TFs
+TF_targeting_all_het <- targeting_list[grep("TF_", names(targeting_list))] %>%
+  purrr::reduce(full_join, by = "TF") %>%
+  select(., contains(c("TF", "het_edge_weight_pos")))
 
-colnames(TF_targeting_all_het) <- c("TF", "astrocytes", "excitatory", "inhibitory", "micro", "mural", "oligodendrocyte", "opcs", "fibro")
+#grabbing colnames and setting for new dataframe generated above
+names <- names(targeting_list[grep("TF_", names(targeting_list))]) %>%
+  sub(".*TF_targeting_", "", .)  %>% append("TF", .)
+colnames(TF_targeting_all_het) <- names
 
-gene_targeting_all_het <- merge(Gene_targeting_astro[,c(1,3)], Gene_targeting_excitatory[,c(1,3)], by = "gene")
-gene_targeting_all_het <- merge(gene_targeting_all_het, Gene_targeting_inhibitory[,c(1,3)], by = "gene")
-gene_targeting_all_het <- merge(gene_targeting_all_het, Gene_targeting_micro[,c(1,3)], by = "gene")
-gene_targeting_all_het <- merge(gene_targeting_all_het, Gene_targeting_mural[,c(1,3)], by = "gene")
-gene_targeting_all_het <- merge(gene_targeting_all_het, Gene_targeting_oligodendrocyte[,c(1,3)], by = "gene")
-gene_targeting_all_het <- merge(gene_targeting_all_het, Gene_targeting_opcs[,c(1,3)], by = "gene")
-gene_targeting_all_het <- merge(gene_targeting_all_het, Gene_targeting_fibro[,c(1,3)], by = "gene")
+#grabbing all het targeting scores for genes
+gene_targeting_all_het <- targeting_list[grep("Gene_", names(targeting_list))] %>%
+  purrr::reduce(full_join, by = "gene") %>%
+  select(., contains(c("gene", "het_edge_weight_pos")))
 
-colnames(gene_targeting_all_het) <- c("gene", "astrocytes", "excitatory", "inhibitory", "micro", "mural", "oligodendrocyte", "opcs", "fibro")
+#grabbing colnames and setting for new dataframe generated above
+names <- names(targeting_list[grep("Gene_", names(targeting_list))]) %>%
+  sub(".*Gene_targeting_", "", .)  %>% append("gene", .)
+colnames(gene_targeting_all_het) <- names
 ```
 
 ```{r find-top-targeted-genes-across-het-celltypes}
 #identify the maximum for each row
-max <- pmax(gene_targeting_all_het$astrocytes, gene_targeting_all_het$excitatory, gene_targeting_all_het$inhibitory, gene_targeting_all_het$micro, gene_targeting_all_het$mural, gene_targeting_all_het$oligodendrocyte, gene_targeting_all_het$opcs, gene_targeting_all_het$fibro)
+max <- do.call(pmax, gene_targeting_all_het[,-1]) #finding max for each gene across cell types
 
 #subtract each value from the maximum by gene; the gene with the most positive rowsum is the most variably targeted across cell types, and the cell type with a value = 0 represents the cell type with the highest targeting for that gene
-gene_targeting_ranked <- max - gene_targeting_all_het[,c(2:9)]
+gene_targeting_ranked <- max - gene_targeting_all_het[,-1]
 gene_targeting_ranked$rank_sum <- rowSums(gene_targeting_ranked)
-#gene_targeting_ranked$max <- max
 
 #adding gene names back
-gene_targeting_ranked$gene <- gene_targeting_all_het$gene 
+gene_targeting_ranked$gene <- gene_targeting_all_het$gene
 
 #sorting and annotating
 gene_targeting_ranked <- gene_targeting_ranked %>% arrange(desc(rank_sum))
 gene_targeting_ranked$rank <- seq(1:nrow(gene_targeting_ranked))
 
 #adding rank to targeting score dataframe
-gene_targeting_all_het <- merge(gene_targeting_ranked[,10:11], gene_targeting_all_het, by = "gene")
-gene_targeting_all_het <- arrange(gene_targeting_all_het,rank)
+gene_targeting_all_het <- merge(select(gene_targeting_ranked, c("rank", "gene")), gene_targeting_all_het, by = "gene")
+gene_targeting_all_het <- arrange(gene_targeting_all_het, rank)
 ```
 
 ```{r visualize-het-gene-targeting-distribution}
-pivoted <- pivot_longer(gene_targeting_all_het, values_to = "targeting_score", names_to = "cell_type", cols = c(4:11))
+pivoted <- pivot_longer(gene_targeting_all_het, values_to = "targeting_score", names_to = "cell_type", cols = -c("gene", "rank"))
 pivoted
 
 
-png(filename = here("results/diff_targeting/cortex_gene_targeting_dist_het.png"),
+png(filename = here("results/diff_targeting/kidney_gene_targeting_dist_het.png"),
     width = 1000,
     height = 500)
 ggplot(data=pivoted, aes(x=targeting_score, group=cell_type, color=cell_type)) +
-    geom_density(adjust=1.5, alpha=.4) + ggtitle("Gene Targeting Score Distribution in S858R Mice") + theme_bw() + scale_color_manual(values = c("#6968B4", "#DC71FA", "#0a2f6f", "#00BBDB","#C216B7","#027461","#7997FF","#00C1AA"))
+  geom_density(adjust=1.5, alpha=.4) +
+  ggtitle("Kidney Gene Targeting Score Distribution in S858R Mice") +
+  theme_bw() +
+  scale_color_manual(values = c("#FFBE1D", "#4E3801", "#EEDF37", "#F03F00", "#6D0404", "#AA6320", "#CF9400", "#FFC8C4", "#AA937E", "#C70F0F", "#A85A5A", "#BD085E", "#948802", "#FFE196", "#FF7600", "#F8766D", "#FFE196"))
 dev.off()
 ```
 
-```{r visualizing-het-gene-rank-with-heatmap}
+## setting heatmap data and setbp1 input needed for the rest of the script
+```{r heatmap-color-annotation}
 #setting annotation colors
-annotation_colors <- list("cell_type" = c("excitatory" = "#DC71FA", "inhibitory" = "#00BBDB", "oligodendrocyte" = "#7997FF", "astrocytes" = "#6968B4", "micro" = "#C216B7", "opcs" = "#00C1AA", "mural" = "#027461", "fibro" = "#0a2f6f"))
+annotation_colors <- list("cell_type" = c("Bcell" = "#FFBE1D", "CDIC_typeA" = "#4E3801", "CDIC_typeB" = "#EEDF37", "CDPC" = "#F03F00", "DCT" = "#6D0404", "DLH" = "#AA6320", "LOH" = "#CF9400", "PCTS1" = "#FFC8C4", "PCTS2" = "#AA937E", "PST" = "#C70F0F", "PT" = "#A85A5A", "endothelial" = "#BD085E", "fibroblasts" = "#948802", "macrophages" = "#FFE196", "pericytes" = "#FF7600", "podocytes" = "#F8766D", "smcs" = "#FFE196"))
+```
+
+```{r loading-geneset}
+setbp1_genes <- read.csv(here("results/seurat/setbp1_targets.csv"))
+setbp1_genes <- setbp1_genes[,-1] %>% as.vector()
+setbp1_genes <- append(setbp1_genes, "Setbp1")
+```
+
+## plotting targeting heatmaps
+```{r visualizing-het-gene-rank-with-heatmap}
 #formatting input data
 data <- gene_targeting_all_het
 rownames(data) <- data$gene
 data <- data[, -c(1:2)]
-#setting meta colname 
+#setting meta colname
 meta_colname <- "cell_type"
 #setting plot path
-plot_path <- here("results/diff_targeting/cortex_gene_targeting_all_het_heatmap_test.png")
+plot_path <- here("results/diff_targeting/kidney_gene_targeting_all_het_heatmap_test.png")
 #setting rowtitle
 rowtitle <- "genes"
 #setting columntitle
-plot_title <- "Targeting of All Genes Across Cell-types in Setbp1 S858R Cerebral Cortex"
+plot_title <- "Targeting of All Genes Across Cell-types in Setbp1 S858R Kidney Cortex"
 
 targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title)
 ```
 
 ```{r visualizing-het-gene-top100-rank-with-heatmap}
-#setting annotation colors
-annotation_colors <- list("cell_type" = c("excitatory" = "#DC71FA", "inhibitory" = "#00BBDB", "oligodendrocyte" = "#7997FF", "astrocytes" = "#6968B4", "micro" = "#C216B7", "opcs" = "#00C1AA", "mural" = "#027461", "fibro" = "#0a2f6f"))
 #formatting input data
 data <- gene_targeting_all_het %>% slice(1:100)
 rownames(data) <- data$gene
 data <- data[, -c(1:3)]
-#setting meta colname 
+#setting meta colname
 meta_colname <- "cell_type"
 #setting plot path
-plot_path <- here("results/diff_targeting/cortex_targeting_het_top100_heatmap.png")
+plot_path <- here("results/diff_targeting/kidney_targeting_het_top100_heatmap.png")
 #setting rowtitle
 rowtitle <- "genes"
 #setting columntitle
-plot_title <- "Targeting of top 100 Genes Across Cell-types in Setbp1 S858R Cerebral Cortex"
+plot_title <- "Targeting of top 100 Genes Across Cell-types in Setbp1 S858R Kidney Cortex"
 
 targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title)
 ```
 
 ```{r visualizing-setbp1-targets-gene-targeting-across-het}
-#setting annotation colors
-annotation_colors <- list("cell_type" = c("excitatory" = "#DC71FA", "inhibitory" = "#00BBDB", "oligodendrocyte" = "#7997FF", "astrocytes" = "#6968B4", "micro" = "#C216B7", "opcs" = "#00C1AA", "mural" = "#027461", "fibro" = "#0a2f6f"))
 #formatting input data
-setbp1_genes <- read.csv(here("results/seurat/setbp1_targets.csv"))
-setbp1_genes <- setbp1_genes[,-1] %>% as.vector()
-setbp1_genes <- append(setbp1_genes, "Setbp1")
-
 data <- gene_targeting_all_het[gene_targeting_all_het$gene %in% setbp1_genes,]
 
 rownames(data) <- data$gene
 data <- data[, -c(1:3)]
-#setting meta colname 
+#setting meta colname
 meta_colname <- "cell_type"
 #setting plot path
-plot_path <- here("results/diff_targeting/cortex_gene_targeting_het_setbp1targets_across_heatmap.png")
+plot_path <- here("results/diff_targeting/kidney_gene_targeting_het_setbp1targets_across_heatmap.png")
 #setting rowtitle
 rowtitle <- "genes"
 #setting columntitle
-plot_title <- "Gene targeting of Setbp1 and it's targets Across Cell-types in Setbp1 S858R Cerebral Cortex"
+plot_title <- "Gene targeting of Setbp1 and it's targets Across Cell-types in Setbp1 S858R Kidney Cortex"
 
-targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title)
+targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title, show_names = TRUE, width = 1000, height = 2000)
 ```
 
 
 ```{r find-top-targeted-TFs-across-het-celltypes}
 #identify the maximum for each row
-max <- pmax(TF_targeting_all_het$astrocytes, TF_targeting_all_het$excitatory, TF_targeting_all_het$inhibitory, TF_targeting_all_het$micro, TF_targeting_all_het$mural, TF_targeting_all_het$oligodendrocyte, TF_targeting_all_het$opcs, TF_targeting_all_het$fibro)
+max <- do.call(pmax, TF_targeting_all_het[,-1]) #finding max for each TF across cell types
 
 #subtract each value from the maximum by TF; the TF with the most positive rowsum is the most variably targeted across cell types, and the cell type with a value = 0 represents the cell type with the highest targeting for that TF
-TF_targeting_ranked <- max - TF_targeting_all_het[,2:9]
+TF_targeting_ranked <- max - TF_targeting_all_het[,-1]
 TF_targeting_ranked$rank_sum <- rowSums(TF_targeting_ranked)
-#TF_targeting_ranked$max <- max
 
 #adding TF names back
-TF_targeting_ranked$TF <- TF_targeting_all_het$TF 
+TF_targeting_ranked$TF <- TF_targeting_all_het$TF
 
 #sorting and annotating
 TF_targeting_ranked <- TF_targeting_ranked %>% arrange(desc(rank_sum))
 TF_targeting_ranked$rank <- seq(1:nrow(TF_targeting_ranked))
 
 #adding rank to targeting score dataframe
-TF_targeting_all_het <- merge(TF_targeting_ranked[,10:11], TF_targeting_all_het, by = "TF")
-TF_targeting_all_het <- arrange(TF_targeting_all_het,rank)
+TF_targeting_all_het <- merge(select(TF_targeting_ranked, c("rank", "TF")), TF_targeting_all_het, by = "TF")
+TF_targeting_all_het <- arrange(TF_targeting_all_het, rank)
 ```
 
 ```{r visualize-het-TF-targeting-distribution}
-pivoted <- pivot_longer(TF_targeting_all_het, values_to = "targeting_score", names_to = "cell_type", cols = c(3:10))
+pivoted <- pivot_longer(TF_targeting_all_het, values_to = "targeting_score", names_to = "cell_type", cols = -c("TF", "rank"))
 
-png(filename = here("results/diff_targeting/cortex_TF_targeting_dist_het.png"),
+png(filename = here("results/diff_targeting/kidney_TF_targeting_dist_het.png"),
     width = 1000,
     height = 500)
 ggplot(data=pivoted, aes(x=targeting_score, group=cell_type, color=cell_type)) +
-    geom_density(adjust=1.5, alpha=.4) + ggtitle("TF Targeting Score Distribution in S858R Mice") + theme_bw() + scale_color_manual(values = c("#6968B4", "#DC71FA", "#0a2f6f", "#00BBDB","#C216B7","#027461","#7997FF","#00C1AA"))
+    geom_density(adjust=1.5, alpha=.4) +
+  ggtitle("TF Targeting Score Distribution in S858R Mice") +
+  theme_bw() +
+  scale_color_manual(values = c("#FFBE1D", "#4E3801", "#EEDF37", "#F03F00", "#6D0404", "#AA6320", "#CF9400", "#FFC8C4", "#AA937E", "#C70F0F", "#A85A5A", "#BD085E", "#948802", "#FFE196", "#FF7600", "#F8766D", "#FFE196"))
 dev.off()
 ```
 
 ```{r visualizing-het-TF-rank-with-heatmap}
-#setting annotation colors
-annotation_colors <- list("cell_type" = c("excitatory" = "#DC71FA", "inhibitory" = "#00BBDB", "oligodendrocyte" = "#7997FF", "astrocytes" = "#6968B4", "micro" = "#C216B7", "opcs" = "#00C1AA", "mural" = "#027461", "fibro" = "#0a2f6f"))
 #formatting input data
 data <- TF_targeting_all_het
 rownames(data) <- data$TF
 data <- data[, -c(1:2)]
-#setting meta colname 
+#setting meta colname
 meta_colname <- "cell_type"
 #setting plot path
-plot_path <- here("results/diff_targeting/cortex_TF_targeting_all_het_heatmap.png")
+plot_path <- here("results/diff_targeting/kidney_TF_targeting_all_het_heatmap.png")
 #setting rowtitle
 rowtitle <- "TFs"
 #setting columntitle
-plot_title <- "Targeting of All TFs Across Cell-types in Setbp1 S858R Cerebral Cortex"
+plot_title <- "Targeting of All TFs Across Cell-types in Setbp1 S858R Kidney Cortex"
 
 targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title)
 ```
 
 ```{r visualizing-het-top100-TF-rank-with-heatmap}
-#setting annotation colors
-annotation_colors <- list("cell_type" = c("excitatory" = "#DC71FA", "inhibitory" = "#00BBDB", "oligodendrocyte" = "#7997FF", "astrocytes" = "#6968B4", "micro" = "#C216B7", "opcs" = "#00C1AA", "mural" = "#027461", "fibro" = "#0a2f6f"))
 #formatting input data
 data <- TF_targeting_all_het %>% slice(1:100)
 rownames(data) <- data$TF
 data <- data[, -c(1:2)]
-#setting meta colname 
+#setting meta colname
 meta_colname <- "cell_type"
 #setting plot path
-plot_path <- here("results/diff_targeting/cortex_TF_targeting_het_top100_heatmap.png")
+plot_path <- here("results/diff_targeting/kidney_TF_targeting_het_top100_heatmap.png")
 #setting rowtitle
 rowtitle <- "TFs"
 #setting columntitle
-plot_title <- "Targeting of TF Across Cell-types in Setbp1 S858R Cerebral Cortex"
+plot_title <- "Targeting of TF Across Cell-types in Setbp1 S858R Kidney Cortex"
 
 targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title)
 ```
 
 ```{r visualizing-setbp1-targets-TF-targeting-across-het}
-#setting annotation colors
-annotation_colors <- list("cell_type" = c("excitatory" = "#DC71FA", "inhibitory" = "#00BBDB", "oligodendrocyte" = "#7997FF", "astrocytes" = "#6968B4", "micro" = "#C216B7", "opcs" = "#00C1AA", "mural" = "#027461", "fibro" = "#0a2f6f"))
 #formatting input data
-setbp1_genes <- read.csv(here("results/seurat/setbp1_targets.csv"))
-setbp1_genes <- setbp1_genes[,-1] %>% as.vector()
-setbp1_genes <- append(setbp1_genes, "Setbp1")
-
 data <- TF_targeting_all_het[TF_targeting_all_het$TF %in% setbp1_genes,]
 
 rownames(data) <- data$TF
 data <- data[, -c(1:2)]
-#setting meta colname 
+#setting meta colname
 meta_colname <- "cell_type"
 #setting plot path
-plot_path <- here("results/diff_targeting/cortex_TF_targeting_het_setbp1targets_across_heatmap.png")
+plot_path <- here("results/diff_targeting/kidney_TF_targeting_het_setbp1targets_across_heatmap.png")
 #setting rowtitle
 rowtitle <- "TFs"
 #setting columntitle
-plot_title <- "TF targeting of Setbp1 and it's targets Across Cell-types in Setbp1 S858R Cerebral Cortex"
+plot_title <- "TF targeting of Setbp1 and it's targets Across Cell-types in Setbp1 S858R kidney Cortex"
 
-targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title)
+targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title, show_names = TRUE)
 ```
 
 # Investigate targeting differences across ctrl cell types:
+
 ```{r constructing-ctrl-targeting-matrix}
-TF_targeting_all_ctrl <- merge(TF_targeting_astro[,c(1,2)], TF_targeting_excitatory[,c(1,2)], by = "TF")
-TF_targeting_all_ctrl <- merge(TF_targeting_all_ctrl, TF_targeting_inhibitory[,c(1,2)], by = "TF")
-TF_targeting_all_ctrl <- merge(TF_targeting_all_ctrl, TF_targeting_micro[,c(1,2)], by = "TF")
-TF_targeting_all_ctrl <- merge(TF_targeting_all_ctrl, TF_targeting_mural[,c(1,2)], by = "TF")
-TF_targeting_all_ctrl <- merge(TF_targeting_all_ctrl, TF_targeting_oligodendrocyte[,c(1,2)], by = "TF")
-TF_targeting_all_ctrl <- merge(TF_targeting_all_ctrl, TF_targeting_opcs[,c(1,2)], by = "TF")
-TF_targeting_all_ctrl <- merge(TF_targeting_all_ctrl, TF_targeting_fibro[,c(1,2)], by = "TF")
+#grabbing all ctrl targeting scores for TFs
+TF_targeting_all_ctrl <- targeting_list[grep("TF_", names(targeting_list))] %>%
+  purrr::reduce(full_join, by = "TF") %>%
+  select(., contains(c("TF", "ctrl_edge_weight_pos")))
 
-colnames(TF_targeting_all_ctrl) <- c("TF", "astrocytes", "excitatory", "inhibitory", "micro", "mural", "oligodendrocyte", "opcs", "fibro")
+#grabbing colnames and setting for new dataframe generated above
+names <- names(targeting_list[grep("TF_", names(targeting_list))]) %>%
+  sub(".*TF_targeting_", "", .)  %>% append("TF", .)
+colnames(TF_targeting_all_ctrl) <- names
 
-gene_targeting_all_ctrl <- merge(Gene_targeting_astro[,c(1,2)], Gene_targeting_excitatory[,c(1,2)], by = "gene")
-gene_targeting_all_ctrl <- merge(gene_targeting_all_ctrl, Gene_targeting_inhibitory[,c(1,2)], by = "gene")
-gene_targeting_all_ctrl <- merge(gene_targeting_all_ctrl, Gene_targeting_micro[,c(1,2)], by = "gene")
-gene_targeting_all_ctrl <- merge(gene_targeting_all_ctrl, Gene_targeting_mural[,c(1,2)], by = "gene")
-gene_targeting_all_ctrl <- merge(gene_targeting_all_ctrl, Gene_targeting_oligodendrocyte[,c(1,2)], by = "gene")
-gene_targeting_all_ctrl <- merge(gene_targeting_all_ctrl, Gene_targeting_opcs[,c(1,2)], by = "gene")
-gene_targeting_all_ctrl <- merge(gene_targeting_all_ctrl, Gene_targeting_fibro[,c(1,2)], by = "gene")
+#grabbing all ctrl targeting scores for genes
+gene_targeting_all_ctrl <- targeting_list[grep("Gene_", names(targeting_list))] %>%
+  purrr::reduce(full_join, by = "gene") %>%
+  select(., contains(c("gene", "ctrl_edge_weight_pos")))
 
-colnames(gene_targeting_all_ctrl) <- c("gene", "astrocytes", "excitatory", "inhibitory", "micro", "mural", "oligodendrocyte", "opcs", "fibro")
+#grabbing colnames and setting for new dataframe generated above
+names <- names(targeting_list[grep("Gene_", names(targeting_list))]) %>%
+  sub(".*Gene_targeting_", "", .)  %>% append("gene", .)
+colnames(gene_targeting_all_ctrl) <- names
 ```
 
 ```{r find-top-targeted-genes-across-ctrl-celltypes}
 #identify the maximum for each row
-max <- pmax(gene_targeting_all_ctrl$astrocytes, gene_targeting_all_ctrl$excitatory, gene_targeting_all_ctrl$inhibitory, gene_targeting_all_ctrl$micro, gene_targeting_all_ctrl$mural, gene_targeting_all_ctrl$oligodendrocyte, gene_targeting_all_ctrl$opcs, gene_targeting_all_ctrl$fibro)
+max <- do.call(pmax, gene_targeting_all_ctrl[,-1]) #finding max for each gene across cell types
 
 #subtract each value from the maximum by gene; the gene with the most positive rowsum is the most variably targeted across cell types, and the cell type with a value = 0 represents the cell type with the highest targeting for that gene
-gene_targeting_ranked <- max - gene_targeting_all_ctrl[,2:9]
+gene_targeting_ranked <- max - gene_targeting_all_ctrl[,-1]
 gene_targeting_ranked$rank_sum <- rowSums(gene_targeting_ranked)
-#gene_targeting_ranked$max <- max
 
 #adding gene names back
-gene_targeting_ranked$gene <- gene_targeting_all_ctrl$gene 
+gene_targeting_ranked$gene <- gene_targeting_all_ctrl$gene
 
 #sorting and annotating
 gene_targeting_ranked <- gene_targeting_ranked %>% arrange(desc(rank_sum))
 gene_targeting_ranked$rank <- seq(1:nrow(gene_targeting_ranked))
 
 #adding rank to targeting score dataframe
-gene_targeting_all_ctrl <- merge(gene_targeting_ranked[,10:11], gene_targeting_all_ctrl, by = "gene")
-gene_targeting_all_ctrl <- arrange(gene_targeting_all_ctrl,rank)
+gene_targeting_all_ctrl <- merge(select(gene_targeting_ranked, c("rank", "gene")), gene_targeting_all_ctrl, by = "gene")
+gene_targeting_all_ctrl <- arrange(gene_targeting_all_ctrl, rank)
 ```
 
 ```{r visualize-ctrl-gene-targeting-distribution}
-pivoted <- pivot_longer(gene_targeting_all_ctrl, values_to = "targeting_score", names_to = "cell_type", cols = c(3:10))
+pivoted <- pivot_longer(gene_targeting_all_ctrl, values_to = "targeting_score", names_to = "cell_type", cols = -c("gene", "rank"))
 pivoted
 
-png(filename = here("results/diff_targeting/cortex_gene_targeting_dist_ctrl.png"),
+png(filename = here("results/diff_targeting/kidney_gene_targeting_dist_ctrl.png"),
     width = 1000,
     height = 500)
 ggplot(data=pivoted, aes(x=targeting_score, group=cell_type, color=cell_type)) +
-    geom_density(adjust=1.5, alpha=.4) + ggtitle("Gene targeting score distribution in Controls") + theme_bw() + scale_color_manual(values = c("#6968B4", "#DC71FA", "#0a2f6f", "#00BBDB","#C216B7","#027461","#7997FF","#00C1AA"))
+  geom_density(adjust=1.5, alpha=.4) +
+  ggtitle("Kidney Gene Targeting Score Distribution in Ctrl Mice") +
+  theme_bw() +
+  scale_color_manual(values = c("#FFBE1D", "#4E3801", "#EEDF37", "#F03F00", "#6D0404", "#AA6320", "#CF9400", "#FFC8C4", "#AA937E", "#C70F0F", "#A85A5A", "#BD085E", "#948802", "#FFE196", "#FF7600", "#F8766D", "#FFE196"))
 dev.off()
 
 summary(gene_targeting_all_ctrl)
 ```
 
 ```{r visualizing-ctrl-gene-rank-with-heatmap}
-#setting annotation colors
-annotation_colors <- list("cell_type" = c("excitatory" = "#DC71FA", "inhibitory" = "#00BBDB", "oligodendrocyte" = "#7997FF", "astrocytes" = "#6968B4", "micro" = "#C216B7", "opcs" = "#00C1AA", "mural" = "#027461", "fibro" = "#0a2f6f"))
 #formatting input data
 data <- gene_targeting_all_ctrl
 rownames(data) <- data$gene
 data <- data[, -c(1:2)]
-#setting meta colname 
+#setting meta colname
 meta_colname <- "cell_type"
 #setting plot path
-plot_path <- here("results/diff_targeting/cortex_gene_targeting_all_ctrl_heatmap.png")
+plot_path <- here("results/diff_targeting/kidney_gene_targeting_all_ctrl_heatmap.png")
 #setting rowtitle
 rowtitle <- "genes"
 #setting columntitle
-plot_title <- "Targeting of All Genes Across Cell-types in Setbp1 Ctrl Cerebral Cortex"
+plot_title <- "Targeting of All Genes Across Cell-types in Setbp1 Ctrl Kidney Cortex"
 
 targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title)
 ```
 
 ```{r visualizing-ctrl-gene-top100-rank-with-heatmap}
-#setting annotation colors
-annotation_colors <- list("cell_type" = c("excitatory" = "#DC71FA", "inhibitory" = "#00BBDB", "oligodendrocyte" = "#7997FF", "astrocytes" = "#6968B4", "micro" = "#C216B7", "opcs" = "#00C1AA", "mural" = "#027461", "fibro" = "#0a2f6f"))
 #formatting input data
 data <- gene_targeting_all_ctrl %>% slice(1:100)
 rownames(data) <- data$gene
 data <- data[, -c(1:2)]
-#setting meta colname 
+#setting meta colname
 meta_colname <- "cell_type"
 #setting plot path
-plot_path <- here("results/diff_targeting/cortex_targeting_ctrl_top100_heatmap.png")
+plot_path <- here("results/diff_targeting/kidney_targeting_ctrl_top100_heatmap.png")
 #setting rowtitle
 rowtitle <- "genes"
 #setting columntitle
-plot_title <- "Targeting of top 100 Genes Across Cell-types in Setbp1 S858R Cerebral Cortex"
+plot_title <- "Targeting of top 100 Genes Across Cell-types in Setbp1 Ctrl Kidney Cortex"
 
 targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title)
 ```
 
 ```{r visualizing-setbp1-targets-genes-targeting-across-ctrl}
-setbp1_genes <- read.csv(here("results/seurat/setbp1_targets.csv"))
-setbp1_genes <- setbp1_genes[,-1] %>% as.vector()
-setbp1_genes <- append(setbp1_genes, "Setbp1")
-
 data <- gene_targeting_all_ctrl[gene_targeting_all_ctrl$gene %in% setbp1_genes,]
 
 rownames(data) <- data$gene
 data <- data[, -c(1:2)]
-#setting meta colname 
+#setting meta colname
 meta_colname <- "cell_type"
 #setting plot path
-plot_path <- here("results/diff_targeting/cortex_gene_targeting_ctrl_setbp1targets_across_heatmap.png")
+plot_path <- here("results/diff_targeting/kidney_gene_targeting_ctrl_setbp1targets_across_heatmap.png")
 #setting rowtitle
 rowtitle <- "genes"
 #setting columntitle
-plot_title <- "Gene targeting of Setbp1 and it's targets Across Cell-types in Setbp1 Control Cerebral Cortex"
+plot_title <- "Gene targeting of Setbp1 and its targets Across Cell-types in Setbp1 Control Kidey Cortex"
 
 targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title)
 ```
 
-
-
 ```{r find-top-targeted-TFs-across-ctrl-celltypes}
 #identify the maximum for each row
-max <- pmax(TF_targeting_all_ctrl$astrocytes, TF_targeting_all_ctrl$excitatory, TF_targeting_all_ctrl$inhibitory, TF_targeting_all_ctrl$micro, TF_targeting_all_ctrl$mural, TF_targeting_all_ctrl$oligodendrocyte, TF_targeting_all_ctrl$opcs, TF_targeting_all_ctrl$fibro)
+max <- do.call(pmax, TF_targeting_all_ctrl[,-1]) #finding max for each TF across cell types
 
 #subtract each value from the maximum by TF; the TF with the most positive rowsum is the most variably targeted across cell types, and the cell type with a value = 0 represents the cell type with the highest targeting for that TF
-TF_targeting_ranked <- max - TF_targeting_all_ctrl[,2:9]
+TF_targeting_ranked <- max - TF_targeting_all_ctrl[,-1]
 TF_targeting_ranked$rank_sum <- rowSums(TF_targeting_ranked)
-#TF_targeting_ranked$max <- max
 
 #adding TF names back
-TF_targeting_ranked$TF <- TF_targeting_all_ctrl$TF 
+TF_targeting_ranked$TF <- TF_targeting_all_ctrl$TF
 
 #sorting and annotating
 TF_targeting_ranked <- TF_targeting_ranked %>% arrange(desc(rank_sum))
 TF_targeting_ranked$rank <- seq(1:nrow(TF_targeting_ranked))
 
 #adding rank to targeting score dataframe
-TF_targeting_all_ctrl <- merge(TF_targeting_ranked[,10:11], TF_targeting_all_ctrl, by = "TF")
-TF_targeting_all_ctrl <- arrange(TF_targeting_all_ctrl,rank)
+TF_targeting_all_ctrl <- merge(select(TF_targeting_ranked, c("rank", "TF")), TF_targeting_all_ctrl, by = "TF")
+TF_targeting_all_ctrl <- arrange(TF_targeting_all_ctrl, rank)
 ```
 
 ```{r visualize-ctrl-TF-targeting-distribution}
-pivoted <- pivot_longer(TF_targeting_all_ctrl, values_to = "targeting_score", names_to = "cell_type", cols = c(3:10))
+pivoted <- pivot_longer(TF_targeting_all_ctrl, values_to = "targeting_score", names_to = "cell_type", cols = -c("TF", "rank"))
 pivoted
 
-png(filename = here("results/diff_targeting/cortex_TF_targeting_dist_ctrl.png"),
+
+png(filename = here("results/diff_targeting/kidney_TF_targeting_dist_ctrl.png"),
     width = 1000,
     height = 500)
 ggplot(data=pivoted, aes(x=targeting_score, group=cell_type, color=cell_type)) +
-    geom_density(adjust=1.5, alpha=.4) + ggtitle("TF targeting score distribution in Controls") + theme_bw() + scale_color_manual(values = c("#6968B4", "#DC71FA", "#0a2f6f", "#00BBDB","#C216B7","#027461","#7997FF","#00C1AA"))
+  geom_density(adjust=1.5, alpha=.4) +
+  ggtitle("Kidney TF Targeting Score Distribution in Ctrl Mice") +
+  theme_bw() +
+  scale_color_manual(values = c("#FFBE1D", "#4E3801", "#EEDF37", "#F03F00", "#6D0404", "#AA6320", "#CF9400", "#FFC8C4", "#AA937E", "#C70F0F", "#A85A5A", "#BD085E", "#948802", "#FFE196", "#FF7600", "#F8766D", "#FFE196"))
+dev.off()
 
 summary(TF_targeting_all_ctrl)
 ```
 
 ```{r visualizing-ctrl-TF-rank-with-heatmap}
-#setting annotation colors
-annotation_colors <- list("cell_type" = c("excitatory" = "#DC71FA", "inhibitory" = "#00BBDB", "oligodendrocyte" = "#7997FF", "astrocytes" = "#6968B4", "micro" = "#C216B7", "opcs" = "#00C1AA", "mural" = "#027461", "fibro" = "#0a2f6f"))
 ##formatting input data
 data <- TF_targeting_all_ctrl
 rownames(data) <- data$TF
 data <- data[, -c(1:2)]
-#setting meta colname 
+#setting meta colname
 meta_colname <- "cell_type"
 #setting plot path
-plot_path <- here("results/diff_targeting/cortex_TF_targeting_all_ctrl_heatmap.png")
+plot_path <- here("results/diff_targeting/kidney_TF_targeting_all_ctrl_heatmap.png")
 #setting rowtitle
 rowtitle <- "TFs"
 #setting columntitle
-plot_title <- "Targeting of All TFs Across Cell-types in Setbp1 Control Cerebral Cortex"
+plot_title <- "Targeting of All TFs Across Cell-types in Setbp1 Control Kidney Cortex"
 
 targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title)
 ```
 
 ```{r visualizing-ctrl-top100-TF-rank-with-heatmap}
-#setting annotation colors
-annotation_colors <- list("cell_type" = c("excitatory" = "#DC71FA", "inhibitory" = "#00BBDB", "oligodendrocyte" = "#7997FF", "astrocytes" = "#6968B4", "micro" = "#C216B7", "opcs" = "#00C1AA", "mural" = "#027461", "fibro" = "#0a2f6f"))
 #formatting input data
 data <- TF_targeting_all_ctrl %>% slice(1:100)
 rownames(data) <- data$TF
 data <- data[, -c(1:2)]
-#setting meta colname 
+#setting meta colname
 meta_colname <- "cell_type"
 #setting plot path
-plot_path <- here("results/diff_targeting/cortex_TF_targeting_ctrl_top100_heatmap.png")
+plot_path <- here("results/diff_targeting/kidney_TF_targeting_ctrl_top100_heatmap.png")
 #setting rowtitle
 rowtitle <- "TFs"
 #setting columntitle
-plot_title <- "Targeting of top 100 TF Across Cell-types in Setbp1 Control Cerebral Cortex"
+plot_title <- "Targeting of top 100 TF Across Cell-types in Setbp1 Control Kidney Cortex"
 
 targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title)
 ```
 
 ```{r visualizing-setbp1-targets-TF-targeting-across-ctrl}
-#setting annotation colors
-annotation_colors <- list("cell_type" = c("excitatory" = "#DC71FA", "inhibitory" = "#00BBDB", "oligodendrocyte" = "#7997FF", "astrocytes" = "#6968B4", "micro" = "#C216B7", "opcs" = "#00C1AA", "mural" = "#027461", "fibro" = "#0a2f6f"))
-#formatting input data
-setbp1_genes <- read.csv(here("results/seurat/setbp1_targets.csv"))
-setbp1_genes <- setbp1_genes[,-1] %>% as.vector()
-setbp1_genes <- append(setbp1_genes, "Setbp1")
-
 data <- TF_targeting_all_ctrl[TF_targeting_all_ctrl$TF %in% setbp1_genes,]
 
 rownames(data) <- data$TF
 data <- data[, -c(1:2)]
-#setting meta colname 
+#setting meta colname
 meta_colname <- "cell_type"
 #setting plot path
-plot_path <- here("results/diff_targeting/cortex_TF_targeting_ctrl_setbp1targets_across_heatmap.png")
+plot_path <- here("results/diff_targeting/kidney_TF_targeting_ctrl_setbp1targets_across_heatmap.png")
 #setting rowtitle
 rowtitle <- "TFs"
 #setting columntitle
-plot_title <- "TF targeting of Setbp1 and it's targets Across Cell-types in Setbp1 Control Cerebral Cortex"
+plot_title <- "TF targeting of Setbp1 and its targets Across Cell-types in Setbp1 Control Kidney Cortex"
 
 targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title)
 ```
 
+# Investigate targeting rank within each Het cell type
 
-# Investigate targeting rank within each Het cell type 
-```{r constructing-het-targeting-matrix}
+#```{r constructing-het-targeting-matrix}
 TF_targeting_all_het <- merge(TF_targeting_astro[,c(1,3)], TF_targeting_excitatory[,c(1,3)], by = "TF")
 TF_targeting_all_het <- merge(TF_targeting_all_het, TF_targeting_inhibitory[,c(1,3)], by = "TF")
 TF_targeting_all_het <- merge(TF_targeting_all_het, TF_targeting_micro[,c(1,3)], by = "TF")
@@ -737,25 +633,47 @@ gene_targeting_all_het <- merge(gene_targeting_all_het, Gene_targeting_opcs[,c(1
 gene_targeting_all_het <- merge(gene_targeting_all_het, Gene_targeting_fibro[,c(1,3)], by = "gene")
 
 colnames(gene_targeting_all_het) <- c("gene", "astrocytes", "excitatory", "inhibitory", "micro", "mural", "oligodendrocyte", "opcs", "fibro")
-```
+#```
 
 ```{r find-top-targeted-TFs-within-het-celltypes}
-#rank TFs by targeting for each cell type , find top 20
-astro_rank_het <- TF_targeting_all_het[ ,c(1,2)] %>% arrange(desc(astrocytes)) %>% mutate(rank = seq(1:nrow(.))) %>% mutate(cell_type = "astrocytes") %>% slice(1:20) %>% rename(targeting_score = astrocytes)
-ex_rank_het <- TF_targeting_all_het[ ,c(1,3)] %>% arrange(desc(excitatory)) %>% mutate(rank = seq(1:nrow(.))) %>% mutate(cell_type = "excitatory") %>% slice(1:20) %>% rename(targeting_score = excitatory)
-in_rank_het <- TF_targeting_all_het[ ,c(1,4)] %>% arrange(desc(inhibitory)) %>% mutate(rank = seq(1:nrow(.))) %>% mutate(cell_type = "inhibitory") %>% slice(1:20) %>% rename(targeting_score = inhibitory)
-micro_rank_het <- TF_targeting_all_het[ ,c(1,5)] %>% arrange(desc(micro)) %>% mutate(rank = seq(1:nrow(.))) %>% mutate(cell_type = "micro") %>% slice(1:20) %>% rename(targeting_score = micro)
-mural_rank_het <- TF_targeting_all_het[ ,c(1,6)] %>% arrange(desc(mural)) %>% mutate(rank = seq(1:nrow(.))) %>% mutate(cell_type = "mural") %>% slice(1:20) %>% rename(targeting_score = mural)
-oligo_rank_het <- TF_targeting_all_het[ ,c(1,7)] %>% arrange(desc(oligodendrocyte)) %>% mutate(rank = seq(1:nrow(.))) %>% mutate(cell_type = "oligodendrocyte") %>% slice(1:20) %>% rename(targeting_score = oligodendrocyte)
-opcs_rank_het <- TF_targeting_all_het[ ,c(1,8)] %>% arrange(desc(opcs)) %>% mutate(rank = seq(1:nrow(.))) %>% mutate(cell_type = "opcs") %>% slice(1:20)  %>% rename(targeting_score = opcs)
-fibro_rank_het <- TF_targeting_all_het[ ,c(1,9)] %>% arrange(desc(fibro)) %>% mutate(rank = seq(1:nrow(.))) %>% mutate(cell_type = "fibro") %>% slice(1:20)  %>% rename(targeting_score = fibro)
+TF_targeting_all_het <- subset(TF_targeting_all_het, select = -c(rank)) #removing rank from previous portion of analysis
 
-het_TF_targeting_within <- rbind(astro_rank_het, ex_rank_het, in_rank_het, micro_rank_het, mural_rank_het, oligo_rank_het, opcs_rank_het, fibro_rank_het)
+cell_names <- colnames(TF_targeting_all_het) %>% .[which(. != "TF")] #note: need to change for gene, grabbing cell type names
+cell_names
+
+#rank TFs by targeting for each cell type , find top 20
+TF_rank_het <- list() #creating empty list to store within
+
+for(i in cell_names){
+  rank_het <- TF_targeting_all_het[ ,names(TF_targeting_all_het) %in% c("TF", i)] %>% #note: need to change TF to gene where applicable
+    .[order(.[i], decreasing = TRUE),] %>%
+    mutate(rank = seq(1:nrow(.))) %>%
+    mutate(cell_type = i) %>%
+    slice(1:20) %>%
+    rename(targeting_score = i)
+  TF_rank_het[[i]] <- rank_het
+
+}
+
+het_TF_targeting_within <- do.call(bind_rows, TF_rank_het)#collapsing list into single df using row binding
+
+#rank TFs by targeting for each cell type for all data
+TF_rank_het <- list() #creating empty list to store within
+
+for(i in cell_names){
+  rank_het <- TF_targeting_all_het[ ,names(TF_targeting_all_het) %in% c("TF", i)] %>% #note: need to change TF to gene where applicable
+    .[order(.[i], decreasing = TRUE),] %>%
+    mutate(rank = seq(1:nrow(.))) %>%
+    mutate(cell_type = i) %>%
+    rename(targeting_score = i)
+  TF_rank_het[[i]] <- rank_het
+
+}
+
+het_all_TF_targeting_within <- do.call(bind_rows, TF_rank_het)#collapsing list into single df using row binding
 ```
 
 ```{r visualizing-het-TF-rank-with-heatmap}
-#setting annotation colors
-annotation_colors <- list("cell_type" = c("excitatory" = "#DC71FA", "inhibitory" = "#00BBDB", "oligodendrocyte" = "#7997FF", "astrocytes" = "#6968B4", "micro" = "#C216B7", "opcs" = "#00C1AA", "mural" = "#027461", "fibro" = "#0a2f6f"))
 ##formatting input data
 data <- het_TF_targeting_within[, c("TF", "targeting_score", "cell_type"), drop = FALSE]
 data <- pivot_wider(data, names_from = c("cell_type"), values_from = "targeting_score", names_repair = "minimal")
@@ -763,21 +681,19 @@ data[is.na(data)] = 0
 names <- data$TF #add gene names as rownames
 data <- data[,-1, drop = FALSE]#drop gene column
 rownames(data) <- names
-#setting meta colname 
+#setting meta colname
 meta_colname <- "cell_type"
 #setting plot path
-plot_path <- here("results/diff_targeting/cortex_TF_targeting_top20_het_within_celltype_heatmap.png")
+plot_path <- here("results/diff_targeting/kidney_TF_targeting_top20_het_within_celltype_heatmap.png")
 #setting rowtitle
 rowtitle <- "TFs"
 #setting columntitle
-plot_title <- "Targeting of Top 20 TFs within Cell-types in Setbp1 S858R Cerebral Cortex"
+plot_title <- "Targeting of Top 20 TFs within Cell-types in Setbp1 S858R Kidney Cortex"
 
 targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title)
 ```
 
 ```{r visualizing-ALL-het-TF-rank-heatmap}
-#setting annotation colors
-annotation_colors <- list("cell_type" = c("excitatory" = "#DC71FA", "inhibitory" = "#00BBDB", "oligodendrocyte" = "#7997FF", "astrocytes" = "#6968B4", "micro" = "#C216B7", "opcs" = "#00C1AA", "mural" = "#027461", "fibro" = "#0a2f6f"))
 ##formatting input data
 data <- het_all_TF_targeting_within[, c("TF", "targeting_score", "cell_type"), drop = FALSE]
 data <- pivot_wider(data, names_from = c("cell_type"), values_from = "targeting_score", names_repair = "minimal")
@@ -785,26 +701,19 @@ data[is.na(data)] = 0
 names <- data$TF #add gene names as rownames
 data <- data[,-1, drop = FALSE]#drop gene column
 rownames(data) <- names
-#setting meta colname 
+#setting meta colname
 meta_colname <- "cell_type"
 #setting plot path
-plot_path <- here("results/diff_targeting/cortex_TF_targeting_het_all_withincelltype_heatmap.png")
+plot_path <- here("results/diff_targeting/kidney_TF_targeting_het_all_withincelltype_heatmap.png")
 #setting rowtitle
 rowtitle <- "TFs"
 #setting columntitle
-plot_title <- "Targeting of all TFs within Cell-types in Setbp1 S858R Cerebral Cortex"
+plot_title <- "Targeting of all TFs within Cell-types in Setbp1 S858R Kidney Cortex"
 
 targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title)
 ```
 
 ```{r het-setbp1-TF-targets-within}
-#setting annotation colors
-annotation_colors <- list("cell_type" = c("excitatory" = "#DC71FA", "inhibitory" = "#00BBDB", "oligodendrocyte" = "#7997FF", "astrocytes" = "#6968B4", "micro" = "#C216B7", "opcs" = "#00C1AA", "mural" = "#027461", "fibro" = "#0a2f6f"))
-#subsetting for gene set
-setbp1_genes <- read.csv(here("results/seurat/setbp1_targets.csv"))
-setbp1_genes <- setbp1_genes[,-1] %>% as.vector()
-setbp1_genes <- append(setbp1_genes, "Setbp1")
-
 data <- het_all_TF_targeting_within[het_all_TF_targeting_within$TF %in% setbp1_genes,]
 
 ##formatting input data
@@ -815,48 +724,59 @@ names <- data$TF #add gene names as rownames
 data <- data[,-1, drop = FALSE]#drop gene column
 rownames(data) <- names
 
-#setting meta colname 
+#setting meta colname
 meta_colname <- "cell_type"
 #setting plot path
-plot_path <- here("results/diff_targeting/cortex_TF_targeting_het_Setbp1targets_withincelltype_heatmap.png")
+plot_path <- here("results/diff_targeting/kidney_TF_targeting_het_Setbp1targets_withincelltype_heatmap.png")
 #setting rowtitle
 rowtitle <- "TFs"
 #setting columntitle
-plot_title <- "Targeting of Setbp1 and known target TFs within Cell-types in Setbp1 S858R Cerebral Cortex"
+plot_title <- "Targeting of Setbp1 and known target TFs within Cell-types in Setbp1 S858R Kidney Cortex"
 
 targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title)
 ```
 
 
 ```{r find-top-targeted-genes-within-het-celltypes}
+gene_targeting_all_het <- subset(gene_targeting_all_het, select = -c(rank)) #removing rank from previous portion of analysis
+
+cell_names <- colnames(gene_targeting_all_het) %>% .[which(. != "gene")] #note: need to change for gene, grabbing cell type names
+cell_names
+
 #rank genes by targeting for each cell type , find top 20
-astro_rank_het <- gene_targeting_all_het[ ,c(1,2)] %>% arrange(desc(astrocytes)) %>% mutate(rank = seq(1:nrow(.))) %>% mutate(cell_type = "astrocytes") %>% slice(1:20) %>% rename(targeting_score = astrocytes)
-ex_rank_het <- gene_targeting_all_het[ ,c(1,3)] %>% arrange(desc(excitatory)) %>% mutate(rank = seq(1:nrow(.))) %>% mutate(cell_type = "excitatory") %>% slice(1:20) %>% rename(targeting_score = excitatory)
-in_rank_het <- gene_targeting_all_het[ ,c(1,4)] %>% arrange(desc(inhibitory)) %>% mutate(rank = seq(1:nrow(.))) %>% mutate(cell_type = "inhibitory") %>% slice(1:20) %>% rename(targeting_score = inhibitory)
-micro_rank_het <- gene_targeting_all_het[ ,c(1,5)] %>% arrange(desc(micro)) %>% mutate(rank = seq(1:nrow(.))) %>% mutate(cell_type = "micro") %>% slice(1:20) %>% rename(targeting_score = micro)
-mural_rank_het <- gene_targeting_all_het[ ,c(1,6)] %>% arrange(desc(mural)) %>% mutate(rank = seq(1:nrow(.))) %>% mutate(cell_type = "mural") %>% slice(1:20) %>% rename(targeting_score = mural)
-oligo_rank_het <- gene_targeting_all_het[ ,c(1,7)] %>% arrange(desc(oligodendrocyte)) %>% mutate(rank = seq(1:nrow(.))) %>% mutate(cell_type = "oligodendrocyte") %>% slice(1:20) %>% rename(targeting_score = oligodendrocyte)
-opcs_rank_het <- gene_targeting_all_het[ ,c(1,8)] %>% arrange(desc(opcs)) %>% mutate(rank = seq(1:nrow(.))) %>% mutate(cell_type = "opcs") %>% slice(1:20)  %>% rename(targeting_score = opcs)
-fibro_rank_het <- gene_targeting_all_het[ ,c(1,9)] %>% arrange(desc(fibro)) %>% mutate(rank = seq(1:nrow(.))) %>% mutate(cell_type = "fibro") %>% slice(1:20)  %>% rename(targeting_score = fibro)
+gene_rank_het <- list() #creating empty list to store within
 
-het_gene_targeting_within <- rbind(astro_rank_het, ex_rank_het, in_rank_het, micro_rank_het, mural_rank_het, oligo_rank_het, opcs_rank_het, fibro_rank_het)
+for(i in cell_names){
+  rank_het <- gene_targeting_all_het[ ,names(gene_targeting_all_het) %in% c("gene", i)] %>% #note: need to change TF to gene where applicable
+    .[order(.[i], decreasing = TRUE),] %>%
+    mutate(rank = seq(1:nrow(.))) %>%
+    mutate(cell_type = i) %>%
+    slice(1:20) %>%
+    rename(targeting_score = i)
+  gene_rank_het[[i]] <- rank_het
 
-#rank genes by targeting for each cell type, look at all genes
-astro_rank_het <- gene_targeting_all_het[ ,c(1,2)] %>% arrange(desc(astrocytes)) %>% mutate(rank = seq(1:nrow(.))) %>% mutate(cell_type = "astrocytes") %>% rename(targeting_score = astrocytes)
-ex_rank_het <- gene_targeting_all_het[ ,c(1,3)] %>% arrange(desc(excitatory)) %>% mutate(rank = seq(1:nrow(.))) %>% mutate(cell_type = "excitatory") %>% rename(targeting_score = excitatory)
-in_rank_het <- gene_targeting_all_het[ ,c(1,4)] %>% arrange(desc(inhibitory)) %>% mutate(rank = seq(1:nrow(.))) %>% mutate(cell_type = "inhibitory") %>% rename(targeting_score = inhibitory)
-micro_rank_het <- gene_targeting_all_het[ ,c(1,5)] %>% arrange(desc(micro)) %>% mutate(rank = seq(1:nrow(.))) %>% mutate(cell_type = "micro") %>% rename(targeting_score = micro)
-mural_rank_het <- gene_targeting_all_het[ ,c(1,6)] %>% arrange(desc(mural)) %>% mutate(rank = seq(1:nrow(.))) %>% mutate(cell_type = "mural") %>% rename(targeting_score = mural)
-oligo_rank_het <- gene_targeting_all_het[ ,c(1,7)] %>% arrange(desc(oligodendrocyte)) %>% mutate(rank = seq(1:nrow(.))) %>% mutate(cell_type = "oligodendrocyte") %>% rename(targeting_score = oligodendrocyte)
-opcs_rank_het <- gene_targeting_all_het[ ,c(1,8)] %>% arrange(desc(opcs)) %>% mutate(rank = seq(1:nrow(.))) %>% mutate(cell_type = "opcs") %>% rename(targeting_score = opcs)
-fibro_rank_het <- gene_targeting_all_het[ ,c(1,9)] %>% arrange(desc(fibro)) %>% mutate(rank = seq(1:nrow(.))) %>% mutate(cell_type = "fibro") %>% rename(targeting_score = fibro)
-het_all_gene_targeting_within <- rbind(astro_rank_het, ex_rank_het, in_rank_het, micro_rank_het, mural_rank_het, oligo_rank_het, opcs_rank_het, fibro_rank_het)
+}
+
+het_gene_targeting_within <- do.call(bind_rows, gene_rank_het)#collapsing list into single df using row binding
+
+#rank genes by targeting for each cell type for all data
+gene_rank_het <- list() #creating empty list to store within
+
+for(i in cell_names){
+  rank_het <- gene_targeting_all_het[ ,names(gene_targeting_all_het) %in% c("gene", i)] %>% #note: need to change TF to gene where applicable
+    .[order(.[i], decreasing = TRUE),] %>%
+    mutate(rank = seq(1:nrow(.))) %>%
+    mutate(cell_type = i) %>%
+    rename(targeting_score = i)
+  gene_rank_het[[i]] <- rank_het
+
+}
+
+het_all_gene_targeting_within <- do.call(bind_rows, gene_rank_het)#collapsing list into single df using row binding
 ```
 
 
 ```{r visualizing-het-gene-rank-with-heatmap}
-#setting annotation colors
-annotation_colors <- list("cell_type" = c("excitatory" = "#DC71FA", "inhibitory" = "#00BBDB", "oligodendrocyte" = "#7997FF", "astrocytes" = "#6968B4", "micro" = "#C216B7", "opcs" = "#00C1AA", "mural" = "#027461", "fibro" = "#0a2f6f"))
 ##formatting input data
 data <- het_gene_targeting_within[, c("gene", "targeting_score", "cell_type"), drop = FALSE]
 data <- pivot_wider(data, names_from = c("cell_type"), values_from = "targeting_score", names_repair = "minimal")
@@ -864,21 +784,19 @@ data[is.na(data)] = 0
 names <- data$gene #add gene names as rownames
 data <- data[,-1, drop = FALSE]#drop gene column
 rownames(data) <- names
-#setting meta colname 
+#setting meta colname
 meta_colname <- "cell_type"
 #setting plot path
-plot_path <- here("results/diff_targeting/cortex_gene_targeting_top20_het_within_celltype_heatmap.png")
+plot_path <- here("results/diff_targeting/kidney_gene_targeting_top20_het_within_celltype_heatmap.png")
 #setting rowtitle
 rowtitle <- "genes"
 #setting columntitle
-plot_title <- "Targeting of Top 20 genes within Cell-types in Setbp1 S858R Cerebral Cortex"
+plot_title <- "Targeting of Top 20 genes within Cell-types in Setbp1 S858R Kidney Cortex"
 
 targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title)
 ```
 
 ```{r visualizing-ALL-het-gene-rank-heatmap}
-#setting annotation colors
-annotation_colors <- list("cell_type" = c("excitatory" = "#DC71FA", "inhibitory" = "#00BBDB", "oligodendrocyte" = "#7997FF", "astrocytes" = "#6968B4", "micro" = "#C216B7", "opcs" = "#00C1AA", "mural" = "#027461", "fibro" = "#0a2f6f"))
 ##formatting input data
 data <- het_all_gene_targeting_within[, c("gene", "targeting_score", "cell_type"), drop = FALSE]
 data <- pivot_wider(data, names_from = c("cell_type"), values_from = "targeting_score", names_repair = "minimal")
@@ -886,26 +804,19 @@ data[is.na(data)] = 0
 names <- data$gene #add gene names as rownames
 data <- data[,-1, drop = FALSE]#drop gene column
 rownames(data) <- names
-#setting meta colname 
+#setting meta colname
 meta_colname <- "cell_type"
 #setting plot path
-plot_path <- here("results/diff_targeting/cortex_gene_targeting_het_all_withincelltype_heatmap.png")
+plot_path <- here("results/diff_targeting/kidney_gene_targeting_het_all_withincelltype_heatmap.png")
 #setting rowtitle
 rowtitle <- "genes"
 #setting columntitle
-plot_title <- "Targeting of all genes within Cell-types in Setbp1 S858R Cerebral Cortex"
+plot_title <- "Targeting of all genes within Cell-types in Setbp1 S858R Kidney Cortex"
 
 targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title)
 ```
 
 ```{r het-setbp1-gene-targets-within}
-#setting annotation colors
-annotation_colors <- list("cell_type" = c("excitatory" = "#DC71FA", "inhibitory" = "#00BBDB", "oligodendrocyte" = "#7997FF", "astrocytes" = "#6968B4", "micro" = "#C216B7", "opcs" = "#00C1AA", "mural" = "#027461", "fibro" = "#0a2f6f"))
-#filtering setbp1
-setbp1_genes <- read.csv(here("results/seurat/setbp1_targets.csv"))
-setbp1_genes <- setbp1_genes[,-1] %>% as.vector()
-setbp1_genes <- append(setbp1_genes, "Setbp1")
-
 data <- het_all_gene_targeting_within[het_all_gene_targeting_within$gene %in% setbp1_genes,]
 
 ##formatting input data
@@ -916,97 +827,97 @@ names <- data$gene #add gene names as rownames
 data <- data[,-1, drop = FALSE]#drop gene column
 rownames(data) <- names
 
-#setting meta colname 
+#setting meta colname
 meta_colname <- "cell_type"
 #setting plot path
-plot_path <- here("results/diff_targeting/cortex_gene_targeting_het_Setbp1targets_withincelltype_heatmap.png")
+plot_path <- here("results/diff_targeting/kidney_gene_targeting_het_Setbp1targets_withincelltype_heatmap.png")
 #setting rowtitle
 rowtitle <- "genes"
 #setting columntitle
-plot_title <- "Targeting of Setbp1 and known target genes within Cell-types in Setbp1 S858R Cerebral Cortex"
+plot_title <- "Targeting of Setbp1 and known target genes within Cell-types in Setbp1 S858R Kidney Cortex"
 
 targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title)
 ```
 
 
-# Investigate targeting rank within each Ctrl cell type 
-```{r constructing-ctrl-targeting-matrix}
-TF_targeting_all_ctrl <- merge(TF_targeting_astro[,c(1,2)], TF_targeting_excitatory[,c(1,2)], by = "TF")
-TF_targeting_all_ctrl <- merge(TF_targeting_all_ctrl, TF_targeting_inhibitory[,c(1,2)], by = "TF")
-TF_targeting_all_ctrl <- merge(TF_targeting_all_ctrl, TF_targeting_micro[,c(1,2)], by = "TF")
-TF_targeting_all_ctrl <- merge(TF_targeting_all_ctrl, TF_targeting_mural[,c(1,2)], by = "TF")
-TF_targeting_all_ctrl <- merge(TF_targeting_all_ctrl, TF_targeting_oligodendrocyte[,c(1,2)], by = "TF")
-TF_targeting_all_ctrl <- merge(TF_targeting_all_ctrl, TF_targeting_opcs[,c(1,2)], by = "TF")
-TF_targeting_all_ctrl <- merge(TF_targeting_all_ctrl, TF_targeting_fibro[,c(1,2)], by = "TF")
-
-colnames(TF_targeting_all_ctrl) <- c("TF", "astrocytes", "excitatory", "inhibitory", "micro", "mural", "oligodendrocyte", "opcs", "fibro")
-
-gene_targeting_all_ctrl <- merge(Gene_targeting_astro[,c(1,2)], Gene_targeting_excitatory[,c(1,2)], by = "gene")
-gene_targeting_all_ctrl <- merge(gene_targeting_all_ctrl, Gene_targeting_inhibitory[,c(1,2)], by = "gene")
-gene_targeting_all_ctrl <- merge(gene_targeting_all_ctrl, Gene_targeting_micro[,c(1,2)], by = "gene")
-gene_targeting_all_ctrl <- merge(gene_targeting_all_ctrl, Gene_targeting_mural[,c(1,2)], by = "gene")
-gene_targeting_all_ctrl <- merge(gene_targeting_all_ctrl, Gene_targeting_oligodendrocyte[,c(1,2)], by = "gene")
-gene_targeting_all_ctrl <- merge(gene_targeting_all_ctrl, Gene_targeting_opcs[,c(1,2)], by = "gene")
-gene_targeting_all_ctrl <- merge(gene_targeting_all_ctrl, Gene_targeting_fibro[,c(1,2)], by = "gene")
-
-colnames(gene_targeting_all_ctrl) <- c("gene", "astrocytes", "excitatory", "inhibitory", "micro", "mural", "oligodendrocyte", "opcs", "fibro")
-```
-
-
+# Investigate targeting rank within each Ctrl cell type
 ```{r find-top-targeted-genes-within-ctrl-celltypes}
+gene_targeting_all_ctrl <- subset(gene_targeting_all_ctrl, select = -c(rank)) #removing rank from previous portion of analysis
+
+cell_names <- colnames(gene_targeting_all_ctrl) %>% .[which(. != "gene")] #note: need to change for gene, grabbing cell type names
+cell_names
+
 #rank genes by targeting for each cell type , find top 20
-astro_rank_ctrl <- gene_targeting_all_ctrl[ ,c(1,2)] %>% arrange(desc(astrocytes)) %>% mutate(rank = seq(1:nrow(.))) %>% mutate(cell_type = "astrocytes") %>% slice(1:20) %>% rename(targeting_score = astrocytes)
-ex_rank_ctrl <- gene_targeting_all_ctrl[ ,c(1,3)] %>% arrange(desc(excitatory)) %>% mutate(rank = seq(1:nrow(.))) %>% mutate(cell_type = "excitatory") %>% slice(1:20) %>% rename(targeting_score = excitatory)
-in_rank_ctrl <- gene_targeting_all_ctrl[ ,c(1,4)] %>% arrange(desc(inhibitory)) %>% mutate(rank = seq(1:nrow(.))) %>% mutate(cell_type = "inhibitory") %>% slice(1:20) %>% rename(targeting_score = inhibitory)
-micro_rank_ctrl <- gene_targeting_all_ctrl[ ,c(1,5)] %>% arrange(desc(micro)) %>% mutate(rank = seq(1:nrow(.))) %>% mutate(cell_type = "micro") %>% slice(1:20) %>% rename(targeting_score = micro)
-mural_rank_ctrl <- gene_targeting_all_ctrl[ ,c(1,6)] %>% arrange(desc(mural)) %>% mutate(rank = seq(1:nrow(.))) %>% mutate(cell_type = "mural") %>% slice(1:20) %>% rename(targeting_score = mural)
-oligo_rank_ctrl <- gene_targeting_all_ctrl[ ,c(1,7)] %>% arrange(desc(oligodendrocyte)) %>% mutate(rank = seq(1:nrow(.))) %>% mutate(cell_type = "oligodendrocyte") %>% slice(1:20) %>% rename(targeting_score = oligodendrocyte)
-opcs_rank_ctrl <- gene_targeting_all_ctrl[ ,c(1,8)] %>% arrange(desc(opcs)) %>% mutate(rank = seq(1:nrow(.))) %>% mutate(cell_type = "opcs") %>% slice(1:20)  %>% rename(targeting_score = opcs)
-fibro_rank_ctrl <- gene_targeting_all_ctrl[ ,c(1,9)] %>% arrange(desc(fibro)) %>% mutate(rank = seq(1:nrow(.))) %>% mutate(cell_type = "fibro") %>% slice(1:20)  %>% rename(targeting_score = fibro)
+gene_rank_ctrl <- list() #creating empty list to store within
 
-ctrl_gene_targeting_within <- rbind(astro_rank_ctrl, ex_rank_ctrl, in_rank_ctrl, micro_rank_ctrl, mural_rank_ctrl, oligo_rank_ctrl, opcs_rank_ctrl, fibro_rank_ctrl)
+for(i in cell_names){
+  rank_ctrl <- gene_targeting_all_ctrl[ ,names(gene_targeting_all_ctrl) %in% c("gene", i)] %>% #note: need to change TF to gene where applicable
+    .[order(.[i], decreasing = TRUE),] %>%
+    mutate(rank = seq(1:nrow(.))) %>%
+    mutate(cell_type = i) %>%
+    slice(1:20) %>%
+    rename(targeting_score = i)
+  gene_rank_ctrl[[i]] <- rank_ctrl
 
-#rank genes by targeting for each cell type, look at all genes
-astro_rank_ctrl<- gene_targeting_all_ctrl[ ,c(1,2)] %>% arrange(desc(astrocytes)) %>% mutate(rank = seq(1:nrow(.))) %>% mutate(cell_type = "astrocytes") %>% rename(targeting_score = astrocytes)
-ex_rank_ctrl<- gene_targeting_all_ctrl[ ,c(1,3)] %>% arrange(desc(excitatory)) %>% mutate(rank = seq(1:nrow(.))) %>% mutate(cell_type = "excitatory") %>% rename(targeting_score = excitatory)
-in_rank_ctrl<- gene_targeting_all_ctrl[ ,c(1,4)] %>% arrange(desc(inhibitory)) %>% mutate(rank = seq(1:nrow(.))) %>% mutate(cell_type = "inhibitory") %>% rename(targeting_score = inhibitory)
-micro_rank_ctrl<- gene_targeting_all_ctrl[ ,c(1,5)] %>% arrange(desc(micro)) %>% mutate(rank = seq(1:nrow(.))) %>% mutate(cell_type = "micro") %>% rename(targeting_score = micro)
-mural_rank_ctrl<- gene_targeting_all_ctrl[ ,c(1,6)] %>% arrange(desc(mural)) %>% mutate(rank = seq(1:nrow(.))) %>% mutate(cell_type = "mural") %>% rename(targeting_score = mural)
-oligo_rank_ctrl<- gene_targeting_all_ctrl[ ,c(1,7)] %>% arrange(desc(oligodendrocyte)) %>% mutate(rank = seq(1:nrow(.))) %>% mutate(cell_type = "oligodendrocyte") %>% rename(targeting_score = oligodendrocyte)
-opcs_rank_ctrl<- gene_targeting_all_ctrl[ ,c(1,8)] %>% arrange(desc(opcs)) %>% mutate(rank = seq(1:nrow(.))) %>% mutate(cell_type = "opcs") %>% rename(targeting_score = opcs)
-fibro_rank_ctrl<- gene_targeting_all_ctrl[ ,c(1,9)] %>% arrange(desc(fibro)) %>% mutate(rank = seq(1:nrow(.))) %>% mutate(cell_type = "fibro") %>% rename(targeting_score = fibro)
+}
 
-ctrl_all_gene_targeting_within <- rbind(astro_rank_ctrl, ex_rank_ctrl, in_rank_ctrl, micro_rank_ctrl, mural_rank_ctrl, oligo_rank_ctrl, opcs_rank_ctrl, fibro_rank_ctrl)
+ctrl_gene_targeting_within <- do.call(bind_rows, gene_rank_ctrl)#collapsing list into single df using row binding
+
+#rank genes by targeting for each cell type for all data
+gene_rank_ctrl <- list() #creating empty list to store within
+
+for(i in cell_names){
+  rank_ctrl <- gene_targeting_all_ctrl[ ,names(gene_targeting_all_ctrl) %in% c("gene", i)] %>% #note: need to change TF to gene where applicable
+    .[order(.[i], decreasing = TRUE),] %>%
+    mutate(rank = seq(1:nrow(.))) %>%
+    mutate(cell_type = i) %>%
+    rename(targeting_score = i)
+  gene_rank_ctrl[[i]] <- rank_ctrl
+
+}
+
+ctrl_all_gene_targeting_within <- do.call(bind_rows, gene_rank_ctrl)#collapsing list into single df using row binding
 ```
 
 ```{r find-top-targeted-TFs-within-ctrl-celltypes}
+TF_targeting_all_ctrl <- subset(TF_targeting_all_ctrl, select = -c(rank)) #removing rank from previous portion of analysis
+
+cell_names <- colnames(TF_targeting_all_ctrl) %>% .[which(. != "TF")] #note: need to change for TF, grabbing cell type names
+cell_names
+
 #rank TFs by targeting for each cell type , find top 20
-astro_rank_ctrl <- TF_targeting_all_ctrl[ ,c(1,2)] %>% arrange(desc(astrocytes)) %>% mutate(rank = seq(1:nrow(.))) %>% mutate(cell_type = "astrocytes") %>% slice(1:20) %>% rename(targeting_score = astrocytes)
-ex_rank_ctrl <- TF_targeting_all_ctrl[ ,c(1,3)] %>% arrange(desc(excitatory)) %>% mutate(rank = seq(1:nrow(.))) %>% mutate(cell_type = "excitatory") %>% slice(1:20) %>% rename(targeting_score = excitatory)
-in_rank_ctrl <- TF_targeting_all_ctrl[ ,c(1,4)] %>% arrange(desc(inhibitory)) %>% mutate(rank = seq(1:nrow(.))) %>% mutate(cell_type = "inhibitory") %>% slice(1:20) %>% rename(targeting_score = inhibitory)
-micro_rank_ctrl <- TF_targeting_all_ctrl[ ,c(1,5)] %>% arrange(desc(micro)) %>% mutate(rank = seq(1:nrow(.))) %>% mutate(cell_type = "micro") %>% slice(1:20) %>% rename(targeting_score = micro)
-mural_rank_ctrl <- TF_targeting_all_ctrl[ ,c(1,6)] %>% arrange(desc(mural)) %>% mutate(rank = seq(1:nrow(.))) %>% mutate(cell_type = "mural") %>% slice(1:20) %>% rename(targeting_score = mural)
-oligo_rank_ctrl <- TF_targeting_all_ctrl[ ,c(1,7)] %>% arrange(desc(oligodendrocyte)) %>% mutate(rank = seq(1:nrow(.))) %>% mutate(cell_type = "oligodendrocyte") %>% slice(1:20) %>% rename(targeting_score = oligodendrocyte)
-opcs_rank_ctrl <- TF_targeting_all_ctrl[ ,c(1,8)] %>% arrange(desc(opcs)) %>% mutate(rank = seq(1:nrow(.))) %>% mutate(cell_type = "opcs") %>% slice(1:20)  %>% rename(targeting_score = opcs)
-fibro_rank_ctrl <- TF_targeting_all_ctrl[ ,c(1,9)] %>% arrange(desc(fibro)) %>% mutate(rank = seq(1:nrow(.))) %>% mutate(cell_type = "fibro") %>% slice(1:20)  %>% rename(targeting_score = fibro)
+TF_rank_ctrl <- list() #creating empty list to store within
 
-ctrl_TF_targeting_within <- rbind(astro_rank_ctrl, ex_rank_ctrl, in_rank_ctrl, micro_rank_ctrl, mural_rank_ctrl, oligo_rank_ctrl, opcs_rank_ctrl, fibro_rank_ctrl)
+for(i in cell_names){
+  rank_ctrl <- TF_targeting_all_ctrl[ ,names(TF_targeting_all_ctrl) %in% c("TF", i)] %>% #note: need to change TF to gene where applicable
+    .[order(.[i], decreasing = TRUE),] %>%
+    mutate(rank = seq(1:nrow(.))) %>%
+    mutate(cell_type = i) %>%
+    slice(1:20) %>%
+    rename(targeting_score = i)
+  TF_rank_ctrl[[i]] <- rank_ctrl
 
-#rank TFs by targeting for each cell type, look at all genes
-astro_rank_ctrl<- TF_targeting_all_ctrl[ ,c(1,2)] %>% arrange(desc(astrocytes)) %>% mutate(rank = seq(1:nrow(.))) %>% mutate(cell_type = "astrocytes") %>% rename(targeting_score = astrocytes)
-ex_rank_ctrl<- TF_targeting_all_ctrl[ ,c(1,3)] %>% arrange(desc(excitatory)) %>% mutate(rank = seq(1:nrow(.))) %>% mutate(cell_type = "excitatory") %>% rename(targeting_score = excitatory)
-in_rank_ctrl<- TF_targeting_all_ctrl[ ,c(1,4)] %>% arrange(desc(inhibitory)) %>% mutate(rank = seq(1:nrow(.))) %>% mutate(cell_type = "inhibitory") %>% rename(targeting_score = inhibitory)
-micro_rank_ctrl<- TF_targeting_all_ctrl[ ,c(1,5)] %>% arrange(desc(micro)) %>% mutate(rank = seq(1:nrow(.))) %>% mutate(cell_type = "micro") %>% rename(targeting_score = micro)
-mural_rank_ctrl<- TF_targeting_all_ctrl[ ,c(1,6)] %>% arrange(desc(mural)) %>% mutate(rank = seq(1:nrow(.))) %>% mutate(cell_type = "mural") %>% rename(targeting_score = mural)
-oligo_rank_ctrl<- TF_targeting_all_ctrl[ ,c(1,7)] %>% arrange(desc(oligodendrocyte)) %>% mutate(rank = seq(1:nrow(.))) %>% mutate(cell_type = "oligodendrocyte") %>% rename(targeting_score = oligodendrocyte)
-opcs_rank_ctrl<- TF_targeting_all_ctrl[ ,c(1,8)] %>% arrange(desc(opcs)) %>% mutate(rank = seq(1:nrow(.))) %>% mutate(cell_type = "opcs") %>% rename(targeting_score = opcs)
-fibro_rank_ctrl<- TF_targeting_all_ctrl[ ,c(1,9)] %>% arrange(desc(fibro)) %>% mutate(rank = seq(1:nrow(.))) %>% mutate(cell_type = "fibro") %>% rename(targeting_score = fibro)
+}
 
-ctrl_all_TF_targeting_within <- rbind(astro_rank_ctrl, ex_rank_ctrl, in_rank_ctrl, micro_rank_ctrl, mural_rank_ctrl, oligo_rank_ctrl, opcs_rank_ctrl, fibro_rank_ctrl)
+ctrl_TF_targeting_within <- do.call(bind_rows, TF_rank_ctrl)#collapsing list into single df using row binding
+
+#rank TFs by targeting for each cell type for all data
+TF_rank_ctrl <- list() #creating empty list to store within
+
+for(i in cell_names){
+  rank_ctrl <- TF_targeting_all_ctrl[ ,names(TF_targeting_all_ctrl) %in% c("TF", i)] %>% #note: need to change TF to TF where applicable
+    .[order(.[i], decreasing = TRUE),] %>%
+    mutate(rank = seq(1:nrow(.))) %>%
+    mutate(cell_type = i) %>%
+    rename(targeting_score = i)
+  TF_rank_ctrl[[i]] <- rank_ctrl
+
+}
+
+ctrl_all_TF_targeting_within <- do.call(bind_rows, TF_rank_ctrl)#collapsing list into single df using row binding
 ```
+
 ```{r visualizing-ctrl-gene-rank-with-heatmap}
-#setting annotation colors
-annotation_colors <- list("cell_type" = c("excitatory" = "#DC71FA", "inhibitory" = "#00BBDB", "oligodendrocyte" = "#7997FF", "astrocytes" = "#6968B4", "micro" = "#C216B7", "opcs" = "#00C1AA", "mural" = "#027461", "fibro" = "#0a2f6f"))
 ##formatting input data
 data <- ctrl_gene_targeting_within[, c("gene", "targeting_score", "cell_type"), drop = FALSE]
 data <- pivot_wider(data, names_from = c("cell_type"), values_from = "targeting_score", names_repair = "minimal")
@@ -1014,21 +925,19 @@ data[is.na(data)] = 0
 names <- data$gene #add gene names as rownames
 data <- data[,-1, drop = FALSE]#drop gene column
 rownames(data) <- names
-#setting meta colname 
+#setting meta colname
 meta_colname <- "cell_type"
 #setting plot path
-plot_path <- here("results/diff_targeting/cortex_gene_targeting_top20_ctrl_within_celltype_heatmap.png")
+plot_path <- here("results/diff_targeting/kidney_gene_targeting_top20_ctrl_within_celltype_heatmap.png")
 #setting rowtitle
 rowtitle <- "genes"
 #setting columntitle
-plot_title <- "Targeting of Top 20 genes within Cell-types in Setbp1 Ctrl Cerebral Cortex"
+plot_title <- "Targeting of Top 20 genes within Cell-types in Setbp1 Ctrl Kidney Cortex"
 
 targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title)
 ```
 
 ```{r visualizing-ALL-ctrl-gene-rank-heatmap}
-#setting annotation colors
-annotation_colors <- list("cell_type" = c("excitatory" = "#DC71FA", "inhibitory" = "#00BBDB", "oligodendrocyte" = "#7997FF", "astrocytes" = "#6968B4", "micro" = "#C216B7", "opcs" = "#00C1AA", "mural" = "#027461", "fibro" = "#0a2f6f"))
 ##formatting input data
 data <- ctrl_all_gene_targeting_within[, c("gene", "targeting_score", "cell_type"), drop = FALSE]
 data <- pivot_wider(data, names_from = c("cell_type"), values_from = "targeting_score", names_repair = "minimal")
@@ -1036,27 +945,21 @@ data[is.na(data)] = 0
 names <- data$gene #add gene names as rownames
 data <- data[,-1, drop = FALSE]#drop gene column
 rownames(data) <- names
-#setting meta colname 
+#setting meta colname
 meta_colname <- "cell_type"
 #setting plot path
-plot_path <- here("results/diff_targeting/cortex_gene_targeting_ctrl_all_withincelltype_heatmap.png")
+plot_path <- here("results/diff_targeting/kidney_gene_targeting_ctrl_all_withincelltype_heatmap.png")
 #setting rowtitle
 rowtitle <- "genes"
 #setting columntitle
-plot_title <- "Targeting of all genes within Cell-types in Setbp1 Ctrl Cerebral Cortex"
+plot_title <- "Targeting of all genes within Cell-types in Setbp1 Ctrl Kidney Cortex"
 
 targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title)
 ```
 
 
 ```{r ctrl-setbp1-gene-targets-within}
-#setting annotation colors
-annotation_colors <- list("cell_type" = c("excitatory" = "#DC71FA", "inhibitory" = "#00BBDB", "oligodendrocyte" = "#7997FF", "astrocytes" = "#6968B4", "micro" = "#C216B7", "opcs" = "#00C1AA", "mural" = "#027461", "fibro" = "#0a2f6f"))
-#filtering based off of gene set 
-setbp1_genes <- read.csv(here("results/seurat/setbp1_targets.csv"))
-setbp1_genes <- setbp1_genes[,-1] %>% as.vector()
-setbp1_genes <- append(setbp1_genes, "Setbp1")
-
+#filtering based off of gene set
 data <- ctrl_all_gene_targeting_within[ctrl_all_gene_targeting_within$gene %in% setbp1_genes,]
 
 ##formatting input data
@@ -1066,21 +969,19 @@ data[is.na(data)] = 0
 names <- data$gene #add gene names as rownames
 data <- data[,-1, drop = FALSE]#drop gene column
 rownames(data) <- names
-#setting meta colname 
+#setting meta colname
 meta_colname <- "cell_type"
 #setting plot path
-plot_path <- here("results/diff_targeting/cortex_gene_targeting_ctrl_Setbp1targets_withincelltype_heatmap.png")
+plot_path <- here("results/diff_targeting/kidney_gene_targeting_ctrl_Setbp1targets_withincelltype_heatmap.png")
 #setting rowtitle
 rowtitle <- "genes"
 #setting columntitle
-plot_title <- "Targeting of Setbp1 and known target genes within Cell-types in Setbp1 Control Cerebral Cortex"
+plot_title <- "Targeting of Setbp1 and known target genes within Cell-types in Setbp1 Control Kidney Cortex"
 
 targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title)
 ```
 
 ```{r visualizing-ctrl-TF-rank-with-heatmap}
-#setting annotation colors
-annotation_colors <- list("cell_type" = c("excitatory" = "#DC71FA", "inhibitory" = "#00BBDB", "oligodendrocyte" = "#7997FF", "astrocytes" = "#6968B4", "micro" = "#C216B7", "opcs" = "#00C1AA", "mural" = "#027461", "fibro" = "#0a2f6f"))
 ##formatting input data
 data <- ctrl_TF_targeting_within[, c("TF", "targeting_score", "cell_type"), drop = FALSE]
 data <- pivot_wider(data, names_from = c("cell_type"), values_from = "targeting_score", names_repair = "minimal")
@@ -1088,21 +989,19 @@ data[is.na(data)] = 0
 names <- data$TF #add TF names as rownames
 data <- data[,-1, drop = FALSE]#drop TF column
 rownames(data) <- names
-#setting meta colname 
+#setting meta colname
 meta_colname <- "cell_type"
 #setting plot path
-plot_path <- here("results/diff_targeting/cortex_TF_targeting_top20_ctrl_within_celltype_heatmap.png")
+plot_path <- here("results/diff_targeting/kidney_TF_targeting_top20_ctrl_within_celltype_heatmap.png")
 #setting rowtitle
 rowtitle <- "TFs"
 #setting columntitle
-plot_title <- "Targeting of Top 20 TFs within Cell-types in Setbp1 Ctrl Cerebral Cortex"
+plot_title <- "Targeting of Top 20 TFs within Cell-types in Setbp1 Ctrl Kidney Cortex"
 
 targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title)
 ```
 
 ```{r visualizing-ALL-ctrl-TF-rank-heatmap}
-#setting annotation colors
-annotation_colors <- list("cell_type" = c("excitatory" = "#DC71FA", "inhibitory" = "#00BBDB", "oligodendrocyte" = "#7997FF", "astrocytes" = "#6968B4", "micro" = "#C216B7", "opcs" = "#00C1AA", "mural" = "#027461", "fibro" = "#0a2f6f"))
 ##formatting input data
 data <- ctrl_all_TF_targeting_within[, c("TF", "targeting_score", "cell_type"), drop = FALSE]
 data <- pivot_wider(data, names_from = c("cell_type"), values_from = "targeting_score", names_repair = "minimal")
@@ -1110,26 +1009,20 @@ data[is.na(data)] = 0
 names <- data$TF #add TF names as rownames
 data <- data[,-1, drop = FALSE]#drop TF column
 rownames(data) <- names
-#setting meta colname 
+#setting meta colname
 meta_colname <- "cell_type"
 #setting plot path
-plot_path <- here("results/diff_targeting/cortex_TF_targeting_ctrl_all_withincelltype_heatmap.png")
+plot_path <- here("results/diff_targeting/kidney_TF_targeting_ctrl_all_withincelltype_heatmap.png")
 #setting rowtitle
 rowtitle <- "TFs"
 #setting columntitle
-plot_title <- "Targeting of all TFs within Cell-types in Setbp1 Ctrl Cerebral Cortex"
+plot_title <- "Targeting of all TFs within Cell-types in Setbp1 Ctrl Kidney Cortex"
 
 targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title)
 ```
 
 ```{r ctrl-setbp1-TF-targets-within}
-#setting annotation colors
-annotation_colors <- list("cell_type" = c("excitatory" = "#DC71FA", "inhibitory" = "#00BBDB", "oligodendrocyte" = "#7997FF", "astrocytes" = "#6968B4", "micro" = "#C216B7", "opcs" = "#00C1AA", "mural" = "#027461", "fibro" = "#0a2f6f"))
 #subsetting for gene set
-setbp1_genes <- read.csv(here("results/seurat/setbp1_targets.csv"))
-setbp1_genes <- setbp1_genes[,-1] %>% as.vector()
-setbp1_genes <- append(setbp1_genes, "Setbp1")
-
 data <- ctrl_all_TF_targeting_within[ctrl_all_TF_targeting_within$TF %in% setbp1_genes,]
 
 ##formatting input data
@@ -1140,14 +1033,14 @@ names <- data$TF #add TF names as rownames
 data <- data[,-1, drop = FALSE]#drop TF column
 rownames(data) <- names
 
-#setting meta colname 
+#setting meta colname
 meta_colname <- "cell_type"
 #setting plot path
-plot_path <- here("results/diff_targeting/cortex_TF_targeting_ctrl_Setbp1targets_withincelltype_heatmap.png")
+plot_path <- here("results/diff_targeting/kidney_TF_targeting_ctrl_Setbp1targets_withincelltype_heatmap.png")
 #setting rowtitle
 rowtitle <- "TFs"
 #setting columntitle
-plot_title <- "Targeting of Setbp1 and known target TFs within Cell-types in Setbp1 Control Cerebral Cortex"
+plot_title <- "Targeting of Setbp1 and known target TFs within Cell-types in Setbp1 Control Kidney Cortex"
 
 targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title)
 ```
@@ -1155,38 +1048,77 @@ targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, pl
 ####################################
 
 # calculating differential targeting score between conditions 
-GOAL: ID genes/TFs with largest difference in targeting between conditions within each cell type:
-Using the combined het/ctrl dataframe for each cell type above, calculate the difference (het-ctrl) for the targeting weight where the more positive difference indicates higher gene targeting in het and more negative diff indicates higher gene targeting in ctrl. The closer a value is to 0, the less difference in targeting between conditions for that cell type
+GOAL: ID genes/TFs with largest difference in targeting _between conditions within each cell type_:
+* Using the combined het/ctrl dataframe for each cell type above, calculate the difference (het-ctrl) for the targeting weight where the more positive difference indicates higher gene targeting in het and more negative diff indicates higher gene targeting in ctrl. 
+* The closer a value is to 0, the less difference in targeting between conditions for that cell type
 
 ```{r rearrange-data-calc-diff}
-#wrangle data
-combined_gene_targeting <- cbind(gene_targeting_all_het, gene_targeting_all_ctrl)
-combined_gene_targeting <- combined_gene_targeting[,-10] #remove duplicate "gene" column
-colnames(combined_gene_targeting) <- c("gene", "astrocytes_het", "excitatory_het", "inhibitory_het", "micro_het", "mural_het", "oligodendrocyte_het", "opcs_het", "fibro_het", "astrocytes_ctrl", "excitatory_ctrl", "inhibitory_ctrl", "micro_ctrl", "mural_ctrl", "oligodendrocyte_ctrl", "opcs_ctrl", "fibro_ctrl")
+#ordering data the same
+gene_targeting_all_het <- gene_targeting_all_het[order(gene_targeting_all_het["gene"]),]
+gene_targeting_all_ctrl <- gene_targeting_all_ctrl[order(gene_targeting_all_ctrl["gene"]),]
 
-diff_gene_targeting <- data.frame(matrix(NA, nrow = 22033, ncol = 9))
-diff_gene_targeting$X1 <- combined_gene_targeting$gene
-colnames(diff_gene_targeting) <- c("gene", "astrocytes", "excitatory", "inhibitory", "microglia", "mural", "oligodendrocyte", "opcs", "fibro")
+# Add suffix to column names except the gene/TF column
+new_colnames <- ifelse(names(gene_targeting_all_het) != "gene", paste0(names(gene_targeting_all_het), "_het"), names(gene_targeting_all_het))
+names(gene_targeting_all_het) <- new_colnames
+print(gene_targeting_all_het) # Print the updated dataframe
 
-#calculate diff targeting for each cell type 
-diff_gene_targeting$astrocytes <- combined_gene_targeting$astrocytes_het - combined_gene_targeting$astrocytes_ctrl
-diff_gene_targeting$excitatory <- combined_gene_targeting$excitatory_het - combined_gene_targeting$excitatory_ctrl
-diff_gene_targeting$inhibitory <- combined_gene_targeting$inhibitory_het - combined_gene_targeting$inhibitory_ctrl
-diff_gene_targeting$microglia <- combined_gene_targeting$micro_het - combined_gene_targeting$micro_ctrl
-diff_gene_targeting$mural <- combined_gene_targeting$mural_het - combined_gene_targeting$mural_ctrl
-diff_gene_targeting$oligodendrocyte <- combined_gene_targeting$oligodendrocyte_het - combined_gene_targeting$oligodendrocyte_ctrl
-diff_gene_targeting$opcs <- combined_gene_targeting$opcs_het - combined_gene_targeting$opcs_ctrl
-diff_gene_targeting$fibro <- combined_gene_targeting$fibro_het - combined_gene_targeting$fibro_ctrl
+new_colnames <- ifelse(names(gene_targeting_all_ctrl) != "gene", paste0(names(gene_targeting_all_ctrl), "_ctrl"), names(gene_targeting_all_ctrl))
+names(gene_targeting_all_ctrl) <- new_colnames
+print(gene_targeting_all_ctrl) # Print the updated dataframe
+
+#binding data together
+combined_gene_targeting <- merge(gene_targeting_all_het, gene_targeting_all_ctrl, by = "gene")
+```
+
+```{r calculate-het-enriched-diff-targeting}
+#creating empty data frame
+ diff_gene_targeting <- data.frame(matrix(NA, nrow = nrow(combined_gene_targeting), ncol = 1))
+ colnames(diff_gene_targeting) <- "gene" #this will need to be gene or TF respectively
+ diff_gene_targeting$gene <- combined_gene_targeting$gene #adding gene/TF
+
+#calc diff targeting
+cell_names <- colnames(gene_targeting_all_ctrl[,-1]) %>% sub("_ctrl.*", "", .) #all cell type prefixes except gene name, which should be first column in data
+for(i in cell_names){
+  selected_columns <- names(combined_gene_targeting)[startsWith(names(combined_gene_targeting), i)]
+  # Check there are two columns with the specified prefix
+  if (length(selected_columns) == 2) {
+    diff_col <- combined_gene_targeting[[selected_columns[1]]] - combined_gene_targeting[[selected_columns[2]]] #ensure difference is `het - control` here
+    # Create a new column name
+    diff_colname <- paste0(i)
+    # Add the result to the result dataframe
+    diff_gene_targeting[[diff_colname]] <- diff_col
+  }
+}
 
 het_enriched <- replace(diff_gene_targeting, diff_gene_targeting[,] < 0, 0) #creating dataframe where the differential is enriched in the het condition
-save(het_enriched, file = here("results/diff_targeting/het_enriched.Rdata"))
-ctrl_enriched <- replace(diff_gene_targeting, diff_gene_targeting[,] > 0, 0) #creating dataframe where the differential is enriched in the ctrl condition
-save(ctrl_enriched, file = here("results/diff_targeting/ctrl_enriched.Rdata"))
+save(het_enriched, file = here("results/diff_targeting/kidney_het_enriched_gene.Rdata"))
+```
+
+```{r calculate-ctrl-enriched-diff-targeting}
+#creating empty data frame
+ diff_gene_targeting <- data.frame(matrix(NA, nrow = nrow(combined_gene_targeting), ncol = 1))
+ colnames(diff_gene_targeting) <- "gene" #this will need to be gene or TF respectively
+ diff_gene_targeting$gene <- combined_gene_targeting$gene #adding gene/TF
+
+# calc diff targeting 
+cell_names <- colnames(gene_targeting_all_ctrl[,-1]) %>% sub("_ctrl.*", "", .) #all cell type prefixes except gene name, which should be first column in data
+for(i in cell_names){
+  selected_columns <- names(combined_gene_targeting)[startsWith(names(combined_gene_targeting), i)]
+  # Check there are two columns with the specified prefix
+  if (length(selected_columns) == 2) {
+    diff_col <- combined_gene_targeting[[selected_columns[2]]] - combined_gene_targeting[[selected_columns[1]]] #ensure difference is `control - het` here
+    # Create a new column name
+    diff_colname <- paste0(i)
+    # Add the result to the result dataframe
+    diff_gene_targeting[[diff_colname]] <- diff_col
+  }
+}
+
+ctrl_enriched <- replace(diff_gene_targeting, diff_gene_targeting[,] < 0, 0) #creating dataframe where the differential is enriched in the ctrl condition
+save(ctrl_enriched, file = here("results/diff_targeting/kidney_ctrl_enriched_gene.Rdata"))
 ```
 
 ```{r visualizing-all-diff-gene-het-enriched}
-#setting annotation colors
-annotation_colors <- list("cell_type" = c("excitatory" = "#DC71FA", "inhibitory" = "#00BBDB", "oligodendrocyte" = "#7997FF", "astrocytes" = "#6968B4", "micro" = "#C216B7", "opcs" = "#00C1AA", "mural" = "#027461", "fibro" = "#0a2f6f"))
 ##formatting input data
 data <- het_enriched
 names <- data$gene #add gene names as rownames
@@ -1195,23 +1127,17 @@ rownames(data) <- names
 #setting meta colname 
 meta_colname <- "cell_type"
 #setting plot path
-plot_path <- here("results/diff_targeting/cortex_gene_DIFFtargeting_het_enriched_heatmap.png")
+plot_path <- here("results/diff_targeting/kidney_gene_DIFFtargeting_het_enriched_heatmap.png")
 #setting rowtitle
 rowtitle <- "genes"
 #setting columntitle
-plot_title <- "Differential Targeting of S858R enriched genes in Cerebral Cortex"
+plot_title <- "Differential Targeting of S858R enriched genes in Kidney Cortex"
 
 targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title)
 ```
 
 ```{r visualizing-all-diff-gene-het-enriched-setbp1genes}
-#setting annotation colors
-annotation_colors <- list("cell_type" = c("excitatory" = "#DC71FA", "inhibitory" = "#00BBDB", "oligodendrocyte" = "#7997FF", "astrocytes" = "#6968B4", "micro" = "#C216B7", "opcs" = "#00C1AA", "mural" = "#027461", "fibro" = "#0a2f6f"))
 #filtering for gene set
-setbp1_genes <- read.csv(here("results/seurat/setbp1_targets.csv"))
-setbp1_genes <- setbp1_genes[,-1] %>% as.vector()
-setbp1_genes <- append(setbp1_genes, "Setbp1") #683 aliases total
-
 data <- het_enriched[het_enriched$gene %in% setbp1_genes,]
 
 names <- data$gene #add names as rownames
@@ -1220,141 +1146,39 @@ rownames(data) <- names
 #setting meta colname 
 meta_colname <- "cell_type"
 #setting plot path
-plot_path <- here("results/diff_targeting/cortex_gene_DIFFtargeting_het_Setbp1targets_enriched_heatmap.png")
+plot_path <- here("results/diff_targeting/kidney_gene_DIFFtargeting_het_Setbp1targets_enriched_heatmap.png")
 #setting rowtitle
 rowtitle <- "genes"
 #setting columntitle
-plot_title <- "Differential Gene Targeting of known targets of Setbp1 in S858R enriched genes of Cerebral Cortex"
+plot_title <- "Differential Gene Targeting of known targets of Setbp1 in S858R enriched genes of Kidney Cortex"
 
 targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title)
 ```
 
 ```{r GO-difftargeting-genes-Setbp1Target-het-enriched}
 ##pathway analysis and plotting
-setbp1_genes <- read.csv(here("results/seurat/setbp1_targets.csv"))
-setbp1_genes <- setbp1_genes[,-1] %>% as.vector()
-setbp1_genes <- append(setbp1_genes, "Setbp1") #683 aliases total
+exclude_column <- "gene" #note: this needs to be changed for TF or gene respectively, indicates which columns to pivot longer below, 
+data <- het_enriched[het_enriched$gene %in% setbp1_genes,] %>% pivot_longer(., cols = which(colnames(.) != exclude_column), names_to = "cell_type", values_to =  "targeting_score") %>% .[!.$targeting_score == 0,]
 
-data <- het_enriched[het_enriched$gene %in% setbp1_genes,] %>% pivot_longer(., cols = 2:9, names_to = "cell_type", values_to =  "targeting_score") %>% .[!.$targeting_score == 0,]
-
-
-#astrocytes ----------
-top <- data[data$cell_type == "astrocytes",]
-genes <- as.character(top$gene)
-
-# submit genes to pathway analysis function ---------- 
-fea_result_filt <- fea(genes = genes, organism = "mmusculus", max_term = 1000, min_term = 1)
-png(paste0(here("results/diff_targeting/DiffTargeting_astro_genes_ Setbp1targets_het_enriched.png")), width = 1000, height = 1000)
+for(i in cell_names){
+  # grab genes/TFs from cell type i ----------
+  top <- data[data$cell_type == i,]
+  genes <- as.character(top$gene)
+  # submit genes to pathway analysis function ---------- 
+  fea_result_filt <- fea(genes = genes, organism = "mmusculus", max_term = 1000, min_term = 1)
+  png(paste0(here("results/diff_targeting/"), "DiffTargeting_", i, "genes_ Setbp1targets_het_enriched.png"), width = 1000, height = 1000)
 # plot dotplot and add title based on input variable ----------
 plot <- bubbleplot(fea_result_filt) +  
-    ggtitle(paste0("Pathways Associated with Differentially Targeted genes (Setbp1 or known targets) in Setbp1 S858R Astrocytes")) + 
-    theme(plot.title = element_text(hjust = 0.5, size = 12)) 
+    ggtitle(paste0("Pathways Associated with Differentially Targeted genes (Setbp1 or known targets) in Setbp1 S858R ", i)) + 
+    theme(plot.title = element_text(hjust = 0.5, size = 12)) + 
+    theme_minimal()
   print(plot) 
-  dev.off() 
-  
-#excitatory ------------
-top <- data[data$cell_type == "excitatory",]
-genes <- as.character(top$gene)
-
-# submit genes to pathway analysis function ---------- 
-fea_result_filt <- fea(genes = genes, organism = "mmusculus", max_term = 1000, min_term = 1)
-png(paste0(here("results/diff_targeting/DiffTargeting_ex_genes_Setbp1targets_het_enriched.png")), width = 1000, height = 1000)
-# plot dotplot and add title based on input variable ----------
-plot <- bubbleplot(fea_result_filt) +  
-    ggtitle(paste0("Pathways Associated with Differentially Targeted genes (Setbp1 or known targets) in Setbp1 S858R Excitatory Neurons")) + 
-    theme(plot.title = element_text(hjust = 0.5, size = 12)) 
-  print(plot) 
-  dev.off() 
-  
-#inhibitory ------------
-top <- data[data$cell_type == "inhibitory",]
-genes <- as.character(top$gene)
-
-# submit genes to pathway analysis function ---------- 
-fea_result_filt <- fea(genes = genes, organism = "mmusculus", max_term = 1000, min_term = 1)
-png(paste0(here("results/diff_targeting/DiffTargeting_inhib_genes_ Setbp1targets_het_enriched.png")), width = 1000, height = 1000)
-# plot dotplot and add title based on input variable ----------
-plot <- bubbleplot(fea_result_filt) +  
-    ggtitle(paste0("Pathways Associated with Differentially Targeted genes (Setbp1 or known targets) in Setbp1 S858R inhibitory Neurons")) + 
-    theme(plot.title = element_text(hjust = 0.5, size = 12)) 
-  print(plot) 
-  dev.off() 
-  
-#mural ------------
-top <- data[data$cell_type == "mural",]
-genes <- as.character(top$gene)
-
-# submit genes to pathway analysis function ---------- 
-fea_result_filt <- fea(genes = genes, organism = "mmusculus", max_term = 1000, min_term = 1)
-png(paste0(here("results/diff_targeting/DiffTargeting_mural_genes_ Setbp1targets_het_enriched.png")), width = 1000, height = 1000)
-# plot dotplot and add title based on input variable ----------
-plot <- bubbleplot(fea_result_filt) +  
-    ggtitle(paste0("Pathways Associated with Differentially Targeted genes (Setbp1 or known targets) in Setbp1 S858R Mural cells")) + 
-    theme(plot.title = element_text(hjust = 0.5, size = 12)) 
-  print(plot) 
-  dev.off() 
-
-#microglia ------------
-top <- data[data$cell_type == "microglia",]
-genes <- as.character(top$gene)
-
-# submit genes to pathway analysis function ---------- 
-fea_result_filt <- fea(genes = genes, organism = "mmusculus", max_term = 1000, min_term = 1)
-png(paste0(here("results/diff_targeting/DiffTargeting_microglia_genes_ Setbp1targets_het_enriched.png")), width = 1000, height = 1000)
-# plot dotplot and add title based on input variable ----------
-plot <- bubbleplot(fea_result_filt) +  
-    ggtitle(paste0("Pathways Associated with Differentially Targeted genes (Setbp1 or known targets) in Setbp1 S858R microglia")) + 
-    theme(plot.title = element_text(hjust = 0.5, size = 12)) 
-  print(plot) 
-  dev.off()   
-    
-#oligodendrocytes ------------
-top <- data[data$cell_type == "oligodendrocyte",]
-genes <- as.character(top$gene)
-
-# submit genes to pathway analysis function ---------- 
-fea_result_filt <- fea(genes = genes, organism = "mmusculus", max_term = 1000, min_term = 1)
-png(paste0(here("results/diff_targeting/DiffTargeting_oligodendrocytes_genes_ Setbp1targets_het_enriched.png")), width = 1000, height = 1000)
-# plot dotplot and add title based on input variable ----------
-plot <- bubbleplot(fea_result_filt) +  
-    ggtitle(paste0("Pathways Associated with Differentially Targeted genes (Setbp1 or known targets) in Setbp1 S858R oligodendrocytes")) + 
-    theme(plot.title = element_text(hjust = 0.5, size = 12)) 
-  print(plot) 
-  dev.off() 
-  
-#opcs ------------
-top <- data[data$cell_type == "opcs",]
-genes <- as.character(top$gene)
-
-# submit genes to pathway analysis function ---------- 
-fea_result_filt <- fea(genes = genes, organism = "mmusculus", max_term = 1000, min_term = 1)
-png(paste0(here("results/diff_targeting/DiffTargeting_opcs_genes_ Setbp1targets_het_enriched.png")), width = 1000, height = 1000)
-# plot dotplot and add title based on input variable ----------
-plot <- bubbleplot(fea_result_filt) +  
-    ggtitle(paste0("Pathways Associated with Differentially Targeted genes (Setbp1 or known targets) in Setbp1 S858R opcs")) + 
-    theme(plot.title = element_text(hjust = 0.5, size = 12)) 
-  print(plot) 
-  dev.off() 
-  
-#fibro ------------
-top <- data[data$cell_type == "fibro",]
-genes <- as.character(top$gene)
-
-# submit genes to pathway analysis function ---------- 
-fea_result_filt <- fea(genes = genes, organism = "mmusculus", max_term = 1000, min_term = 1)
-png(paste0(here("results/diff_targeting/DiffTargeting_fibro_genes_ Setbp1targets_het_enriched.png")), width = 1000, height = 1000)
-# plot dotplot and add title based on input variable ----------
-plot <- bubbleplot(fea_result_filt) +  
-    ggtitle(paste0("Pathways Associated with Differentially Targeted genes (Setbp1 or known targets) in Setbp1 S858R fibro")) + 
-    theme(plot.title = element_text(hjust = 0.5, size = 12)) 
-  print(plot) 
-  dev.off() 
+  dev.off()
+  print(paste0("pathways investigated and plotted in ", i))
+}
 ``` 
 
-
 ```{r visualizing-all-diff-gene-ctrl-enriched}
-#setting annotation colors
-annotation_colors <- list("cell_type" = c("excitatory" = "#DC71FA", "inhibitory" = "#00BBDB", "oligodendrocyte" = "#7997FF", "astrocytes" = "#6968B4", "micro" = "#C216B7", "opcs" = "#00C1AA", "mural" = "#027461", "fibro" = "#0a2f6f"))
 ##formatting input data
 data <- ctrl_enriched
 names <- data$gene #add gene names as rownames
@@ -1363,53 +1187,82 @@ rownames(data) <- names
 #setting meta colname 
 meta_colname <- "cell_type"
 #setting plot path
-plot_path <- here("results/diff_targeting/cortex_gene_DIFFtargeting_ctrl_enriched_heatmap.png")
+plot_path <- here("results/diff_targeting/kidney_gene_DIFFtargeting_ctrl_enriched_heatmap.png")
 #setting rowtitle
 rowtitle <- "genes"
 #setting columntitle
-plot_title <- "Differential Targeting of Control enriched genes in Cerebral Cortex"
+plot_title <- "Differential Targeting of Control enriched genes in kidney Cortex"
 
 targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title)
 ```
 
 ```{r rearrange-data-calc-diff-TF}
-#wrangle data
-combined_TF_targeting <- cbind(TF_targeting_all_het, TF_targeting_all_ctrl)
-combined_TF_targeting <- combined_TF_targeting[,-10] #removing duplicate TF column
-colnames(combined_TF_targeting) <- c("TF", "astrocytes_het", "excitatory_het", "inhibitory_het", "micro_het", "mural_het", "oligodendrocyte_het", "opcs_het", "fibro_het", "astrocytes_ctrl", "excitatory_ctrl", "inhibitory_ctrl", "micro_ctrl", "mural_ctrl", "oligodendrocyte_ctrl", "opcs_ctrl", "fibro_ctrl")
+#ordering data the same
+TF_targeting_all_het <- TF_targeting_all_het[order(TF_targeting_all_het["TF"]),]
+TF_targeting_all_ctrl <- TF_targeting_all_ctrl[order(TF_targeting_all_ctrl["TF"]),]
 
-diff_TF_targeting <- data.frame(matrix(NA, nrow = 1080, ncol = 9))
-diff_TF_targeting$X1 <- combined_TF_targeting$TF
-colnames(diff_TF_targeting) <- c("TF", "astrocytes", "excitatory", "inhibitory", "microglia", "mural", "oligodendrocyte", "opcs", "fibro")
+# Add suffix to column names except the gene/TF column
+new_colnames <- ifelse(names(TF_targeting_all_het) != "TF", paste0(names(TF_targeting_all_het), "_het"), names(TF_targeting_all_het))
+names(TF_targeting_all_het) <- new_colnames
+print(TF_targeting_all_het) # Print the updated dataframe
 
-#calculate diff targeting for each cell type 
-diff_TF_targeting$astrocytes <- combined_TF_targeting$astrocytes_het - combined_TF_targeting$astrocytes_ctrl
-diff_TF_targeting$excitatory <- combined_TF_targeting$excitatory_het - combined_TF_targeting$excitatory_ctrl
-diff_TF_targeting$inhibitory <- combined_TF_targeting$inhibitory_het - combined_TF_targeting$inhibitory_ctrl
-diff_TF_targeting$microglia <- combined_TF_targeting$micro_het - combined_TF_targeting$micro_ctrl
-diff_TF_targeting$mural <- combined_TF_targeting$mural_het - combined_TF_targeting$mural_ctrl
-diff_TF_targeting$oligodendrocyte <- combined_TF_targeting$oligodendrocyte_het - combined_TF_targeting$oligodendrocyte_ctrl
-diff_TF_targeting$opcs <- combined_TF_targeting$opcs_het - combined_TF_targeting$opcs_ctrl
+new_colnames <- ifelse(names(TF_targeting_all_ctrl) != "TF", paste0(names(TF_targeting_all_ctrl), "_ctrl"), names(TF_targeting_all_ctrl))
+names(TF_targeting_all_ctrl) <- new_colnames
+print(TF_targeting_all_ctrl) # Print the updated dataframe
+
+#binding data together
+combined_TF_targeting <- merge(TF_targeting_all_het, TF_targeting_all_ctrl, by = "TF")
+```
+
+```{r calculate-het-enriched-diff-targeting}
+#creating empty data frame
+ diff_TF_targeting <- data.frame(matrix(NA, nrow = nrow(combined_TF_targeting), ncol = 1))
+ colnames(diff_TF_targeting) <- "TF" #this will need to be gene or TF respectively
+ diff_TF_targeting$TF <- combined_TF_targeting$TF #adding gene/TF
+
+#calc diff targeting
+cell_names <- colnames(TF_targeting_all_ctrl[,-1]) %>% sub("_ctrl.*", "", .) #all cell type prefixes except TF name, which should be first column in data
+for(i in cell_names){
+  selected_columns <- names(combined_TF_targeting)[startsWith(names(combined_TF_targeting), i)]
+  # Check there are two columns with the specified prefix
+  if (length(selected_columns) == 2) {
+    diff_col <- combined_TF_targeting[[selected_columns[1]]] - combined_TF_targeting[[selected_columns[2]]] #ensure difference is `het - control` here
+    # Create a new column name
+    diff_colname <- paste0(i)
+    # Add the result to the result dataframe
+    diff_TF_targeting[[diff_colname]] <- diff_col
+  }
+}
 
 het_enriched_TF <- replace(diff_TF_targeting, diff_TF_targeting[,] < 0, 0) #creating dataframe where the differential is enriched in the het condition
-ctrl_enriched_TF <- replace(diff_TF_targeting, diff_TF_targeting[,] > 0, 0) #creating dataframe where the differential is enriched in the ctrl condition
+save(het_enriched_TF, file = here("results/diff_targeting/kidney_het_enriched_TF.Rdata"))
 ```
 
-## investigating whether targeting weight distributions are significantly different
-```{r wilcoxon-test-TF}
-pivoted <- pivot_longer(het_enriched_TF, values_to = "targeting_score", names_to = "cell_type", cols = c(2:8))
-two.way <- aov(targeting_score ~ cell_type + TF, data = pivoted)
-summary(two.way)
+```{r calculate-ctrl-enriched-diff-targeting}
+#creating empty data frame
+ diff_TF_targeting <- data.frame(matrix(NA, nrow = nrow(combined_TF_targeting), ncol = 1))
+ colnames(diff_TF_targeting) <- "TF" #this will need to be gene or TF respectively
+ diff_TF_targeting$TF <- combined_TF_targeting$TF #adding gene/TF
 
-tukey.two.way <- TukeyHSD(two.way)
-plot(tukey.two.way, las = 1)
+# calc diff targeting 
+cell_names <- colnames(TF_targeting_all_ctrl[,-1]) %>% sub("_ctrl.*", "", .) #all cell type prefixes except TF name, which should be first column in data
+for(i in cell_names){
+  selected_columns <- names(combined_TF_targeting)[startsWith(names(combined_TF_targeting), i)]
+  # Check there are two columns with the specified prefix
+  if (length(selected_columns) == 2) {
+    diff_col <- combined_TF_targeting[[selected_columns[2]]] - combined_TF_targeting[[selected_columns[1]]] #ensure difference is `control - het` here
+    # Create a new column name
+    diff_colname <- paste0(i)
+    # Add the result to the result dataframe
+    diff_TF_targeting[[diff_colname]] <- diff_col
+  }
+}
+
+ctrl_enriched_TF <- replace(diff_TF_targeting, diff_TF_targeting[,] < 0, 0) #creating dataframe where the differential is enriched in the ctrl condition
+save(ctrl_enriched_TF, file = here("results/diff_targeting/kidney_ctrl_enriched_TF.Rdata"))
 ```
-
-
 
 ```{r visualizing-all-diff-TF-het-enriched}
-#setting annotation colors
-annotation_colors <- list("cell_type" = c("excitatory" = "#DC71FA", "inhibitory" = "#00BBDB", "oligodendrocyte" = "#7997FF", "astrocytes" = "#6968B4", "micro" = "#C216B7", "opcs" = "#00C1AA", "mural" = "#027461", "fibro" = "#0a2f6f"))
 ##formatting input data
 data <- het_enriched_TF
 names <- data$TF #add TF names as rownames
@@ -1418,23 +1271,17 @@ rownames(data) <- names
 #setting meta colname 
 meta_colname <- "cell_type"
 #setting plot path
-plot_path <- here("results/diff_targeting/cortex_TF_DIFFtargeting_het_enriched_heatmap.png")
+plot_path <- here("results/diff_targeting/kidney_TF_DIFFtargeting_het_enriched_heatmap.png")
 #setting rowtitle
 rowtitle <- "TFs"
 #setting columntitle
-plot_title <- "Differential Targeting of S858R enriched TFs in Cerebral Cortex"
+plot_title <- "Differential Targeting of S858R enriched TFs in Kidney Cortex"
 
 targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title)
 ```
 
 ```{r visualizing-all-diff-TF-het-enriched-setbp1TFs}
-#setting annotation colors
-annotation_colors <- list("cell_type" = c("excitatory" = "#DC71FA", "inhibitory" = "#00BBDB", "oligodendrocyte" = "#7997FF", "astrocytes" = "#6968B4", "micro" = "#C216B7", "opcs" = "#00C1AA", "mural" = "#027461", "fibro" = "#0a2f6f"))
 ##formatting input data
-setbp1_genes <- read.csv(here("results/seurat/setbp1_targets.csv"))
-setbp1_genes <- setbp1_genes[,-1] %>% as.vector()
-setbp1_genes <- append(setbp1_genes, "Setbp1") #683 aliases total
-
 data <- het_enriched_TF[het_enriched_TF$TF %in% setbp1_genes,]
 
 names <- data$TF #add names as rownames
@@ -1443,126 +1290,39 @@ rownames(data) <- names
 #setting meta colname 
 meta_colname <- "cell_type"
 #setting plot path
-plot_path <- herehere("results/diff_targeting/cortex_TF_DIFFtargeting_het_Setbp1targets_enriched_heatmap.png")
+plot_path <- here("results/diff_targeting/kidney_TF_DIFFtargeting_het_Setbp1targets_enriched_heatmap.png")
 #setting rowtitle
 rowtitle <- "TFs"
 #setting columntitle
-plot_title <- "Differential TF Targeting of known targets of Setbp1 in S858R enriched TFs of Cerebral Cortex"
+plot_title <- "Differential TF Targeting of known targets of Setbp1 in S858R enriched TFs of Kidney Cortex"
 
 targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title)
 ```
 
 ```{r GO-difftargeting-TFs-Setbp1Target-het-enriched}
 ##pathway analysis and plotting
-setbp1_genes <- read.csv(here("results/seurat/setbp1_targets.csv"))
-setbp1_genes <- setbp1_genes[,-1] %>% as.vector()
-setbp1_genes <- append(setbp1_genes, "Setbp1") #683 aliases total
+exclude_column <- "TF" #note: this needs to be changed for TF or gene respectively, indicates which columns to pivot longer below, 
+data <- het_enriched_TF[het_enriched_TF$TF %in% setbp1_genes,] %>% pivot_longer(., cols = which(colnames(.) != exclude_column), names_to = "cell_type", values_to =  "targeting_score") %>% .[!.$targeting_score == 0,]
 
-data <- het_enriched_TF[het_enriched_TF$TF %in% setbp1_genes,] %>% pivot_longer(., cols = 2:8, names_to = "cell_type", values_to =  "targeting_score") %>% .[!.$targeting_score == 0,]
-
-
-#astrocytes ----------
-top <- data[data$cell_type == "astrocytes",]
-TFs <- as.character(top$TF)
-
-# submit TFs to pathway analysis function ---------- 
-fea_result_filt <- fea(genes = TFs, organism = "mmusculus", max_term = 1000, min_term = 1)
-png(paste0(here("results/diff_targeting/DiffTargeting_astro_TFs_ Setbp1targets_het_enriched.png")), width = 1000, height = 1000)
+for(i in cell_names){
+  # grab genes/TFs from cell type i ----------
+  top <- data[data$cell_type == i,]
+  genes <- as.character(top$TF)
+  # submit genes to pathway analysis function ---------- 
+  fea_result_filt <- fea(genes = genes, organism = "mmusculus", max_term = 1000, min_term = 1)
+  png(paste0(here("results/diff_targeting/"), "DiffTargeting_", i, "TFs_ Setbp1targets_het_enriched.png"), width = 1000, height = 1000)
 # plot dotplot and add title based on input variable ----------
 plot <- bubbleplot(fea_result_filt) +  
-    ggtitle(paste0("Pathways Associated with Differentially Targeted TFs (Setbp1 or known targets) in Setbp1 S858R Astrocytes")) + 
-    theme(plot.title = element_text(hjust = 0.5, size = 12)) 
+    ggtitle(paste0("Pathways Associated with Differentially Targeted TFs (Setbp1 or known targets) in Setbp1 S858R ", i)) + 
+    theme(plot.title = element_text(hjust = 0.5, size = 12)) + 
+    theme_minimal()
   print(plot) 
-  dev.off() 
-  
-#excitatory ------------
-top <- data[data$cell_type == "excitatory",]
-TFs <- as.character(top$TF)
-
-# submit TFs to pathway analysis function ---------- 
-fea_result_filt <- fea(genes = TFs, organism = "mmusculus", max_term = 1000, min_term = 1)
-png(paste0(here("results/diff_targeting/DiffTargeting_ex_TFs_Setbp1targets_het_enriched.png")), width = 1000, height = 1000)
-# plot dotplot and add title based on input variable ----------
-plot <- bubbleplot(fea_result_filt) +  
-    ggtitle(paste0("Pathways Associated with Differentially Targeted TFs (Setbp1 or known targets) in Setbp1 S858R Excitatory Neurons")) + 
-    theme(plot.title = element_text(hjust = 0.5, size = 12)) 
-  print(plot) 
-  dev.off() 
-  
-#inhibitory ------------
-top <- data[data$cell_type == "inhibitory",]
-TFs <- as.character(top$TF)
-
-# submit TFs to pathway analysis function ---------- 
-fea_result_filt <- fea(genes = TFs, organism = "mmusculus", max_term = 1000, min_term = 1)
-png(paste0(here("results/diff_targeting/DiffTargeting_inhib_TFs_ Setbp1targets_het_enriched.png")), width = 1000, height = 1000)
-# plot dotplot and add title based on input variable ----------
-plot <- bubbleplot(fea_result_filt) +  
-    ggtitle(paste0("Pathways Associated with Differentially Targeted TFs (Setbp1 or known targets) in Setbp1 S858R inhibitory Neurons")) + 
-    theme(plot.title = element_text(hjust = 0.5, size = 12)) 
-  print(plot) 
-  dev.off() 
-  
-#mural ------------
-top <- data[data$cell_type == "mural",]
-TFs <- as.character(top$TF)
-
-# submit TFs to pathway analysis function ---------- 
-fea_result_filt <- fea(genes = TFs, organism = "mmusculus", max_term = 1000, min_term = 1)
-png(paste0(here("results/diff_targeting/DiffTargeting_mural_TFs_ Setbp1targets_het_enriched.png")), width = 1000, height = 1000)
-# plot dotplot and add title based on input variable ----------
-plot <- bubbleplot(fea_result_filt) +  
-    ggtitle(paste0("Pathways Associated with Differentially Targeted TFs (Setbp1 or known targets) in Setbp1 S858R Mural cells")) + 
-    theme(plot.title = element_text(hjust = 0.5, size = 12)) 
-  print(plot) 
-  dev.off() 
-
-#microglia ------------
-top <- data[data$cell_type == "microglia",]
-TFs <- as.character(top$TF)
-
-# submit TFs to pathway analysis function ---------- 
-fea_result_filt <- fea(genes = TFs, organism = "mmusculus", max_term = 1000, min_term = 1)
-png(paste0(here("results/diff_targeting/DiffTargeting_microglia_TFs_ Setbp1targets_het_enriched.png")), width = 1000, height = 1000)
-# plot dotplot and add title based on input variable ----------
-plot <- bubbleplot(fea_result_filt) +  
-    ggtitle(paste0("Pathways Associated with Differentially Targeted TFs (Setbp1 or known targets) in Setbp1 S858R microglia")) + 
-    theme(plot.title = element_text(hjust = 0.5, size = 12)) 
-  print(plot) 
-  dev.off()   
-    
-#oligodendrocytes ------------
-top <- data[data$cell_type == "oligodendrocyte",]
-TFs <- as.character(top$TF)
-
-# submit TFs to pathway analysis function ---------- 
-fea_result_filt <- fea(genes = TFs, organism = "mmusculus", max_term = 1000, min_term = 1)
-png(paste0(here("results/diff_targeting/DiffTargeting_oligodendrocytes_TFs_ Setbp1targets_het_enriched.png")), width = 1000, height = 1000)
-# plot dotplot and add title based on input variable ----------
-plot <- bubbleplot(fea_result_filt) +  
-    ggtitle(paste0("Pathways Associated with Differentially Targeted TFs (Setbp1 or known targets) in Setbp1 S858R oligodendrocytes")) + 
-    theme(plot.title = element_text(hjust = 0.5, size = 12)) 
-  print(plot) 
-  dev.off() 
-  
-#opcs ------------
-top <- data[data$cell_type == "opcs",]
-TFs <- as.character(top$TF)
-
-# submit TFs to pathway analysis function ---------- 
-fea_result_filt <- fea(genes = TFs, organism = "mmusculus", max_term = 1000, min_term = 1)
-png(paste0(here("results/diff_targeting/DiffTargeting_opcs_TFs_ Setbp1targets_het_enriched.png")), width = 1000, height = 1000)
-# plot dotplot and add title based on input variable ----------
-plot <- bubbleplot(fea_result_filt) +  
-    ggtitle(paste0("Pathways Associated with Differentially Targeted TFs (Setbp1 or known targets) in Setbp1 S858R opcs")) + 
-    theme(plot.title = element_text(hjust = 0.5, size = 12)) 
-  print(plot) 
-  dev.off() 
+  dev.off()
+  print(paste0("pathways investigated and plotted in ", i))
+}
 ``` 
 
 ```{r visualizing-all-diff-TF-ctrl-enriched}
-#setting annotation colors
-annotation_colors <- list("cell_type" = c("excitatory" = "#DC71FA", "inhibitory" = "#00BBDB", "oligodendrocyte" = "#7997FF", "astrocytes" = "#6968B4", "micro" = "#C216B7", "opcs" = "#00C1AA", "mural" = "#027461", "fibro" = "#0a2f6f"))
 ##formatting input data
 data <- ctrl_enriched_TF
 names <- data$TF #add TF names as rownames
@@ -1571,89 +1331,123 @@ rownames(data) <- names
 #setting meta colname 
 meta_colname <- "cell_type"
 #setting plot path
-plot_path <- here("results/diff_targeting/cortex_TF_DIFFtargeting_ctrl_enriched_heatmap.png")
+plot_path <- here("results/diff_targeting/kidney_TF_DIFFtargeting_ctrl_enriched_heatmap.png")
 #setting rowtitle
 rowtitle <- "TFs"
 #setting columntitle
-plot_title <- "Differential Targeting of Control enriched TFs in Cerebral Cortex"
+plot_title <- "Differential Targeting of Control enriched TFs in Kidney Cortex"
 
 targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title)
 ```
 
-```{r visualize-distribution-of-difftargeting-scores}
+```{r visualize-distribution-of-het-gene-difftargeting-scores}
 #het gene distribution
-pivoted <- pivot_longer(het_enriched, values_to = "targeting_score", names_to = "cell_type", cols = c(2:8))
-ggplot(data=pivoted, aes(x=targeting_score, group=cell_type, color=cell_type)) +
-    geom_density(adjust=1.5, alpha=.4) + ggtitle("Gene targeting score distribution in S8585R")
-summary(het_enriched)
+exclude_column <- "gene"
 
+pivoted <- pivot_longer(het_enriched, values_to = "targeting_score", names_to = "cell_type", cols = which(colnames(het_enriched) != exclude_column))
+ggplot(data=pivoted, aes(x=targeting_score, group=cell_type, color=cell_type)) +
+    geom_density(adjust=1.5, alpha=.4) +
+  ggtitle("Gene targeting score distribution in S8585R") + 
+  scale_color_manual(values = c("#FFBE1D", "#4E3801", "#EEDF37", "#F03F00", "#6D0404", "#AA6320", "#CF9400", "#FFC8C4", "#AA937E", "#C70F0F", "#A85A5A", "#BD085E", "#948802", "#FFE196", "#FF7600", "#F8766D", "#FFE196"))
+summary(het_enriched)
+```
+
+
+```{r het-diff-gene-targeting-distribution-nonzero}
 #het gene distribution nonzero
 nonzero <- pivoted[pivoted$targeting_score!=0,]
-png(filename = here("results/diff_targeting/cortex_difftargeting_het_gene_distribution.png"), 
+png(filename = here("results/diff_targeting/kidney_difftargeting_het_gene_distribution.png"), 
     width = 1000,
     height = 500)
 ggplot(data=nonzero, aes(x=targeting_score, group=cell_type, color=cell_type)) +
-    geom_density(adjust=1.5, alpha=.4) + ggtitle("Gene differential targeting score distribution in S8585R") + theme_bw() + scale_color_manual(values = c("#6968B4", "#DC71FA", "#00BBDB","#C216B7","#027461","#7997FF","#00C1AA"))
+    geom_density(adjust=1.5, alpha=.4) +
+  ggtitle("Gene differential targeting score distribution in S8585R") +
+  theme_bw() +
+  scale_color_manual(values = c("#FFBE1D", "#4E3801", "#EEDF37", "#F03F00", "#6D0404", "#AA6320", "#CF9400", "#FFC8C4", "#AA937E", "#C70F0F", "#A85A5A", "#BD085E", "#948802", "#FFE196", "#FF7600", "#F8766D", "#FFE196"))
 dev.off()
+
 nonzero_long <- pivot_wider(nonzero, names_from =cell_type, values_from = targeting_score)
 summary(nonzero_long)
 
-pivoted <- pivot_longer(het_enriched_TF, values_to = "targeting_score", names_to = "cell_type", cols = c(2:8))
-
+exclude_column <- "TF"
+pivoted <- pivot_longer(het_enriched_TF, values_to = "targeting_score", names_to = "cell_type", cols = which(colnames(het_enriched_TF) != exclude_column))
 summary(het_enriched)
+```
 
-
-
+```{r control-diff-gene-targeting-distribution}
 #control gene distribution
-pivoted <- pivot_longer(ctrl_enriched, values_to = "targeting_score", names_to = "cell_type", cols = c(2:8))
+exclude_column <- "gene"
+pivoted <- pivot_longer(ctrl_enriched, values_to = "targeting_score", names_to = "cell_type", cols = which(colnames(ctrl_enriched) != exclude_column))
 ggplot(data=pivoted, aes(x=abs(targeting_score), group=cell_type, color=cell_type)) +
-    geom_density(adjust=1.5, alpha=.4) + ggtitle("Gene targeting score distribution in Control")
+  geom_density(adjust=1.5, alpha=.4) +
+  ggtitle("Gene targeting score distribution in Control") + 
+  scale_color_manual(values = c("#FFBE1D", "#4E3801", "#EEDF37", "#F03F00", "#6D0404", "#AA6320", "#CF9400", "#FFC8C4", "#AA937E", "#C70F0F", "#A85A5A", "#BD085E", "#948802", "#FFE196", "#FF7600", "#F8766D", "#FFE196"))
+
 summary(ctrl_enriched)
 
+
 nonzero <- pivoted[pivoted$targeting_score!=0,]
-
-
-png(filename = here("results/diff_targeting/cortex_difftargeting_ctrl_gene_distribution.png"), 
+png(filename = here("results/diff_targeting/kidney_difftargeting_ctrl_gene_distribution.png"), 
     width = 1000,
     height = 500)
 ggplot(data=nonzero, aes(x=abs(targeting_score), group=cell_type, color=cell_type)) +
-    geom_density(adjust=1.5, alpha=.4) + ggtitle("Gene differential targeting score distribution in Control") + theme_bw() + scale_color_manual(values = c("#6968B4", "#DC71FA", "#00BBDB","#C216B7","#027461","#7997FF","#00C1AA"))
+    geom_density(adjust=1.5, alpha=.4) +
+  ggtitle("Gene differential targeting score distribution in Control") +
+  theme_bw() +
+  scale_color_manual(values = c("#FFBE1D", "#4E3801", "#EEDF37", "#F03F00", "#6D0404", "#AA6320", "#CF9400", "#FFC8C4", "#AA937E", "#C70F0F", "#A85A5A", "#BD085E", "#948802", "#FFE196", "#FF7600", "#F8766D", "#FFE196"))
 dev.off()
 
 nonzero_long <- pivot_wider(nonzero, names_from =cell_type, values_from = targeting_score)
-nonzero_long <- abs(nonzero_long[,c(2:8)])
+nonzero_long <- abs(nonzero_long[,which(colnames(nonzero_long) != exclude_column)])
 summary(nonzero_long)
+```
 
+```{r het-diff-TF-targting-dist}
 #het TF distribution
-pivoted <- pivot_longer(het_enriched_TF, values_to = "targeting_score", names_to = "cell_type", cols = c(2:8))
+exclude_column <- "TF"
+
+pivoted <- pivot_longer(het_enriched_TF, values_to = "targeting_score", names_to = "cell_type", cols = which(colnames(het_enriched_TF) != exclude_column))
 ggplot(data=pivoted, aes(x=targeting_score, group=cell_type, color=cell_type)) +
-    geom_density(adjust=1.5, alpha=.4) + ggtitle("TF targeting score distribution in S8585R")
+    geom_density(adjust=1.5, alpha=.4) +
+  ggtitle("TF targeting score distribution in S8585R") +
+  scale_color_manual(values = c("#FFBE1D", "#4E3801", "#EEDF37", "#F03F00", "#6D0404", "#AA6320", "#CF9400", "#FFC8C4", "#AA937E", "#C70F0F", "#A85A5A", "#BD085E", "#948802", "#FFE196", "#FF7600", "#F8766D", "#FFE196"))
 summary(het_enriched)
 
 nonzero <- pivoted[pivoted$targeting_score!=0,]
-png(filename = here("results/diff_targeting/cortex_difftargeting_het_TF_distribution.png"), 
+png(filename = here("results/diff_targeting/kidney_difftargeting_het_TF_distribution.png"), 
     width = 1000,
     height = 500)
 ggplot(data=nonzero, aes(x=targeting_score, group=cell_type, color=cell_type)) +
-    geom_density(adjust=1.5, alpha=.4) + ggtitle("TF differential targeting score distribution in S8585R") + theme_bw() + scale_color_manual(values = c("#6968B4", "#DC71FA", "#00BBDB","#C216B7","#027461","#7997FF","#00C1AA"))
+    geom_density(adjust=1.5, alpha=.4) +
+  ggtitle("TF differential targeting score distribution in S8585R") +
+  theme_bw() +
+  scale_color_manual(values = c("#FFBE1D", "#4E3801", "#EEDF37", "#F03F00", "#6D0404", "#AA6320", "#CF9400", "#FFC8C4", "#AA937E", "#C70F0F", "#A85A5A", "#BD085E", "#948802", "#FFE196", "#FF7600", "#F8766D", "#FFE196"))
 dev.off()
 
 
 nonzero_long <- pivot_wider(nonzero, names_from =cell_type, values_from = targeting_score)
 summary(nonzero_long)
+```
 
-#control TF distribution
-pivoted <- pivot_longer(ctrl_enriched_TF, values_to = "targeting_score", names_to = "cell_type", cols = c(2:8))
+```{r ctrl-diff-TF-targting-dist}
+exclude_column <- "TF"
+pivoted <- pivot_longer(ctrl_enriched_TF, values_to = "targeting_score", names_to = "cell_type", cols = which(colnames(het_enriched_TF) != exclude_column))
 ggplot(data=pivoted, aes(x=abs(targeting_score), group=cell_type, color=cell_type)) +
-    geom_density(adjust=1.5, alpha=.4) + ggtitle("TF targeting score distribution in Control")
+    geom_density(adjust=1.5, alpha=.4) +
+  ggtitle("TF targeting score distribution in Control") +
+  scale_color_manual(values = c("#FFBE1D", "#4E3801", "#EEDF37", "#F03F00", "#6D0404", "#AA6320", "#CF9400", "#FFC8C4", "#AA937E", "#C70F0F", "#A85A5A", "#BD085E", "#948802", "#FFE196", "#FF7600", "#F8766D", "#FFE196"))
+
 summary(ctrl_enriched)
 
 nonzero <- pivoted[pivoted$targeting_score!=0,]
-png(filename = here("results/diff_targeting/cortex_difftargeting_ctrl_TF_distribution.png"), 
+png(filename = here("results/diff_targeting/kidney_difftargeting_ctrl_TF_distribution.png"), 
     width = 1000,
     height = 500)
 ggplot(data=nonzero, aes(x=abs(targeting_score), group=cell_type, color=cell_type)) +
-    geom_density(adjust=1.5, alpha=.4) + ggtitle("TF differential targeting score distribution in Control") + theme_bw() + scale_color_manual(values = c("#6968B4", "#DC71FA", "#00BBDB","#C216B7","#027461","#7997FF","#00C1AA"))
+    geom_density(adjust=1.5, alpha=.4) +
+  ggtitle("TF differential targeting score distribution in Control") +
+  theme_bw() +
+  scale_color_manual(values = c("#FFBE1D", "#4E3801", "#EEDF37", "#F03F00", "#6D0404", "#AA6320", "#CF9400", "#FFC8C4", "#AA937E", "#C70F0F", "#A85A5A", "#BD085E", "#948802", "#FFE196", "#FF7600", "#F8766D", "#FFE196"))
 dev.off()
 
 nonzero_long <- pivot_wider(nonzero, names_from =cell_type, values_from = targeting_score)
@@ -1711,8 +1505,6 @@ het_enriched_TF_top <- rbind(astro_rank_het, ex_rank_het, in_rank_het, micro_ran
 ```
 
 ```{r visualize-het-enriched-TF-top20-heatmap}
-#setting annotation colors
-annotation_colors <- list("cell_type" = c("excitatory" = "#DC71FA", "inhibitory" = "#00BBDB", "oligodendrocyte" = "#7997FF", "astrocytes" = "#6968B4", "micro" = "#C216B7", "opcs" = "#00C1AA", "mural" = "#027461", "fibro" = "#0a2f6f"))
 ##formatting input data
 data <- het_enriched_TF_top[, c("TF", "targeting_score", "cell_type"), drop = FALSE]
 data <- pivot_wider(data, names_from = c("cell_type"), values_from = "targeting_score", names_repair = "minimal")
@@ -1723,11 +1515,11 @@ rownames(data) <- names
 #setting meta colname 
 meta_colname <- "cell_type"
 #setting plot path
-plot_path <- here("results/diff_targeting/cortex_TF_DIFFtargeting_top20_het_heatmap.png")
+plot_path <- here("results/diff_targeting/kidney_TF_DIFFtargeting_top20_het_heatmap.png")
 #setting rowtitle
 rowtitle <- "TFs"
 #setting columntitle
-plot_title <- "Differential Targeting of Top 20 TFs within Cell-types in Setbp1 S858R Cerebral Cortex"
+plot_title <- "Differential Targeting of Top 20 TFs within Cell-types in Setbp1 S858R kidney Cortex"
 
 targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title)
 ```
@@ -1952,8 +1744,6 @@ ctrl_enriched_TF_top <- rbind(astro_rank_ctrl, ex_rank_ctrl, in_rank_ctrl, micro
 ```
 
 ```{r visualize-ctrl-enriched-TF-top20-heatmap}
-#setting annotation colors
-annotation_colors <- list("cell_type" = c("excitatory" = "#DC71FA", "inhibitory" = "#00BBDB", "oligodendrocyte" = "#7997FF", "astrocytes" = "#6968B4", "micro" = "#C216B7", "opcs" = "#00C1AA", "mural" = "#027461", "fibro" = "#0a2f6f"))
 ##formatting input data
 data <- ctrl_enriched_TF_top[, c("TF", "targeting_score", "cell_type"), drop = FALSE]
 data <- pivot_wider(data, names_from = c("cell_type"), values_from = "targeting_score", names_repair = "minimal")
@@ -1964,17 +1754,16 @@ rownames(data) <- names
 #setting meta colname 
 meta_colname <- "cell_type"
 #setting plot path
-plot_path <- here("results/diff_targeting/cortex_TF_DIFFtargeting_top20_ctrl_heatmap.png")
+plot_path <- here("results/diff_targeting/kidney_TF_DIFFtargeting_top20_ctrl_heatmap.png")
 #setting rowtitle
 rowtitle <- "TFs"
 #setting columntitle
-plot_title <- "Differential Targeting of Top 20 TFs within Cell-types in Setbp1 Control Cerebral Cortex"
+plot_title <- "Differential Targeting of Top 20 TFs within Cell-types in Setbp1 Control kidney Cortex"
 
 targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title)
 ```
 
 ```{r visualize-ctrl-enriched-gene-top20}
-
 ctrl_enriched <- ctrl_enriched[,2:8] %>% abs() %>% mutate(gene= ctrl_enriched$gene)
 ctrl_enriched <- ctrl_enriched[,c(8,1,2,3,4,5,6,7)]
 
@@ -1992,8 +1781,6 @@ ctrl_enriched_top <- rbind(astro_rank_ctrl, ex_rank_ctrl, in_rank_ctrl, micro_ra
 
 
 ```{r visualize-ctrl-enriched-gene-top20-heatmap}
-#setting annotation colors
-annotation_colors <- list("cell_type" = c("excitatory" = "#DC71FA", "inhibitory" = "#00BBDB", "oligodendrocyte" = "#7997FF", "astrocytes" = "#6968B4", "micro" = "#C216B7", "opcs" = "#00C1AA", "mural" = "#027461", "fibro" = "#0a2f6f"))
 ##formatting input data
 data <- ctrl_enriched_top[, c("gene", "targeting_score", "cell_type"), drop = FALSE]
 data <- pivot_wider(data, names_from = c("cell_type"), values_from = "targeting_score", names_repair = "minimal")
@@ -2004,11 +1791,11 @@ rownames(data) <- names
 #setting meta colname 
 meta_colname <- "cell_type"
 #setting plot path
-plot_path <- here("results/diff_targeting/cortex_gene_DIFFtargeting_top20_ctrl_heatmap.png")
+plot_path <- here("results/diff_targeting/kidney_gene_DIFFtargeting_top20_ctrl_heatmap.png")
 #setting rowtitle
 rowtitle <- "genes"
 #setting columntitle
-plot_title <- "Differential Targeting of Top 20 Genes within Cell-types in Setbp1 Ctrl Cerebral Cortex"
+plot_title <- "Differential Targeting of Top 20 Genes within Cell-types in Setbp1 Ctrl kidney Cortex"
 
 targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title)
 ```
