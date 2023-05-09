@@ -430,7 +430,7 @@ concentrations_ug_mL <- cbind(rep_conc_BCA, ELISA_concentrations_reps) %>% .[, -
 concentrations_ug_mL$Setbp1_prop <- concentrations_ug_mL$ELISA_ug_mL / as.numeric(concentrations_ug_mL$BCA_ug_mL) # dividing ELISA concentration by total protein concentration
 concentrations_ug_mL$Setbp1_percent <- concentrations_ug_mL$Setbp1_prop * 100 # converting to a percent
 
-# caluclate a p-value and plot with singificance indicated
+# calculate a p-value and plot with singificance indicated
 compare_means(Setbp1_percent ~ sample_ID, concentrations_ug_mL, method = "t.test")
 my_comparisons <- list(
   c("cortex_het", "cortex_wt"),
