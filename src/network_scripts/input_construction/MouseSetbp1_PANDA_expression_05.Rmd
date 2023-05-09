@@ -551,7 +551,7 @@ save(PT,
 
 smcs <- as.data.frame(heterozygous_kidney_agg$smooth_muscle_cells)
 save(smcs,
-  file = here("data/processed/expression_inputs/smcs_heteroyzgouskidneyexpression.Rdata")
+  file = here("data/processed/expression_inputs/smcs_heterozygouskidneyexpression.Rdata")
 )
 ```
 
