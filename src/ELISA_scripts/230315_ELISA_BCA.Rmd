@@ -58,7 +58,7 @@ ggplot(data = standards) +
 # extract intercept and slope from line
 line <- lm(standards$OD ~ standards$concentration)
 int <- line$coefficients[1]
-int # 0.1075113 0.06374742
+int # 0.06374742
 slope <- line$coefficients[2]
 slope # 0.0129213
 
@@ -301,7 +301,7 @@ ggplot(data = BCA_repdata) +
 # extract intercept and slope from line
 line <- lm(BCA_repdata$OD ~ BCA_repdata$concentration)
 int <- line$coefficients[1]
-int # 0.3657495 0.2909356
+int # 0.2909356
 slope <- line$coefficients[2]
 slope # 0.0006567205
 
