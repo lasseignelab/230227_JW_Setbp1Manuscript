@@ -1,6 +1,7 @@
-#NOTE: please create a '.Rprofile' file in your project directory in the same location as your '.Rproj' file. 
-#Include a single line with the following code: `R_PROFILE_USER=""`
-#This will address any normalizePath warnings looking for the home directory which is not bound
+# NOTE: please create a '.Rprofile' file in your project directory in the same location as your '.Rproj' file. 
+# Include a single line with the following code: `R_PROFILE_USER=""`
+# This will address any normalizePath warnings looking for the home directory which is not bound within the container
+# This script is caled upon and run within the PANDA_array_02.sh script
 
 #set seed
 set.seed(2178)
@@ -30,7 +31,6 @@ ppi <- read.table(file = "/data/user/jbarham3/230227_JW_Setbp1Manuscript/data/pr
 print("ppi loaded")
 
 expression <- loadRData(args[1]) #load expression data from .Rdata in here from $SAMPLE_LIST
-#expression <- readRDS(args[1]) #load expression data from .rds in here from $SAMPLE_LIST
 print("expression loaded")
 
 #run panda on multi-omic inputs
