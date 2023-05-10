@@ -302,7 +302,7 @@ rowtitle <- "genes"
 #setting columntitle
 plot_title <- "Targeting of top 100 Genes Across Cell-types in Setbp1 S858R Kidney Cortex"
 
-targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title)
+targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title, show_names = TRUE)
 ```
 
 ```{r visualizing-setbp1-targets-gene-targeting-across-het}
@@ -502,7 +502,7 @@ rowtitle <- "genes"
 #setting columntitle
 plot_title <- "Targeting of top 100 Genes Across Cell-types in Setbp1 Ctrl Kidney Cortex"
 
-targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title)
+targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title, show_names = TRUE)
 ```
 
 ```{r visualizing-setbp1-targets-genes-targeting-across-ctrl}
@@ -519,7 +519,7 @@ rowtitle <- "genes"
 #setting columntitle
 plot_title <- "Gene targeting of Setbp1 and its targets Across Cell-types in Setbp1 Control Kidey Cortex"
 
-targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title)
+targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title, show_names = TRUE)
 ```
 
 ```{r find-top-targeted-TFs-across-ctrl-celltypes}
@@ -591,7 +591,7 @@ rowtitle <- "TFs"
 #setting columntitle
 plot_title <- "Targeting of top 100 TF Across Cell-types in Setbp1 Control Kidney Cortex"
 
-targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title)
+targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title, show_names = TRUE)
 ```
 
 ```{r visualizing-setbp1-targets-TF-targeting-across-ctrl}
@@ -608,7 +608,7 @@ rowtitle <- "TFs"
 #setting columntitle
 plot_title <- "TF targeting of Setbp1 and its targets Across Cell-types in Setbp1 Control Kidney Cortex"
 
-targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title)
+targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title, show_names = TRUE)
 ```
 
 # Investigate targeting rank within each Het cell type
@@ -668,7 +668,7 @@ rowtitle <- "TFs"
 #setting columntitle
 plot_title <- "Targeting of Top 20 TFs within Cell-types in Setbp1 S858R Kidney Cortex"
 
-targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title)
+targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title, show_names = TRUE)
 ```
 
 ```{r visualizing-ALL-het-TF-rank-heatmap}
@@ -711,7 +711,7 @@ rowtitle <- "TFs"
 #setting columntitle
 plot_title <- "Targeting of Setbp1 and known target TFs within Cell-types in Setbp1 S858R Kidney Cortex"
 
-targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title)
+targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title, show_names = TRUE)
 ```
 
 
@@ -771,7 +771,7 @@ rowtitle <- "genes"
 #setting columntitle
 plot_title <- "Targeting of Top 20 genes within Cell-types in Setbp1 S858R Kidney Cortex"
 
-targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title)
+targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title, show_names = TRUE)
 ```
 
 ```{r visualizing-ALL-het-gene-rank-heatmap}
@@ -814,7 +814,7 @@ rowtitle <- "genes"
 #setting columntitle
 plot_title <- "Targeting of Setbp1 and known target genes within Cell-types in Setbp1 S858R Kidney Cortex"
 
-targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title)
+targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title, show_names = TRUE)
 ```
 
 
@@ -912,7 +912,7 @@ rowtitle <- "genes"
 #setting columntitle
 plot_title <- "Targeting of Top 20 genes within Cell-types in Setbp1 Ctrl Kidney Cortex"
 
-targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title)
+targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title, show_names = TRUE)
 ```
 
 ```{r visualizing-ALL-ctrl-gene-rank-heatmap}
@@ -956,7 +956,7 @@ rowtitle <- "genes"
 #setting columntitle
 plot_title <- "Targeting of Setbp1 and known target genes within Cell-types in Setbp1 Control Kidney Cortex"
 
-targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title)
+targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title, show_names = TRUE)
 ```
 
 ```{r visualizing-ctrl-TF-rank-with-heatmap}
@@ -976,7 +976,7 @@ rowtitle <- "TFs"
 #setting columntitle
 plot_title <- "Targeting of Top 20 TFs within Cell-types in Setbp1 Ctrl Kidney Cortex"
 
-targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title)
+targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title, show_names = TRUE)
 ```
 
 ```{r visualizing-ALL-ctrl-TF-rank-heatmap}
@@ -1020,7 +1020,7 @@ rowtitle <- "TFs"
 #setting columntitle
 plot_title <- "Targeting of Setbp1 and known target TFs within Cell-types in Setbp1 Control Kidney Cortex"
 
-targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title)
+targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title, show_names = TRUE)
 ```
 
 ####################################
@@ -1274,7 +1274,7 @@ rowtitle <- "TFs"
 #setting columntitle
 plot_title <- "Differential TF Targeting of known targets of Setbp1 in S858R enriched TFs of Kidney Cortex"
 
-targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title)
+targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title, show_names = TRUE)
 ```
 
 ```{r GO-difftargeting-TFs-Setbp1Target-het-enriched}
@@ -1484,7 +1484,7 @@ plot_path <- here("results/diff_targeting/kidney_gene_DIFFtargeting_top20_het_he
 #setting rowtitle
 rowtitle <- "genes"
 #setting columntitle
-plot_title <- "Differential Targeting of Top 20 Genes within Cell-types in Setbp1 S858R Cerebral Cortex"
+plot_title <- "Differential Targeting of Top 20 Genes within Cell-types in Setbp1 S858R kidney Cortex"
 
 targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title)
 ```
@@ -1543,7 +1543,7 @@ rowtitle <- "TFs"
 #setting columntitle
 plot_title <- "Differential Targeting of Top 20 TFs within Cell-types in Setbp1 S858R kidney Cortex"
 
-targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title)
+targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title, show_names = TRUE)
 ```
 
 ```{r GO-difftargeting-top20genes-het-enriched}
@@ -1691,9 +1691,9 @@ plot_path <- here("results/diff_targeting/kidney_gene_DIFFtargeting_top20_ctrl_h
 #setting rowtitle
 rowtitle <- "genes"
 #setting columntitle
-plot_title <- "Differential Targeting of Top 20 Genes within Cell-types in Setbp1 S858R Cerebral Cortex"
+plot_title <- "Differential Targeting of Top 20 Genes within Cell-types in Setbp1 S858R kidney Cortex"
 
-targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title)
+targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title, show_names = TRUE)
 ```
 
 
@@ -1750,7 +1750,7 @@ rowtitle <- "TFs"
 #setting columntitle
 plot_title <- "Differential Targeting of Top 20 TFs within Cell-types in Setbp1 S858R kidney Cortex"
 
-targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title)
+targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title, show_names = TRUE)
 ```
 
 ```{r GO-difftargeting-top20genes-ctrl-enriched}
