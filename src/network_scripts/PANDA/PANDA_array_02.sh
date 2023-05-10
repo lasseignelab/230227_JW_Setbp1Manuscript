@@ -39,5 +39,5 @@ SAMPLE_LIST="${wd}/results/array_inputs/Setbp1_PANDA_files_array.txt" #note: mak
 SAMPLE_ARRAY=(`cat ${SAMPLE_LIST}`) # parantheses instruct bash to create a shell array of strings from SAMPLE_LIST
 INPUT=`echo ${SAMPLE_ARRAY[$SLURM_ARRAY_TASK_ID]}` #extracts a single input from the array and prints (using echo) it into INPUT variable, each single input is then assigned an array number by $SLURM_TASK_ID
 
-# NOTE: may want to add '--cleanenv --no-home ' before -B below, also difference between 1.0.0.sif and 1.01.sif is 1.0.1 has igraph installed
+# NOTE user must have already pulled from docker and built .sif file with singularity below (jordanwhitlock/setbp1_manuscript_panda_1.0.1)
 singularity exec --cleanenv --containall -B ${wd} ${wd}/bin/PANDA_docker/setbp1_manuscript_panda_1.0.1_latest.sif Rscript --vanilla ${src}/PANDA.R ${INPUT} # here vanilla ensures only the script is run and environment is kept clean
