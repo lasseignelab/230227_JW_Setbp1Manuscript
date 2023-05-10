@@ -1,14 +1,8 @@
 ---
 title: "README"
 author: "Jordan Whitlock"
-date: '2023-05-10'
-output: html_document
----
----
-title: "README"
-author:
-output: github_document
 date: "`r Sys.Date()`"
+output: github_document
 ---
 
 ```{r setup, include=FALSE}
