@@ -1,6 +1,6 @@
 #!/bin/bash
 ## run the Rscript PANDA.R and schedule this job to SLURM with
-## `sbatch PANDA_array_02.sh`
+## `sbatch 02_PANDA_array.sh`
 
 #SBATCH --job-name=PANDA
 #SBATCH --mail-type=ALL

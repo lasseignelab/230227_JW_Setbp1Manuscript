@@ -1,0 +1,58 @@
+---
+title: "README"
+author: "Jordan Whitlock"
+date: '2023-05-10'
+output: html_document
+---
+---
+title: "README"
+author:
+output: github_document
+date: "`r Sys.Date()`"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Network Construction and Analysis
+
+## Purpose:
+All scripts in this directory are used to build necessary inputs required for network construction as well as downstream analyses investigating TF activity, differential targeting, cell-specific community structures, etc.
+
+### Reproducibility:
+
+**Network Construction**
+* PANDA jobs were run using UAB Cheaha Supercomputer and it's SLURM scheduler. Jobs were run as an array, within a [Docker](https://hub.docker.com/repository/docker/jordanwhitlock/setbp1_manuscript_panda_1.0.1/general) container converted Singularity in order to execute.
+* Input construction and all other downstream analyses were carried out in a [Docker](https://hub.docker.com/repository/docker/jordanwhitlock/setbp1_manuscript/general) as well.
+
+### Scripts:
+
+#### Input Construction:
+This directory contains all scripts needed to construct the protein-protein interaction (ppi), transcription factor motif (TF-motif) and cell-type specific expression matrices required for [PANDA](https://netzoo.github.io/zooanimals/panda/) regulatory networks. 
+
+```{r echo = FALSE}
+fs::dir_tree("input_construction")
+```
+
+#### PANDA:
+Gene regulatory networks were constructed using the scripts in this directory. In addition, the *.err* and *.out* files for each array job are included here to provide detailed information on the jobs. Prior to building PANDA networks, the user must first construct the inputs needed (ppi, TF-motif, and expression) and then build the *.txt*, which is a list of expression input file paths needed for the array job.
+
+```{r echo = FALSE}
+fs::dir_tree("PANDA")
+```
+
+#### Differential Targeting:
+Gene targeting analyses were performed across and within cell types in each respective condition as well as between conditions (differential targeting). All scripts carrying out these analysis in order to determine if there is a cell-type specific enrichment in either tissue for gene targeting within the S858R, Schinzel-Giedion Syndrome mice are within this directory. 
+
+```{r echo = FALSE}
+fs::dir_tree("differential_targeting")
+```
+
+#### Community Detection:
+In order to understand differences in regulation across communities at the cellular level, we detected communities for each cell specific network using [CONDOR](https://netzoo.github.io/zooanimals/condor/) and found differential communities between S858R and WT mice using [ALPACA](https://netzoo.github.io/zooanimals/alpaca/). Scripts for this analysis are found here
+
+```{r echo = FALSE}
+fs::dir_tree("community_detection")
+```
+
