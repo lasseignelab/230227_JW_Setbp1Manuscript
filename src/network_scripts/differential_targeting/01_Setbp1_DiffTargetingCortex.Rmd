@@ -420,7 +420,7 @@ rowtitle <- "TFs"
 # setting columntitle
 plot_title <- "Targeting of TF Across Cell-types in Setbp1 S858R Cerebral Cortex"
 
-targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title)
+targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title, show_names = TRUE)
 ```
 
 ```{r visualizing-setbp1-targets-TF-targeting-across-het}
@@ -1052,8 +1052,6 @@ plot_title <- "Targeting of Setbp1 and known target TFs within Cell-types in Set
 targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title, show_names = TRUE)
 ```
 
-####################################
-
 # calculating differential targeting score between conditions 
 GOAL: ID genes/TFs with largest difference in targeting _between conditions within each cell type_:
 * Using the combined het/ctrl dataframe for each cell type above, calculate the difference (het-ctrl) for the targeting weight where the more positive difference indicates higher gene targeting in het and more negative diff indicates higher gene targeting in ctrl. 
@@ -1159,7 +1157,7 @@ rowtitle <- "genes"
 # setting columntitle
 plot_title <- "Differential Gene Targeting of known targets of Setbp1 in S858R enriched genes of Cerebral Cortex"
 
-targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title)
+targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title, show_names = TRUE)
 ```
 
 ```{r GO-difftargeting-genes-Setbp1Target-het-enriched}
@@ -1293,7 +1291,7 @@ rowtitle <- "TFs"
 # setting columntitle
 plot_title <- "Differential Targeting of S858R enriched TFs in Cerebral Cortex"
 
-targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title)
+targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title, show_names = TRUE)
 ```
 
 ```{r visualizing-all-diff-TF-het-enriched-setbp1TFs}
@@ -1539,7 +1537,7 @@ rowtitle <- "genes"
 # setting columntitle
 plot_title <- "Differential Targeting of Top 20 Genes within Cell-types in Setbp1 S858R Cerebral Cortex"
 
-targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title)
+targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title, show_names = TRUE)
 ```
 
 
