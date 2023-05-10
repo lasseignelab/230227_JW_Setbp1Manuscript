@@ -98,7 +98,7 @@ merged_het<- data.frame(merged_list[grep("_heterozygous", names(merged_list))]) 
 png(filename = here("results/diff_targeting/kidney_regNet_edgeweight_dist_het.png"),
     width = 1000,
     height = 500)
-ggplot(data=merged_control, aes(x=edge_weight,
+ggplot(data=merged_het, aes(x=edge_weight,
                         group=cell_type, color=cell_type)) +
     geom_density(adjust=1.5, alpha=.4) + ggtitle("Distribution of regNet edge weights in S858R Kidney Cortex") + theme_bw() + scale_color_manual(values = c("#FFBE1D", "#4E3801", "#EEDF37", "#F03F00", "#6D0404", "#AA6320", "#CF9400", "#FFC8C4", "#AA937E", "#C70F0F", "#A85A5A", "#BD085E", "#948802", "#FFE196", "#FF7600", "#F8766D", "#FFE196"))
 dev.off()
