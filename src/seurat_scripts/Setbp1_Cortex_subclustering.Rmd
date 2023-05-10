@@ -76,7 +76,7 @@ dev.off
 
 ```{r subcluster-mural}
 # Subset data.int.celltypes cluster1 and sub-cluster
-subset <- subset(cerebral_int_celltypes, idents = "mural.cells")
+subset <- subset(cerebral_int_celltypes, idents = "mural_cells")
 
 png(here("results/seurat/Cortex_subclustering/Setbp1_cortex_mural_subcluster_seuratclusterUMAP.png"), 
     width = 1000, height = 500)
