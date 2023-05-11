@@ -10,7 +10,7 @@ date: '2023-02-16'
 2. Signor:
 * Human: SET, HOXA9, HOXA10
 
-The final target list is composed of 228 Human genes mapped to 682 mouse orthologs/aliases.
+The final target list is composed of 226 Human genes mapped to 682 mouse orthologs/aliases.
 
 ```{r}
 set.seed(2178)

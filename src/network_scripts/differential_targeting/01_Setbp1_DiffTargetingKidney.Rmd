@@ -362,7 +362,7 @@ rowtitle <- "genes"
 # setting columntitle
 plot_title <- "Gene targeting of Setbp1 and it's targets Across Cell-types in Setbp1 S858R Kidney Cortex"
 
-targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title, show_names = TRUE, width = 1000, height = 2000, show_names = TRUE)
+targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title, show_names = TRUE, width = 1000, height = 2000)
 ```
 
 
@@ -1316,7 +1316,7 @@ rowtitle <- "TFs"
 # setting columntitle
 plot_title <- "Differential TF Targeting of known targets of Setbp1 in S858R enriched TFs of Kidney Cortex"
 
-targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title, show_names = TRUE, show_names = TRUE, height = 2200)
+targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title, show_names = TRUE, height = 2200)
 ```
 
 ```{r GO-difftargeting-TFs-Setbp1Target-het-enriched}

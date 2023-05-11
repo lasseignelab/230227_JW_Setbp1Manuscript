@@ -524,7 +524,7 @@ targetingCalc <- function(regNetmatrix, variable_name, edge_weight_name, conditi
 }
 
 # function-targeting_heatmap; used in targeting
-targeting_heatmap <- function(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title, show_names = FALSE, width = 1000, height = 1000){
+targeting_heatmap <- function(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title, show_names = TRUE, width = 1000, height = 1000){
   #plotting all 
   ##grabbing metadata and annotations
   meta <- as.data.frame(colnames(data))
