@@ -535,8 +535,9 @@ targeting_heatmap <- function(annotation_colors, data, meta_colname, plot_path, 
   heat.anno = HeatmapAnnotation(df = meta, show_annotation_name = TRUE, col = annotation_colors)
   
   ##ensure column order matches annotation table
+  rows <- rownames(data)
   data <- data[,rownames(meta), drop = FALSE]
-  
+  rownames(data) <- rows
   ##convert data to matrix
   mat <- as.matrix(data)
   

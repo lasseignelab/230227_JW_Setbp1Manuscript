@@ -223,8 +223,18 @@ for (i in cell_names) {
   targeting_list[[paste0("Gene_targeting_", i)]] <- gene_targeting
 }
 ```
+## setting heatmap data and setbp1 input needed for the rest of the script
+```{r heatmap-color-annotation}
+# setting annotation colors
+annotation_colors <- list("cell_type" = c("excitatory_neurons" = "#DC71FA", "inhibitory_neurons" = "#00BBDB", "oligodendrocytes" = "#7997FF", "astrocytes" = "#6968B4", "microglia" = "#C216B7", "opcs" = "#00C1AA", "mural" = "#027461", "fibro_cortex" = "#0a2f6f"))
+```
 
-# Investigate targeting differences across Het cell types:
+```{r loading-geneset}
+setbp1_genes <- read.csv(here("results/seurat/setbp1_targets.csv"))
+setbp1_genes <- setbp1_genes[, -1] %>% as.vector()
+setbp1_genes <- append(setbp1_genes, "Setbp1")
+```
+
 ```{r constructing-het-targeting-matrix}
 # grabbing all het targeting scores for TFs
 TF_targeting_all_het <- targeting_list[grep("TF_", names(targeting_list))] %>%
@@ -249,6 +259,33 @@ names <- names(targeting_list[grep("Gene_", names(targeting_list))]) %>%
 colnames(gene_targeting_all_het) <- names
 ```
 
+
+```{r constructing-ctrl-targeting-matrix}
+# grabbing all ctrl targeting scores for TFs
+TF_targeting_all_ctrl <- targeting_list[grep("TF_", names(targeting_list))] %>%
+  purrr::reduce(full_join, by = "TF") %>%
+  select(., contains(c("TF", "ctrl_edge_weight_pos")))
+
+# grabbing colnames and setting for new dataframe generated above
+names <- names(targeting_list[grep("TF_", names(targeting_list))]) %>%
+  sub(".*TF_targeting_", "", .) %>%
+  append("TF", .)
+colnames(TF_targeting_all_ctrl) <- names
+
+# grabbing all ctrl targeting scores for genes
+gene_targeting_all_ctrl <- targeting_list[grep("Gene_", names(targeting_list))] %>%
+  purrr::reduce(full_join, by = "gene") %>%
+  select(., contains(c("gene", "ctrl_edge_weight_pos")))
+
+# grabbing colnames and setting for new dataframe generated above
+names <- names(targeting_list[grep("Gene_", names(targeting_list))]) %>%
+  sub(".*Gene_targeting_", "", .) %>%
+  append("gene", .)
+colnames(gene_targeting_all_ctrl) <- names
+```
+
+
+# Investigate targeting differences across Het cell types:
 ```{r find-top-targeted-genes-across-het-celltypes}
 # identify the maximum for each row
 max <- do.call(pmax, gene_targeting_all_het[, -1]) # finding max for each gene across cell types
@@ -285,18 +322,6 @@ ggplot(data = pivoted, aes(x = targeting_score, group = cell_type, color = cell_
   theme_bw() +
   scale_color_manual(values = c("#6968B4", "#DC71FA", "#0a2f6f", "#00BBDB", "#C216B7", "#027461", "#7997FF", "#00C1AA"))
 dev.off()
-```
-
-## setting heatmap data and setbp1 input needed for the rest of the script
-```{r heatmap-color-annotation}
-# setting annotation colors
-annotation_colors <- list("cell_type" = c("excitatory_neurons" = "#DC71FA", "inhibitory_neurons" = "#00BBDB", "oligodendrocytes" = "#7997FF", "astrocytes" = "#6968B4", "microglia" = "#C216B7", "opcs" = "#00C1AA", "mural" = "#027461", "fibro_cortex" = "#0a2f6f"))
-```
-
-```{r loading-geneset}
-setbp1_genes <- read.csv(here("results/seurat/setbp1_targets.csv"))
-setbp1_genes <- setbp1_genes[, -1] %>% as.vector()
-setbp1_genes <- append(setbp1_genes, "Setbp1")
 ```
 
 ## plotting targeting heatmaps
@@ -442,30 +467,6 @@ targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, pl
 ```
 
 # Investigate targeting differences across ctrl cell types:
-
-```{r constructing-ctrl-targeting-matrix}
-# grabbing all ctrl targeting scores for TFs
-TF_targeting_all_ctrl <- targeting_list[grep("TF_", names(targeting_list))] %>%
-  purrr::reduce(full_join, by = "TF") %>%
-  select(., contains(c("TF", "ctrl_edge_weight_pos")))
-
-# grabbing colnames and setting for new dataframe generated above
-names <- names(targeting_list[grep("TF_", names(targeting_list))]) %>%
-  sub(".*TF_targeting_", "", .) %>%
-  append("TF", .)
-colnames(TF_targeting_all_ctrl) <- names
-
-# grabbing all ctrl targeting scores for genes
-gene_targeting_all_ctrl <- targeting_list[grep("Gene_", names(targeting_list))] %>%
-  purrr::reduce(full_join, by = "gene") %>%
-  select(., contains(c("gene", "ctrl_edge_weight_pos")))
-
-# grabbing colnames and setting for new dataframe generated above
-names <- names(targeting_list[grep("Gene_", names(targeting_list))]) %>%
-  sub(".*Gene_targeting_", "", .) %>%
-  append("gene", .)
-colnames(gene_targeting_all_ctrl) <- names
-```
 
 ```{r find-top-targeted-genes-across-ctrl-celltypes}
 # identify the maximum for each row
@@ -1157,7 +1158,7 @@ rowtitle <- "genes"
 # setting columntitle
 plot_title <- "Differential Gene Targeting of known targets of Setbp1 in S858R enriched genes of Cerebral Cortex"
 
-targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title, show_names = TRUE)
+targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title, show_names = TRUE, height = 2200)
 ```
 
 ```{r GO-difftargeting-genes-Setbp1Target-het-enriched}
@@ -1291,7 +1292,7 @@ rowtitle <- "TFs"
 # setting columntitle
 plot_title <- "Differential Targeting of S858R enriched TFs in Cerebral Cortex"
 
-targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title, show_names = TRUE)
+targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title)
 ```
 
 ```{r visualizing-all-diff-TF-het-enriched-setbp1TFs}
@@ -1537,7 +1538,7 @@ rowtitle <- "genes"
 # setting columntitle
 plot_title <- "Differential Targeting of Top 20 Genes within Cell-types in Setbp1 S858R Cerebral Cortex"
 
-targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title, show_names = TRUE)
+targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title, show_names = TRUE, height = 2000)
 ```
 
 
@@ -1592,7 +1593,7 @@ rowtitle <- "TFs"
 # setting columntitle
 plot_title <- "Differential Targeting of Top 20 TFs within Cell-types in Setbp1 S858R Cerebral Cortex"
 
-targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title, show_names = TRUE)
+targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title, show_names = TRUE, height = 2000)
 ```
 
 ```{r GO-difftargeting-top20genes-het-enriched}
@@ -1705,7 +1706,7 @@ rowtitle <- "genes"
 # setting columntitle
 plot_title <- "Differential Targeting of Top 20 Genes within Cell-types in Setbp1 S858R Cerebral Cortex"
 
-targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title, show_names = TRUE)
+targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title, show_names = TRUE, height = 2000)
 ```
 
 
@@ -1760,7 +1761,7 @@ rowtitle <- "TFs"
 # setting columntitle
 plot_title <- "Differential Targeting of Top 20 TFs within Cell-types in Setbp1 S858R Cerebral Cortex"
 
-targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title, show_names = TRUE)
+targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title, show_names = TRUE, height = 2000)
 ```
 
 ```{r GO-difftargeting-top20genes-ctrl-enriched}
@@ -1831,7 +1832,7 @@ proc.time()
  
 ```{r}
 # run style
-style_file(here("src/network_scripts/differential_targeting/Setbp1_DiffTargetingCortex_01.Rmd"))
+#style_file(here("src/network_scripts/differential_targeting/Setbp1_DiffTargetingCortex_01.Rmd")) #commented out after being run once
 # lintr was run as well
 ```
 
