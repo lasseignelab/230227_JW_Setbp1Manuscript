@@ -1,0 +1,612 @@
+---
+title: "MouseSetbp1_PANDA_expression"
+output: html_document
+date: '2022-10-27'
+---
+This script extracts all processed count matrices from the Seurat object and pseudobulks them to create sample x gene matrices for each cell type as the expression input for PANDA. 
+
+```{r load-libraries}
+set.seed(2178)
+library(SingleCellExperiment)
+library(Matrix)
+library(grr)
+library(magrittr)
+library(Seurat)
+library(styler)
+library(lintr)
+library(here)
+source(here("src/functions/functions.R"))
+```
+
+
+```{r load-seurat-objects}
+# cerebral cortex data:
+load(here("data/setbp1_cerebralintcelltypes.Rdata"))
+
+# kidney data:
+load(here("data/kidney_integrated_celltypes_postSoup.Rdata"))
+```
+
+
+## Pseudobulk the cerebral data for PANDA Input:
+(following tutorial here: https://hbctraining.github.io/scRNA-seq/lessons/pseudobulk_DESeq2_scrnaseq.html)
+
+### Set up data and aggregate 
+```{r}
+# generate sce object ----------
+
+# extract expression data and metadata to create a SingleCellExperiment object
+counts <- cerebral_int_celltypes@assays$RNA@data
+metadata <- cerebral_int_celltypes@meta.data
+
+# set up metadata for aggregation
+metadata$cluster_id <- factor(cerebral_int_celltypes@active.ident)
+
+# create the single cell experiment object
+sce_cerebral <- SingleCellExperiment(assays = list(counts = counts), colData = metadata)
+
+
+control_cerebral_sce <- sce_cerebral[, sce_cerebral$type == "control"] # if the dataset has a non-WT group, would also filter for that here
+
+
+heterozygous_cerebral_sce <- sce_cerebral[, sce_cerebral$type == "heterozygous"]
+
+
+# investigate sce object ----------
+
+assays(control_cerebral_sce) # check assays present -- counts
+colData(control_cerebral_sce) # show all the columns present
+dim(counts(control_cerebral_sce)) # note dims here are same as sce because this is ALL control data
+counts(control_cerebral_sce)[1:6, 1:6] # looking at first 6 rows and first 6 columns in gene x cell count matrix
+# explore cellular metadata for dataset
+dim(colData(control_cerebral_sce))
+
+assays(heterozygous_cerebral_sce) # check assays present -- counts
+colData(heterozygous_cerebral_sce) # show all the columns present
+dim(counts(heterozygous_cerebral_sce)) #note dims here are same as sce because this is ALL heterozygous data
+counts(heterozygous_cerebral_sce)[1:6, 1:6] # looking at first 6 rows and first 6 columns in gene x cell count matrix
+# explore cellular metadata for dataset
+dim(colData(heterozygous_cerebral_sce))
+
+
+# aggregate counts per orig.ident (sample) and cluster_id (cell type) ----------
+
+# Identify groups for aggregation (aggregate across samples) in Control
+groups_cerebral <- colData(control_cerebral_sce)[, c("cluster_id", "orig.ident")]
+# aggregate across cluster-sample groups:
+control_cerebral_agg <- aggregate.Matrix(t(counts(control_cerebral_sce)),
+  groupings = groups_cerebral, fun = "sum"
+)
+class(control_cerebral_agg)
+dim(control_cerebral_agg) 
+# view gene by cell-type matrix:
+control_cerebral_agg[1:6, 1:6]
+
+
+# Identify groups for aggregation (aggregate across samples) in heterozygous
+groups_cerebral <- colData(heterozygous_cerebral_sce)[, c("cluster_id", "orig.ident")]
+# aggregate across cluster-sample groups:
+heterozygous_cerebral_agg <- aggregate.Matrix(t(counts(heterozygous_cerebral_sce)),
+  groupings = groups_cerebral, fun = "sum"
+)
+class(heterozygous_cerebral_agg)
+dim(heterozygous_cerebral_agg) 
+# view gene by cell-type matrix:
+heterozygous_cerebral_agg[1:6, 1:6]
+```
+
+### Split by cell type 
+
+```{r}
+# Not every cluster is present in all samples; create a vector that represents how to split samples
+splitf_control <- sapply(
+  stringr::str_split(rownames(control_cerebral_agg),
+    pattern = "_J", #note: this needs to be adjusted for different data
+    n = 2
+  ),
+  `[`, 1
+)
+
+splitf_het <- sapply(
+  stringr::str_split(rownames(heterozygous_cerebral_agg),
+    pattern = "_J",
+    n = 2
+  ),
+  `[`, 1
+)
+```
+
+
+### Transform to create a sample by cell type expression matrix
+
+Now we can turn the matrix into a list that is split into count matrices for each cluster, then transform each data frame so that rows are genes and columns are the samples
+```{r}
+# Turn into a list and split the list into components for each cluster and transform, so rows are genes and columns are samples and make rownames as the sample IDs
+control_cerebral_agg <- split.data.frame(
+  control_cerebral_agg,
+  factor(splitf_control)
+) %>%
+  lapply(function(u) {
+    set_colnames(
+      t(u),
+      stringr::str_extract(rownames(u), "(?<=_)[:alnum:]+")
+    )
+  })
+class(control_cerebral_agg) # list
+# Explore the different components of list
+str(control_cerebral_agg)
+# Print out the table of counts in each cluster-sample group
+options(width = 100)
+table(control_cerebral_sce$cluster_id, control_cerebral_sce$orig.ident)
+
+
+
+heterozygous_cerebral_agg <- split.data.frame(
+  heterozygous_cerebral_agg,
+  factor(splitf_control)
+) %>%
+  lapply(function(u) {
+    set_colnames(
+      t(u),
+      stringr::str_extract(rownames(u), "(?<=_)[:alnum:]+")
+    )
+  })
+class(heterozygous_cerebral_agg) # list
+# Explore the different components of list
+str(heterozygous_cerebral_agg)
+# Print out the table of counts in each cluster-sample group
+options(width = 100)
+table(heterozygous_cerebral_sce$cluster_id, heterozygous_cerebral_sce$orig.ident)
+```
+
+
+### Extract cell-specific expression matrices and save to inputs folder for Setbp1 data:
+```{r}
+# control matrices ----------
+inhibitory_neurons <- as.data.frame(control_cerebral_agg$inhibitory_neurons)
+save(inhibitory_neurons,
+  file = here("data/processed/expression_inputs/inhibitory_neurons_controlcortexexpression.Rdata")
+)
+
+excitatory_neurons <- as.data.frame(control_cerebral_agg$excitatory_neurons)
+save(excitatory_neurons,
+  file = here("data/processed/expression_inputs/excitatory_neurons_controlcortexexpression.Rdata")
+)
+
+astrocytes <- as.data.frame(control_cerebral_agg$astrocytes)
+save(astrocytes,
+  file = here("data/processed/expression_inputs/astrocytes_controlcortexexpression.Rdata")
+)
+
+oligodendrocytes <- as.data.frame(control_cerebral_agg$oligodendrocytes)
+save(oligodendrocytes,
+  file = here("data/processed/expression_inputs/oligodendrocytes_controlcortexexpression.Rdata")
+)
+
+opcs <- as.data.frame(control_cerebral_agg$opcs)
+save(opcs,
+  file = here("data/processed/expression_inputs/opcs_controlcortexexpression.Rdata")
+)
+
+microglia <- as.data.frame(control_cerebral_agg$microglia)
+save(microglia,
+  file = here("data/processed/expression_inputs/microglia_controlcortexexpression.Rdata")
+)
+
+mural <- as.data.frame(control_cerebral_agg$mural_cells)
+save(mural,
+  file = here("data/processed/expression_inputs/mural_controlcortexexpression.Rdata")
+)
+
+fibro_cortex <- as.data.frame(control_cerebral_agg$fibroblasts)
+save(fibro_cortex,
+  file = here("data/processed/expression_inputs/fibro_cortex_controlcortexexpression.Rdata")
+)
+
+# heterozygous matrices ----------
+inhibitory_neurons <- as.data.frame(heterozygous_cerebral_agg$inhibitory_neurons)
+save(inhibitory_neurons,
+  file = here("data/processed/expression_inputs/inhibitory_neurons_heterozygouscortexexpression.Rdata")
+)
+
+excitatory_neurons <- as.data.frame(heterozygous_cerebral_agg$excitatory_neurons)
+save(excitatory_neurons,
+  file = here("data/processed/expression_inputs/excitatory_neurons_heterozygouscortexexpression.Rdata")
+)
+
+astrocytes <- as.data.frame(heterozygous_cerebral_agg$astrocytes)
+save(astrocytes,
+  file = here("data/processed/expression_inputs/astrocytes_heterozygouscortexexpression.Rdata")
+)
+
+oligodendrocytes <- as.data.frame(heterozygous_cerebral_agg$oligodendrocytes)
+save(oligodendrocytes,
+  file = here("data/processed/expression_inputs/oligodendrocytes_heterozygouscortexexpression.Rdata")
+)
+
+opcs <- as.data.frame(heterozygous_cerebral_agg$opcs)
+save(opcs,
+  file = here("data/processed/expression_inputs/opcs_heterozygouscortexexpression.Rdata")
+)
+
+microglia <- as.data.frame(heterozygous_cerebral_agg$microglia)
+save(microglia, file = here("data/processed/expression_inputs/microglia_heterozygouscortexexpression.Rdata"))
+
+mural <- as.data.frame(heterozygous_cerebral_agg$mural_cells)
+save(mural,
+  file = here("data/processed/expression_inputs/mural_heterozygouscortexexpression.Rdata")
+)
+
+fibro_cortex <- as.data.frame(heterozygous_cerebral_agg$fibroblasts)
+save(fibro_cortex,
+  file = here("data/processed/expression_inputs/fibro_cortex_heterozygouscortexexpression.Rdata")
+)
+```
+
+
+## Pseudobulk the kidney data for PANDA Input:
+(following tutorial here: https://hbctraining.github.io/scRNA-seq/lessons/pseudobulk_DESeq2_scrnaseq.html)
+
+### Set up data and aggregate 
+```{r}
+# generate sce object ----------
+
+# extract expression data and metadata to create a SingleCellExperiment object
+counts <- kidney_int_celltypes@assays$RNA@data
+metadata <- kidney_int_celltypes@meta.data
+
+# set up metadata for aggregation
+Idents(kidney_int_celltypes) <- "cell_type"
+metadata$cluster_id <- factor(kidney_int_celltypes@active.ident)
+
+# create the single cell experiment object
+sce_kidney <- SingleCellExperiment(
+  assays = list(counts = counts),
+  colData = metadata
+)
+
+
+control_kidney_sce <- sce_kidney[, sce_kidney$type == "control"] # if the dataset has a non-WT group, would also filter for that here
+
+
+heterozygous_kidney_sce <- sce_kidney[, sce_kidney$type == "heterozygous"]
+
+
+# investigate sce object ----------
+
+assays(control_kidney_sce) # check assays present -- counts
+colData(control_kidney_sce) # show all the columns present
+dim(counts(control_kidney_sce)) #note dims here are same as sce because this is ALL control data
+counts(control_kidney_sce)[1:6, 1:6] # looking at first 6 rows and first 6 columns in gene x cell count matrix
+# explore cellular metadata for dataset
+dim(colData(control_kidney_sce)) 
+
+assays(heterozygous_kidney_sce) # check assays present -- counts
+colData(heterozygous_kidney_sce) # show all the columns present
+dim(counts(heterozygous_kidney_sce)) # note dims here are same as sce because this is ALL heterozygous data
+counts(heterozygous_kidney_sce)[1:6, 1:6] # looking at first 6 rows and first 6 columns in gene x cell count matrix
+# explore cellular metadata for dataset
+dim(colData(heterozygous_kidney_sce))
+
+
+# aggregate counts per orig.ident (sample) and cluster_id (cell type) ----------
+
+# Identify groups for aggregation (aggregate across samples) in Control
+groups_kidney <- colData(control_kidney_sce)[, c("cluster_id", "orig.ident")]
+# aggregate across cluster-sample groups:
+control_kidney_agg <- aggregate.Matrix(t(counts(control_kidney_sce)),
+  groupings = groups_kidney, fun = "sum"
+)
+class(control_kidney_agg)
+dim(control_kidney_agg) 
+# view gene by cell-type matrix:
+control_kidney_agg[1:6, 1:6]
+
+
+# Identify groups for aggregation (aggregate across samples) in heterozygous
+groups_kidney <- colData(heterozygous_kidney_sce)[, c("cluster_id", "orig.ident")]
+# aggregate across cluster-sample groups:
+heterozygous_kidney_agg <- aggregate.Matrix(t(counts(heterozygous_kidney_sce)),
+  groupings = groups_kidney, fun = "sum"
+)
+class(heterozygous_kidney_agg)
+dim(heterozygous_kidney_agg) 
+# view gene by cell-type matrix:
+heterozygous_kidney_agg[1:6, 1:6]
+```
+
+### Split by cell type 
+
+```{r}
+# Not every cluster is present in all samples; create a vector that represents how to split samples
+splitf_control <- sapply(
+  stringr::str_split(rownames(control_kidney_agg),
+    pattern = "_K", #note, this may not work on other data types and pattern will need to be adjusted
+    n = 2
+  ),
+  `[`, 1
+)
+
+splitf_het <- sapply(
+  stringr::str_split(rownames(heterozygous_kidney_agg),
+    pattern = "_K",
+    n = 2
+  ),
+  `[`, 1
+)
+```
+
+
+### Transform to create a sample by cell type expression matrix
+
+Now we can turn the matrix into a list that is split into count matrices for each cluster, then transform each data frame so that rows are genes and columns are the samples
+```{r}
+# Turn into a list and split the list into components for each cluster and transform, so rows are genes and columns are samples and make rownames as the sample IDs
+control_kidney_agg <- split.data.frame(
+  control_kidney_agg,
+  factor(splitf_control)
+) %>%
+  lapply(function(u) {
+    set_colnames(
+      t(u),
+      stringr::str_extract(rownames(u), "(?<=_)[:alnum:]+")
+    )
+  })
+class(control_kidney_agg) # list
+# Explore the different components of list
+str(control_kidney_agg)
+# Print out the table of counts in each cluster-sample group
+options(width = 100)
+table(control_kidney_sce$cluster_id, control_kidney_sce$orig.ident)
+
+
+
+heterozygous_kidney_agg <- split.data.frame(
+  heterozygous_kidney_agg,
+  factor(splitf_control)
+) %>%
+  lapply(function(u) {
+    set_colnames(
+      t(u),
+      stringr::str_extract(rownames(u), "(?<=_)[:alnum:]+")
+    )
+  })
+class(heterozygous_kidney_agg) # list
+# Explore the different components of list
+str(heterozygous_kidney_agg)
+# Print out the table of counts in each cluster-sample group
+options(width = 100)
+table(heterozygous_kidney_sce$cluster_id, heterozygous_kidney_sce$orig.ident)
+```
+
+
+### Extract cell-specific expression matrices and save to inputs folder for Setbp1 data:
+```{r}
+# control matrices ----------
+pericytes <- as.data.frame(control_kidney_agg$pericytes)
+save(pericytes,
+  file = here("data/processed/expression_inputs/pericytes_controlkidneyexpression.Rdata")
+)
+
+LOH <- as.data.frame(control_kidney_agg$LOH)
+save(LOH,
+  file = here("data/processed/expression_inputs/LOH_controlkidneyexpression.Rdata")
+)
+
+PCTS1 <- as.data.frame(control_kidney_agg$PCTS1)
+save(PCTS1,
+  file = here("data/processed/expression_inputs/PCTS1_controlkidneyexpression.Rdata")
+)
+
+endothelial <- as.data.frame(control_kidney_agg$endothelial)
+save(endothelial,
+  file = here("data/processed/expression_inputs/endothelial_controlkidneyexpression.Rdata")
+)
+
+PST <- as.data.frame(control_kidney_agg$PST)
+save(PST,
+  file = here("data/processed/expression_inputs/PST_controlkidneyexpression.Rdata")
+)
+
+CDPC <- as.data.frame(control_kidney_agg$CDPC)
+save(CDPC,
+  file = here("data/processed/expression_inputs/CDPC_controlkidneyexpression.Rdata")
+)
+
+DCT <- as.data.frame(control_kidney_agg$DCT)
+save(DCT,
+  file = here("data/processed/expression_inputs/DCT_controlkidneyexpression.Rdata")
+)
+
+fibro <- as.data.frame(control_kidney_agg$fibroblasts)
+save(fibro,
+  file = here("data/processed/expression_inputs/fibroblasts_controlkidneyexpression.Rdata")
+)
+
+DLH <- as.data.frame(control_kidney_agg$DLH)
+save(DLH,
+  file = here("data/processed/expression_inputs/DLH_controlkidneyexpression.Rdata")
+)
+
+CDIC_typeB <- as.data.frame(control_kidney_agg$CDIC_typeB)
+save(CDIC_typeB,
+  file = here("data/processed/expression_inputs/CDIC_typeB_controlkidneyexpression.Rdata")
+)
+
+CDIC_typeA <- as.data.frame(control_kidney_agg$CDIC_typeA)
+save(CDIC_typeA,
+  file = here("data/processed/expression_inputs/CDIC_typeA_controlkidneyexpression.Rdata")
+)
+
+macro <- as.data.frame(control_kidney_agg$macrophages)
+save(macro,
+  file = here("data/processed/expression_inputs/macrophages_controlkidneyexpression.Rdata")
+)
+
+bcell <- as.data.frame(control_kidney_agg$B_cells)
+save(bcell,
+  file = here("data/processed/expression_inputs/Bcell_controlkidneyexpression.Rdata")
+)
+
+podo <- as.data.frame(control_kidney_agg$podocytes)
+save(podo,
+  file = here("data/processed/expression_inputs/podocytes_controlkidneyexpression.Rdata")
+)
+
+PCTS2 <- as.data.frame(control_kidney_agg$PCTS2)
+save(PCTS2,
+  file = here("data/processed/expression_inputs/PCTS2_controlkidneyexpression.Rdata")
+)
+
+PT <- as.data.frame(control_kidney_agg$proximal_tubule)
+save(PT,
+  file = here("data/processed/expression_inputs/PT_controlkidneyexpression.Rdata")
+)
+
+smcs <- as.data.frame(control_kidney_agg$smooth_muscle_cells)
+save(smcs,
+  file = here("data/processed/expression_inputs/smcs_controlkidneyexpression.Rdata")
+)
+
+# heterozygous matrices ----------
+pericytes <- as.data.frame(heterozygous_kidney_agg$pericytes)
+save(pericytes,
+  file = here("data/processed/expression_inputs/pericytes_heterozygouskidneyexpression.Rdata")
+)
+
+LOH <- as.data.frame(heterozygous_kidney_agg$LOH)
+save(LOH,
+  file = here("data/processed/expression_inputs/LOH_heterozygouskidneyexpression.Rdata")
+)
+
+PCTS1 <- as.data.frame(heterozygous_kidney_agg$PCTS1)
+save(PCTS1,
+  file = here("data/processed/expression_inputs/PCTS1_heterozygouskidneyexpression.Rdata")
+)
+
+endothelial <- as.data.frame(heterozygous_kidney_agg$endothelial)
+save(endothelial,
+  file = here("data/processed/expression_inputs/endothelial_heterozygouskidneyexpression.Rdata")
+)
+
+PST <- as.data.frame(heterozygous_kidney_agg$PST)
+save(PST,
+  file = here("data/processed/expression_inputs/PST_heterozygouskidneyexpression.Rdata")
+)
+
+CDPC <- as.data.frame(heterozygous_kidney_agg$CDPC)
+save(CDPC,
+  file = here("data/processed/expression_inputs/CDPC_heterozygouskidneyexpression.Rdata")
+)
+
+DCT <- as.data.frame(heterozygous_kidney_agg$DCT)
+save(DCT,
+  file = here("data/processed/expression_inputs/DCT_heterozygouskidneyexpression.Rdata")
+)
+
+fibro <- as.data.frame(heterozygous_kidney_agg$fibroblasts)
+save(fibro,
+  file = here("data/processed/expression_inputs/fibroblasts_heterozygouskidneyexpression.Rdata")
+)
+
+DLH <- as.data.frame(heterozygous_kidney_agg$DLH)
+save(DLH,
+  file = here("data/processed/expression_inputs/DLH_heterozygouskidneyexpression.Rdata")
+)
+
+CDIC_typeB <- as.data.frame(heterozygous_kidney_agg$CDIC_typeB)
+save(CDIC_typeB,
+  file = here("data/processed/expression_inputs/CDIC_typeB_heterozygouskidneyexpression.Rdata")
+)
+
+CDIC_typeA <- as.data.frame(heterozygous_kidney_agg$CDIC_typeA)
+save(CDIC_typeA,
+  file = here("data/processed/expression_inputs/CDIC_typeA_heterozygouskidneyexpression.Rdata")
+)
+
+macro <- as.data.frame(heterozygous_kidney_agg$macrophages)
+save(macro,
+  file = here("data/processed/expression_inputs/macrophages_heterozygouskidneyexpression.Rdata")
+)
+
+bcell <- as.data.frame(heterozygous_kidney_agg$B_cells)
+save(bcell,
+  file = here("data/processed/expression_inputs/Bcell_heterozygouskidneyexpression.Rdata")
+)
+
+podo <- as.data.frame(heterozygous_kidney_agg$podocytes)
+save(podo,
+  file = here("data/processed/expression_inputs/podocytes_heterozygouskidneyexpression.Rdata")
+)
+
+PCTS2 <- as.data.frame(heterozygous_kidney_agg$PCTS2)
+save(PCTS2,
+  file = here("data/processed/expression_inputs/PCTS2_heterozygouskidneyexpression.Rdata")
+)
+
+PT <- as.data.frame(heterozygous_kidney_agg$proximal_tubule)
+save(PT,
+  file = here("data/processed/expression_inputs/PT_heterozygouskidneyexpression.Rdata")
+)
+
+smcs <- as.data.frame(heterozygous_kidney_agg$smooth_muscle_cells)
+save(smcs,
+  file = here("data/processed/expression_inputs/smcs_heterozygouskidneyexpression.Rdata")
+)
+```
+
+```{r}
+# run style
+style_file(here("src/network_scripts/input_construction/Setbp1_PANDA_expression.Rmd"))
+# lintr was run as well
+```
+
+```{r}
+proc.time()
+```
+   user  system elapsed 
+ 58.698  13.903 526.798 
+
+```{r}
+sessionInfo()
+```
+R version 4.1.3 (2022-03-10)
+Platform: x86_64-pc-linux-gnu (64-bit)
+Running under: Ubuntu 20.04.5 LTS
+
+Matrix products: default
+BLAS/LAPACK: /usr/lib/x86_64-linux-gnu/openblas-pthread/libopenblasp-r0.3.8.so
+
+locale:
+[1] C
+
+attached base packages:
+[1] stats4    stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+ [1] ggplot2_3.4.1               here_1.0.1                  lintr_3.0.2                 styler_1.9.0                SeuratObject_4.1.3         
+ [6] Seurat_4.3.0                magrittr_2.0.3              grr_0.9.5                   Matrix_1.5-3                SingleCellExperiment_1.16.0
+[11] SummarizedExperiment_1.24.0 Biobase_2.54.0              GenomicRanges_1.46.1        GenomeInfoDb_1.30.1         IRanges_2.28.0             
+[16] S4Vectors_0.32.4            BiocGenerics_0.40.0         MatrixGenerics_1.6.0        matrixStats_0.63.0         
+
+loaded via a namespace (and not attached):
+  [1] plyr_1.8.8             igraph_1.4.1           lazyeval_0.2.2         sp_1.6-0               splines_4.1.3          listenv_0.9.0         
+  [7] scattermore_0.8        digest_0.6.31          htmltools_0.5.4        fansi_1.0.4            tensor_1.5             cluster_2.1.2         
+ [13] ROCR_1.0-11            remotes_2.4.2          globals_0.16.2         R.utils_2.12.2         spatstat.sparse_3.0-0  colorspace_2.1-0      
+ [19] ggrepel_0.9.3          xfun_0.37              dplyr_1.1.0            callr_3.7.3            crayon_1.5.2           RCurl_1.98-1.10       
+ [25] jsonlite_1.8.4         progressr_0.13.0       spatstat.data_3.0-0    survival_3.3-1         zoo_1.8-11             glue_1.6.2            
+ [31] polyclip_1.10-4        gtable_0.3.1           zlibbioc_1.40.0        XVector_0.34.0         leiden_0.4.3           DelayedArray_0.20.0   
+ [37] R.cache_0.16.0         future.apply_1.10.0    abind_1.4-5            scales_1.2.1           spatstat.random_3.1-3  miniUI_0.1.1.1        
+ [43] Rcpp_1.0.10            viridisLite_0.4.1      xtable_1.8-4           reticulate_1.28        htmlwidgets_1.6.1      rex_1.2.1             
+ [49] httr_1.4.5             RColorBrewer_1.1-3     ellipsis_0.3.2         ica_1.0-3              pkgconfig_2.0.3        R.methodsS3_1.8.2     
+ [55] uwot_0.1.14            deldir_1.0-6           utf8_1.2.3             tidyselect_1.2.0       rlang_1.0.6            reshape2_1.4.4        
+ [61] later_1.3.0            munsell_0.5.0          tools_4.1.3            cli_3.6.0              generics_0.1.3         ggridges_0.5.4        
+ [67] stringr_1.5.0          fastmap_1.1.1          goftest_1.2-3          processx_3.8.0         knitr_1.42             fitdistrplus_1.1-8    
+ [73] purrr_1.0.1            RANN_2.6.1             pbapply_1.7-0          future_1.31.0          nlme_3.1-155           mime_0.12             
+ [79] R.oo_1.25.0            xml2_1.3.3             compiler_4.1.3         rstudioapi_0.14        plotly_4.10.1          png_0.1-8             
+ [85] spatstat.utils_3.0-1   tibble_3.1.8           stringi_1.7.12         cyclocomp_1.1.0        ps_1.7.2               desc_1.4.2            
+ [91] lattice_0.20-45        vctrs_0.5.2            pillar_1.8.1           lifecycle_1.0.3        spatstat.geom_3.0-6    lmtest_0.9-40         
+ [97] RcppAnnoy_0.0.20       data.table_1.14.8      cowplot_1.1.1          bitops_1.0-7           irlba_2.3.5.1          httpuv_1.6.9          
+[103] patchwork_1.1.2        R6_2.5.1               promises_1.2.0.1       KernSmooth_2.23-20     gridExtra_2.3          parallelly_1.34.0     
+[109] codetools_0.2-18       MASS_7.3-55            rprojroot_2.0.3        withr_2.5.0            sctransform_0.3.5      GenomeInfoDbData_1.2.7
+[115] parallel_4.1.3         grid_4.1.3             tidyr_1.3.0            Rtsne_0.16             spatstat.explore_3.0-6 shiny_1.7.4           

@@ -1,0 +1,77 @@
+---
+title: "02_decoupleR_formatting_prior"
+author: "Jordan Whitlock"
+date: '2023-05-15'
+output: html_document
+---
+
+Note for Code Reviewer, this was run in 1.0.5 docker
+
+```{r}
+set.seed(2178)
+library(here)
+library(reshape)
+source(here("src/functions/functions.R"))
+ptm <- proc.time()
+```
+
+
+```{r}
+#make list of expression files needed to loop through
+files <- list.files(here("results/decoupleR_PANDA"), full.names = TRUE)
+files
+
+#run for loop
+for(i in files){
+  #load in the expression data files needed and rename:
+  PANDA <- loadRData(i)
+  #extract regNet and melt into `source`, `target` and `mor`, required format for decoupleR.
+  #These equate to `TF`, `gene` and `score` respectively. 
+  regNet <- PANDA@regNet
+  regNet <- melt(regNet)
+  colnames(regNet) <- c("source", "target", "mor")
+  # #save melted output
+  name <- sub("_PANDA.Rdata", "", basename(i))
+  save(regNet, file = paste0(here("results/decoupleR_PANDA_melted/"), name, "_melted.Rdata"))
+  rm(PANDA)
+  rm(regNet)
+  print(paste0(name, " network melted and saved."))
+}
+```
+
+```{r}
+fptm <- proc.time() - ptm
+fptm[3]/60
+```
+elapsed 
+1.82345
+
+```{r}
+sessionInfo()
+```
+
+R version 4.1.3 (2022-03-10)
+Platform: x86_64-pc-linux-gnu (64-bit)
+Running under: Ubuntu 20.04.5 LTS
+
+Matrix products: default
+BLAS/LAPACK: /usr/lib/x86_64-linux-gnu/openblas-pthread/libopenblasp-r0.3.8.so
+
+locale:
+[1] C
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+[1] ggplot2_3.4.1       reshape_0.8.9       here_1.0.1          pandaR_1.26.0       Biobase_2.54.0     
+[6] BiocGenerics_0.40.0
+
+loaded via a namespace (and not attached):
+ [1] Rcpp_1.0.10        pillar_1.8.1       compiler_4.1.3     plyr_1.8.8         tools_4.1.3        digest_0.6.31     
+ [7] evaluate_0.20      lifecycle_1.0.3    tibble_3.1.8       gtable_0.3.1       lattice_0.20-45    pkgconfig_2.0.3   
+[13] rlang_1.0.6        igraph_1.4.1       cli_3.6.0          rstudioapi_0.14    yaml_2.3.7         hexbin_1.28.2     
+[19] xfun_0.37          fastmap_1.1.1      withr_2.5.0        dplyr_1.1.0        knitr_1.42         generics_0.1.3    
+[25] vctrs_0.5.2        rprojroot_2.0.3    grid_4.1.3         tidyselect_1.2.0   glue_1.6.2         R6_2.5.1          
+[31] fansi_1.0.4        rmarkdown_2.20     magrittr_2.0.3     htmltools_0.5.4    scales_1.2.1       matrixStats_0.63.0
+[37] RUnit_0.4.32       colorspace_2.1-0   utf8_1.2.3         munsell_0.5.0 
