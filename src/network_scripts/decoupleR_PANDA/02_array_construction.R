@@ -1,4 +1,5 @@
 # NOTE: be sure to run this script to set up list of files BEFORE constructing networks with '02_PANDA_array.sh' bash script. 
+# Expression inputs needed for this script were cosntructed using 01_MouseSetbp1_decoupleR_priorNetwork_expression.
 # This script was run inside of JW docker container jordanwhitlock/setbp1_manuscript:1.0.5 (setbp1_manuscript_1.0.5.sif) using Singularity/3.5.2-GCC-5.4.0-2.26 
 set.seed(2178)
 

@@ -6,6 +6,8 @@ output: html_document
 ---
 #note for reviewer (reviewer 2 can remoce this line): this was run in docker 1.0.5
 
+This script is used in order to generate expression inputs for construction of the prior network (in this case PANDA networks for each condition across both tissues) required for decoupleR. this script is succeeded by 01_array_construction and 02_PANDA_array for construction of decoupleR PANDA networks for each cell type in cortex and kidney.
+
 ```{r load-libraries-setup}
 ptm <- proc.time()
 set.seed(2178)
