@@ -7,7 +7,7 @@ library(here)
 library(utils)
 
 ##Make list of .Rdata expression files needed for array job (generated using `MouseSetbp1_PANDA_expression_05.Rmd`):
-files <- list.files(here("data/processed/decoupleR_expression_inputs"), full.names = TRUE) # ensure that ALL exppression inputs for PANDA are in the same directory and that nothing else is in the directory.
+files <- list.files(here("data/processed/decoupleR_PANDA_expression_inputs"), full.names = TRUE) # ensure that ALL exppression inputs for PANDA are in the same directory and that nothing else is in the directory.
 files #save this as a text file to be the array file
 
 write.table(files, file = here("results/array_inputs/Setbp1_decoupleR_PANDA_files.txt"), sep = "\t", row.names = FALSE, col.names = FALSE) # for other data user may want to change file name
