@@ -5,7 +5,7 @@ date: '2023-05-15'
 output: html_document
 ---
 
-This analysis determines differential gene targeting scores across cell types between conditions from the PANDA regulatory networks in order to identify cell-specific gene targeting. All networks below were filtered to only include positive weights. 
+This analysis determines differential gene targeting scores across cell types between conditions from the PANDA regulatory networks in order to identify cell-specific gene targeting. This analysis provides insight into how targeting is changing at the "tissue" level. All networks below were filtered to only include positive weights. 
 
 Targeting code was adapted from: http://netbooks.networkmedicine.org/user/b04f15be-cbd3-44df-932f-6e9026018fd0/notebooks/netZooR/lioness_tcga_targeting_netbook.ipynb
 
@@ -102,13 +102,13 @@ data <- data[, -c(1:2)]
 # setting meta colname
 meta_colname <- "cell_type"
 # setting plot path
-plot_path <- here("results/diff_targeting/kidney_gene_targeting_all_het_heatmap_test.png")
+plot_path <- here("results/diff_targeting/kidney_gene_targeting_all_het_heatmap.png")
 # setting rowtitle
 rowtitle <- "genes"
 # setting columntitle
 plot_title <- "Targeting of All Genes Across Cell-types in Setbp1 S858R Kidney"
 
-targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title)
+targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title, show_names = FALSE)
 ```
 
 ```{r visualizing-het-gene-top100-rank-with-heatmap}
@@ -288,8 +288,7 @@ colnames(diff_gene_targeting) <- "gene"
 diff_gene_targeting$gene <- combined_gene_targeting$gene # adding gene
 
 # calc diff targeting
-cell_names <- colnames(gene_targeting_all_ctrl) %>% .[which(. != "gene")] # note: need to change for gene, grabbing cell type names
-cell_names
+cell_names <- colnames(gene_targeting_all_ctrl) %>% .[which(. != "gene")] %>% sub("_ctrl.*", "", .) # all cell type prefixes except gene name, which should be first column in data
 for (i in cell_names) {
   selected_columns <- names(combined_gene_targeting)[startsWith(names(combined_gene_targeting), i)]
   # Check there are two columns with the specified prefix
@@ -303,7 +302,7 @@ for (i in cell_names) {
 }
 
 het_enriched <- replace(diff_gene_targeting, diff_gene_targeting[, ] < 0, 0) # creating dataframe where the differential is enriched in the het condition
-save(het_enriched, file = here("results/diff_targeting/kidney_het_enriched_gene_within.Rdata"))
+save(het_enriched, file = here("results/diff_targeting/kidney_het_enriched_gene_across.Rdata"))
 ```
 
 ```{r calculate-ctrl-enriched-diff-targeting}
@@ -631,8 +630,6 @@ for (i in cell_names) {
 ```{r}
 proc.time()
 ```
-     user    system   elapsed 
- 5609.788  1391.155 82715.950
  
 ```{r}
 # run style
