@@ -17,16 +17,16 @@ ptm <- proc.time()
 
 
 ```{r}
-#make list of expression files needed to loop through
+# make list of expression files needed to loop through
 files <- list.files(here("results/decoupleR_PANDA"), full.names = TRUE)
 files
 
-#run for loop
-for(i in files){
-  #load in the expression data files needed and rename:
+# run for loop
+for (i in files) {
+  # load in the expression data files needed and rename:
   PANDA <- loadRData(i)
-  #extract regNet and melt into `source`, `target` and `mor`, required format for decoupleR.
-  #These equate to `TF`, `gene` and `score` respectively. 
+  # extract regNet and melt into `source`, `target` and `mor`, required format for decoupleR.
+  # These equate to `TF`, `gene` and `score` respectively.
   regNet <- PANDA@regNet
   regNet <- melt(regNet)
   colnames(regNet) <- c("source", "target", "mor")
@@ -41,12 +41,14 @@ for(i in files){
 
 ```{r}
 fptm <- proc.time() - ptm
-fptm[3]/60
+fptm[3] / 60
 ```
 elapsed 
 1.82345
 
 ```{r}
+style_file(here("src/network_scripts/decoupleR_input_construction/01_decoupleR_formatting_prior.Rmd"))
+
 sessionInfo()
 ```
 

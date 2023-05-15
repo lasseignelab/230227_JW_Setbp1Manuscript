@@ -1,5 +1,5 @@
 ---
-title: "03_MouseSetbp1_decoupleR_expression"
+title: "02_MouseSetbp1_decoupleR_expression"
 author: "Jordan Whitlock"
 date: '2023-05-12'
 output: html_document
@@ -59,7 +59,7 @@ save(kidney_decoupleR_expression,
 ```
 
 ```{r}
-style_file(here("src/network_scripts/input_construction/07_MouseSetbp1_decoupleR_expression.Rmd"))
+style_file(here("src/network_scripts/decoupleR_input_construction/02_MouseSetbp1_decoupleR_expression.Rmd"))
 
 fptm <- proc.time() - ptm
 (fptm[3] / 60)
