@@ -7,8 +7,6 @@ output: html_document
 
 This analysis determines differential gene targeting scores across cell types between conditions from the PANDA regulatory networks in order to identify cell-specific gene targeting. This analysis provides insight into how targeting is changing at the "tissue" level. All networks below were filtered to only include positive weights. 
 
-Targeting code was adapted from: http://netbooks.networkmedicine.org/user/b04f15be-cbd3-44df-932f-6e9026018fd0/notebooks/netZooR/lioness_tcga_targeting_netbook.ipynb
-
 #load in required libraries & functions
 ```{r loading-libraries-functions, results='hide'}
 set.seed(2178)
@@ -183,7 +181,10 @@ gene_targeting_all_ctrl <- arrange(gene_targeting_all_ctrl, rank)
 ```
 
 ```{r visualize-ctrl-gene-targeting-distribution}
-pivoted <- pivot_longer(gene_targeting_all_ctrl, values_to = "targeting_score", names_to = "cell_type", cols = -c("gene", "rank"))
+pivoted <- pivot_longer(gene_targeting_all_ctrl,
+                        values_to = "targeting_score",
+                        names_to = "cell_type",
+                        cols = -c("gene", "rank"))
 pivoted
 
 png(
@@ -195,7 +196,14 @@ ggplot(data = pivoted, aes(x = targeting_score, group = cell_type, color = cell_
   geom_density(adjust = 1.5, alpha = .4) +
   ggtitle("cortex Gene Targeting Score Distribution in Ctrl Mice") +
   theme_bw() +
-  scale_color_manual(values = c("#6968B4", "#DC71FA", "#0a2f6f", "#00BBDB", "#C216B7", "#027461", "#7997FF", "#00C1AA"))
+  scale_color_manual(values = c("#6968B4",
+                                "#DC71FA",
+                                "#0a2f6f",
+                                "#00BBDB",
+                                "#C216B7",
+                                "#027461",
+                                "#7997FF",
+                                "#00C1AA"))
 dev.off()
 
 summary(gene_targeting_all_ctrl)
@@ -453,7 +461,14 @@ pivoted <- pivot_longer(het_enriched, values_to = "targeting_score", names_to = 
 ggplot(data = pivoted, aes(x = targeting_score, group = cell_type, color = cell_type)) +
   geom_density(adjust = 1.5, alpha = .4) +
   ggtitle("Gene targeting score distribution across cell types in S8585R") +
-  scale_color_manual(values = c("#6968B4", "#DC71FA", "#0a2f6f", "#00BBDB", "#C216B7", "#027461", "#7997FF", "#00C1AA"))
+  scale_color_manual(values = c("#6968B4",
+                                "#DC71FA",
+                                "#0a2f6f",
+                                "#00BBDB",
+                                "#C216B7",
+                                "#027461",
+                                "#7997FF",
+                                "#00C1AA"))
 summary(het_enriched)
 ```
 
@@ -470,7 +485,14 @@ ggplot(data = nonzero, aes(x = targeting_score, group = cell_type, color = cell_
   geom_density(adjust = 1.5, alpha = .4) +
   ggtitle("Gene differential targeting score distribution across cell types in S8585R") +
   theme_bw() +
-  scale_color_manual(values = c("#6968B4", "#DC71FA", "#0a2f6f", "#00BBDB", "#C216B7", "#027461", "#7997FF", "#00C1AA"))
+  scale_color_manual(values = c("#6968B4",
+                                "#DC71FA",
+                                "#0a2f6f",
+                                "#00BBDB",
+                                "#C216B7",
+                                "#027461",
+                                "#7997FF",
+                                "#00C1AA"))
 dev.off()
 
 nonzero_long <- pivot_wider(nonzero, names_from = cell_type, values_from = targeting_score)
@@ -488,7 +510,14 @@ pivoted <- pivot_longer(ctrl_enriched, values_to = "targeting_score", names_to =
 ggplot(data = pivoted, aes(x = abs(targeting_score), group = cell_type, color = cell_type)) +
   geom_density(adjust = 1.5, alpha = .4) +
   ggtitle("Gene targeting score distribution across cell types in Control") +
-  scale_color_manual(values = c("#6968B4", "#DC71FA", "#0a2f6f", "#00BBDB", "#C216B7", "#027461", "#7997FF", "#00C1AA"))
+  scale_color_manual(values = c("#6968B4",
+                                "#DC71FA",
+                                "#0a2f6f",
+                                "#00BBDB",
+                                "#C216B7",
+                                "#027461",
+                                "#7997FF",
+                                "#00C1AA"))
 
 summary(ctrl_enriched)
 
@@ -503,7 +532,14 @@ ggplot(data = nonzero, aes(x = abs(targeting_score), group = cell_type, color = 
   geom_density(adjust = 1.5, alpha = .4) +
   ggtitle("Gene differential targeting score distribution across cell types in Control") +
   theme_bw() +
-  scale_color_manual(values = c("#6968B4", "#DC71FA", "#0a2f6f", "#00BBDB", "#C216B7", "#027461", "#7997FF", "#00C1AA"))
+  scale_color_manual(values = c("#6968B4",
+                                "#DC71FA",
+                                "#0a2f6f",
+                                "#00BBDB",
+                                "#C216B7",
+                                "#027461",
+                                "#7997FF",
+                                "#00C1AA"))
 dev.off()
 
 nonzero_long <- pivot_wider(nonzero, names_from = cell_type, values_from = targeting_score)

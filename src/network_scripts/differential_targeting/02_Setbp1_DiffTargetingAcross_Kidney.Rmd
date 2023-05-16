@@ -7,8 +7,6 @@ output: html_document
 
 This analysis determines differential gene targeting scores across cell types between conditions from the PANDA regulatory networks in order to identify cell-specific gene targeting. This analysis provides insight into how targeting is changing at the "tissue" level. All networks below were filtered to only include positive weights. 
 
-Targeting code was adapted from: http://netbooks.networkmedicine.org/user/b04f15be-cbd3-44df-932f-6e9026018fd0/notebooks/netZooR/lioness_tcga_targeting_netbook.ipynb
-
 #load in required libraries & functions
 ```{r loading-libraries-functions, results='hide'}
 set.seed(2178)
@@ -107,7 +105,9 @@ png(
   width = 1000,
   height = 500
 )
-ggplot(data = pivoted, aes(x = targeting_score, group = cell_type, color = cell_type)) +
+ggplot(data = pivoted, aes(x = targeting_score,
+                           group = cell_type,
+                           color = cell_type)) +
   geom_density(adjust = 1.5, alpha = .4) +
   ggtitle("kidney Gene Targeting Score Distribution in S858R Mice") +
   theme_bw() +

@@ -1,12 +1,10 @@
 ---
-title: "Setbp1_DiffTargetingCortex_01"
+title: "01_Setbp1_DiffTargetingWithin_Cortex"
 output: html_document
 date: '2023-02-13'
 ---
 
 This analysis determines differential gene targeting scores within cell types between conditions from the PANDA regulatory networks. All networks below were filtered to only include positive weights.
-
-Targeting code was adapted from: http://netbooks.networkmedicine.org/user/b04f15be-cbd3-44df-932f-6e9026018fd0/notebooks/netZooR/lioness_tcga_targeting_netbook.ipynb
 
 #load in required libraries & functions
 ```{r loading-libraries-functions, results='hide'}
@@ -41,7 +39,14 @@ setbp1_genes <- append(setbp1_genes, "Setbp1")
 ## setting heatmap data needed for the rest of the script
 ```{r heatmap-color-annotation}
 # setting annotation colors
-annotation_colors <- list("cell_type" = c("excitatory_neurons" = "#DC71FA", "inhibitory_neurons" = "#00BBDB", "oligodendrocytes" = "#7997FF", "astrocytes" = "#6968B4", "microglia" = "#C216B7", "opcs" = "#00C1AA", "mural" = "#027461", "fibro_cortex" = "#0a2f6f"))
+annotation_colors <- list("cell_type" = c("excitatory_neurons" = "#DC71FA",
+                                          "inhibitory_neurons" = "#00BBDB",
+                                          "oligodendrocytes" = "#7997FF",
+                                          "astrocytes" = "#6968B4",
+                                          "microglia" = "#C216B7",
+                                          "opcs" = "#00C1AA",
+                                          "mural" = "#027461",
+                                          "fibro_cortex" = "#0a2f6f"))
 ```
 
 ## load in PANDA object containing list of all cell types from Setbp1 data
@@ -110,7 +115,14 @@ ggplot(data = merged_control, aes(
   geom_density(adjust = 1.5, alpha = .4) +
   ggtitle("Distribution of regNet edge weights in control Cerebral Cortex") +
   theme_bw() +
-  scale_color_manual(values = c("#6968B4", "#DC71FA", "#0a2f6f", "#00BBDB", "#C216B7", "#027461", "#7997FF", "#00C1AA"))
+  scale_color_manual(values = c("#6968B4",
+                                "#DC71FA",
+                                "#0a2f6f",
+                                "#00BBDB",
+                                "#C216B7",
+                                "#027461",
+                                "#7997FF",
+                                "#00C1AA"))
 dev.off()
 
 # wrangling data
@@ -129,7 +141,14 @@ ggplot(data = merged_het, aes(
   geom_density(adjust = 1.5, alpha = .4) +
   ggtitle("Distribution of regNet edge weights in S858R Cerebral Cortex") +
   theme_bw() +
-  scale_color_manual(values = c("#6968B4", "#DC71FA", "#0a2f6f", "#00BBDB", "#C216B7", "#027461", "#7997FF", "#00C1AA"))
+  scale_color_manual(values = c("#6968B4",
+                                "#DC71FA",
+                                "#0a2f6f",
+                                "#00BBDB",
+                                "#C216B7",
+                                "#027461",
+                                "#7997FF",
+                                "#00C1AA"))
 dev.off()
 ```
 
@@ -149,7 +168,14 @@ ggplot(data = merged_het_pos, aes(x = edge_weight, group = cell_type, color = ce
   geom_density(adjust = 1.5, alpha = .4) +
   ggtitle("Distribution of regNet edge weights > 0 in S858R Cerebral Cortex") +
   theme_bw() +
-  scale_color_manual(values = c("#6968B4", "#DC71FA", "#0a2f6f", "#00BBDB", "#C216B7", "#027461", "#7997FF", "#00C1AA"))
+  scale_color_manual(values = c("#6968B4",
+                                "#DC71FA",
+                                "#0a2f6f",
+                                "#00BBDB",
+                                "#C216B7",
+                                "#027461",
+                                "#7997FF",
+                                "#00C1AA"))
 dev.off()
 
 # plotting only positive ctrl edge weights
@@ -162,7 +188,14 @@ ggplot(data = merged_control_pos, aes(x = edge_weight, group = cell_type, color 
   geom_density(adjust = 1.5, alpha = .4) +
   ggtitle("Distribution of regNet edge weights >0 in control Cerebral Cortex") +
   theme_bw() +
-  scale_color_manual(values = c("#6968B4", "#DC71FA", "#0a2f6f", "#00BBDB", "#C216B7", "#027461", "#7997FF", "#00C1AA"))
+  scale_color_manual(values = c("#6968B4",
+                                "#DC71FA",
+                                "#0a2f6f",
+                                "#00BBDB",
+                                "#C216B7",
+                                "#027461",
+                                "#7997FF",
+                                "#00C1AA"))
 dev.off()
 ```
 
@@ -627,7 +660,14 @@ pivoted <- pivot_longer(het_enriched, values_to = "targeting_score", names_to = 
 ggplot(data = pivoted, aes(x = targeting_score, group = cell_type, color = cell_type)) +
   geom_density(adjust = 1.5, alpha = .4) +
   ggtitle("Gene targeting score distribution in S8585R") +
-  scale_color_manual(values = c("#6968B4", "#DC71FA", "#0a2f6f", "#00BBDB", "#C216B7", "#027461", "#7997FF", "#00C1AA"))
+  scale_color_manual(values = c("#6968B4",
+                                "#DC71FA",
+                                "#0a2f6f",
+                                "#00BBDB",
+                                "#C216B7",
+                                "#027461",
+                                "#7997FF",
+                                "#00C1AA"))
 summary(het_enriched)
 ```
 
@@ -644,14 +684,21 @@ ggplot(data = nonzero, aes(x = targeting_score, group = cell_type, color = cell_
   geom_density(adjust = 1.5, alpha = .4) +
   ggtitle("Gene differential targeting score distribution in S8585R") +
   theme_bw() +
-  scale_color_manual(values = c("#6968B4", "#DC71FA", "#0a2f6f", "#00BBDB", "#C216B7", "#027461", "#7997FF", "#00C1AA"))
+  scale_color_manual(values = c("#6968B4",
+                                "#DC71FA",
+                                "#0a2f6f",
+                                "#00BBDB",
+                                "#C216B7",
+                                "#027461",
+                                "#7997FF",
+                                "#00C1AA"))
 dev.off()
 
 nonzero_long <- pivot_wider(nonzero, names_from = cell_type, values_from = targeting_score)
 summary(nonzero_long)
 
 exclude_column <- "gene"
-pivoted <- pivot_longer(het_enriched_gene, values_to = "targeting_score", names_to = "cell_type", cols = which(colnames(het_enriched_gene) != exclude_column))
+pivoted <- pivot_longer(het_enriched, values_to = "targeting_score", names_to = "cell_type", cols = which(colnames(het_enriched) != exclude_column))
 summary(het_enriched)
 ```
 
@@ -662,7 +709,14 @@ pivoted <- pivot_longer(ctrl_enriched, values_to = "targeting_score", names_to =
 ggplot(data = pivoted, aes(x = abs(targeting_score), group = cell_type, color = cell_type)) +
   geom_density(adjust = 1.5, alpha = .4) +
   ggtitle("Gene targeting score distribution in Control") +
-  scale_color_manual(values = c("#6968B4", "#DC71FA", "#0a2f6f", "#00BBDB", "#C216B7", "#027461", "#7997FF", "#00C1AA"))
+  scale_color_manual(values = c("#6968B4",
+                                "#DC71FA",
+                                "#0a2f6f",
+                                "#00BBDB",
+                                "#C216B7",
+                                "#027461",
+                                "#7997FF",
+                                "#00C1AA"))
 
 summary(ctrl_enriched)
 
@@ -677,7 +731,14 @@ ggplot(data = nonzero, aes(x = abs(targeting_score), group = cell_type, color = 
   geom_density(adjust = 1.5, alpha = .4) +
   ggtitle("Gene differential targeting score distribution in Control") +
   theme_bw() +
-  scale_color_manual(values = c("#6968B4", "#DC71FA", "#0a2f6f", "#00BBDB", "#C216B7", "#027461", "#7997FF", "#00C1AA"))
+  scale_color_manual(values = c("#6968B4",
+                                "#DC71FA",
+                                "#0a2f6f",
+                                "#00BBDB",
+                                "#C216B7",
+                                "#027461",
+                                "#7997FF",
+                                "#00C1AA"))
 dev.off()
 
 nonzero_long <- pivot_wider(nonzero, names_from = cell_type, values_from = targeting_score)
@@ -856,8 +917,8 @@ for (i in cell_names) {
 fptm <- proc.time() - ptm
 fptm[3]/60
 ```
-     user    system   elapsed 
- 5609.788  1391.155 82715.950
+elapsed 
+35.63102 
  
 ```{r}
 # run style
