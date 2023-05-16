@@ -22,11 +22,24 @@ All scripts in this directory are used to build necessary inputs required for ne
 
 ### Scripts:
 
-#### Input Construction:
-This directory contains all scripts needed to construct the protein-protein interaction (ppi), transcription factor motif (TF-motif) and cell-type specific expression matrices required for [PANDA](https://netzoo.github.io/zooanimals/panda/) regulatory networks. 
+#### PANDA Input Construction:
+This directory contains all scripts needed to construct the protein-protein interaction (ppi), transcription factor motif (TF-motif) and cell-type specific expression matrices required for [PANDA](https://netzoo.github.io/zooanimals/panda/) regulatory networks for both human and mouse.
 
 ```{r echo = FALSE}
-fs::dir_tree("input_construction")
+fs::dir_tree("PANDA_input_construction")
+```
+
+#### decoupleR Input Construction:
+This directory contains all scripts needed for setting up required inputs for [decoupleR](https://saezlab.github.io/decoupleR/). In order to measure TF activity, a prior network containing regulatory relationships between TF and genes for all cell types per condition for both tissues was built using PANDA. These networks were restructured here to be a 3 column matrix containing "source" (TFs), "target" (genes), and "mor" (edge weight). In addition to a prior network, decoupleR also needs an expression input in the format of a gene x cell matrix for each cell type and each condition. 
+```{r echo = FALSE}
+fs::dir_tree("decoupleR_input_construction")
+```
+
+#### decoupleR PANDA:
+Gene regulatory networks were constructed using the scripts in this directory. In addition, the *.err* and *.out* files for each array job are included here to provide detailed information on the jobs. Prior to building PANDA networks, the user must first construct the inputs needed (ppi, TF-motif, and expression) and then build the *.txt*, which is a list of expression input file paths needed for the array job. Here we constructed a prior network for decoupleR containing all cell types for each tissue and both conditions.
+
+```{r echo = FALSE}
+fs::dir_tree("decoupleR_PANDA")
 ```
 
 #### PANDA:
@@ -37,7 +50,7 @@ fs::dir_tree("PANDA")
 ```
 
 #### Differential Targeting:
-Gene targeting analyses were performed across and within cell types in each respective condition as well as between conditions (differential targeting). All scripts carrying out these analysis in order to determine if there is a cell-type specific enrichment in either tissue for gene targeting within the S858R, Schinzel-Giedion Syndrome mice are within this directory. 
+Gene targeting analyses were performed across and within cell types in each respective condition as well as between conditions, which is referred to as differential targeting. All scripts carrying out these analysis in order to determine if there is a cell-type specific enrichment in either tissue for gene targeting within the S858R, Schinzel-Giedion Syndrome mice are within this directory. 
 
 ```{r echo = FALSE}
 fs::dir_tree("differential_targeting")
