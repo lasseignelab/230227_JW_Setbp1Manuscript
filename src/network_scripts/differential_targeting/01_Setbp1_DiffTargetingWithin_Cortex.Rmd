@@ -28,6 +28,7 @@ library(here)
 source(here("src/functions/functions.R"))
 library(styler)
 library(lintr)
+ptm <- proc.time()
 ```
 
 ## load gene set
@@ -852,7 +853,8 @@ for (i in cell_names) {
 [1] "pathways investigated and plotted in opcs"
 
 ```{r}
-proc.time()
+fptm <- proc.time() - ptm
+fptm[3]/60
 ```
      user    system   elapsed 
  5609.788  1391.155 82715.950
