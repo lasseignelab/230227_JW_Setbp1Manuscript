@@ -1,12 +1,10 @@
 ---
-title: "Setbp1_DiffTargetingKidney_01"
+title: "01_Setbp1_DiffTargetingWithin_Kidney"
 output: html_document
 date: '2023-02-13'
 ---
 
-This R markdown script is a reanalysis of the gene targeting analysis performed in "Setbp1_AllCortex_PANDAComparison_01.Rmd" in order to determine the impact of edge weight on the gene targeting scores from the regulatory networks. In an effort to determine this, all networks below were filtered to only include positive weights, whereas in the previous script both positives and negatives were included. 
-
-Targeting code was originially implemented here: http://netbooks.networkmedicine.org/user/b04f15be-cbd3-44df-932f-6e9026018fd0/notebooks/netZooR/lioness_tcga_targeting_netbook.ipynb
+This analysis determines differential gene targeting scores within cell types between conditions from the PANDA regulatory networks. All networks below were filtered to only include positive weights.
 
 #load in required libraries & functions
 ```{r loading-libraries-functions, results='hide'}
@@ -28,6 +26,7 @@ library(here)
 source(here("src/functions/functions.R"))
 library(styler)
 library(lintr)
+ptm <- proc.time()
 ```
 
 ## load gene set 
@@ -284,7 +283,7 @@ cell_names
 gene_rank_het <- list() # creating empty list to store within
 
 for (i in cell_names) {
-  rank_het <- gene_targeting_all_het[, names(gene_targeting_all_het) %in% c("gene", i)] %>% 
+  rank_het <- gene_targeting_all_het[, names(gene_targeting_all_het) %in% c("gene", i)] %>%
     .[order(.[i], decreasing = TRUE), ] %>%
     mutate(rank = seq_len(nrow(.))) %>%
     mutate(cell_type = i) %>%
@@ -299,7 +298,7 @@ het_gene_targeting_within <- do.call(bind_rows, gene_rank_het) # collapsing list
 gene_rank_het <- list() # creating empty list to store within
 
 for (i in cell_names) {
-  rank_het <- gene_targeting_all_het[, names(gene_targeting_all_het) %in% c("gene", i)] %>% 
+  rank_het <- gene_targeting_all_het[, names(gene_targeting_all_het) %in% c("gene", i)] %>%
     .[order(.[i], decreasing = TRUE), ] %>%
     mutate(rank = seq_len(nrow(.))) %>%
     mutate(cell_type = i) %>%
@@ -384,7 +383,7 @@ cell_names
 gene_rank_ctrl <- list() # creating empty list to store within
 
 for (i in cell_names) {
-  rank_ctrl <- gene_targeting_all_ctrl[, names(gene_targeting_all_ctrl) %in% c("gene", i)] %>% 
+  rank_ctrl <- gene_targeting_all_ctrl[, names(gene_targeting_all_ctrl) %in% c("gene", i)] %>%
     .[order(.[i], decreasing = TRUE), ] %>%
     mutate(rank = seq_len(nrow(.))) %>%
     mutate(cell_type = i) %>%
@@ -399,7 +398,7 @@ ctrl_gene_targeting_within <- do.call(bind_rows, gene_rank_ctrl) # collapsing li
 gene_rank_ctrl <- list() # creating empty list to store within
 
 for (i in cell_names) {
-  rank_ctrl <- gene_targeting_all_ctrl[, names(gene_targeting_all_ctrl) %in% c("gene", i)] %>% 
+  rank_ctrl <- gene_targeting_all_ctrl[, names(gene_targeting_all_ctrl) %in% c("gene", i)] %>%
     .[order(.[i], decreasing = TRUE), ] %>%
     mutate(rank = seq_len(nrow(.))) %>%
     mutate(cell_type = i) %>%
@@ -656,7 +655,7 @@ nonzero_long <- pivot_wider(nonzero, names_from = cell_type, values_from = targe
 summary(nonzero_long)
 
 exclude_column <- "gene"
-pivoted <- pivot_longer(het_enriched_gene, values_to = "targeting_score", names_to = "cell_type", cols = which(colnames(het_enriched_gene) != exclude_column))
+pivoted <- pivot_longer(het_enriched, values_to = "targeting_score", names_to = "cell_type", cols = which(colnames(het_enriched) != exclude_column))
 summary(het_enriched)
 ```
 
@@ -698,7 +697,7 @@ cell_names
 gene_diff_het <- list() # creating empty list to store within
 
 for (i in cell_names) {
-  rank_het <- het_enriched[, names(het_enriched) %in% c("gene", i)] %>% 
+  rank_het <- het_enriched[, names(het_enriched) %in% c("gene", i)] %>%
     .[order(.[i], decreasing = TRUE), ] %>%
     mutate(rank = seq_len(nrow(.))) %>%
     mutate(cell_type = i) %>%
@@ -713,7 +712,7 @@ kidney_het_enriched_top_genes <- do.call(bind_rows, gene_diff_het) # collapsing 
 gene_diff_het <- list() # creating empty list to store within
 
 for (i in cell_names) {
-  rank_het <- het_enriched[, names(het_enriched) %in% c("gene", i)] %>% 
+  rank_het <- het_enriched[, names(het_enriched) %in% c("gene", i)] %>%
     .[order(.[i], decreasing = TRUE), ] %>%
     mutate(rank = seq_len(nrow(.))) %>%
     mutate(cell_type = i) %>%
@@ -807,7 +806,7 @@ cell_names
 gene_diff_ctrl <- list() # creating empty list to store within
 
 for (i in cell_names) {
-  rank_ctrl <- ctrl_enriched[, names(ctrl_enriched) %in% c("gene", i)] %>% 
+  rank_ctrl <- ctrl_enriched[, names(ctrl_enriched) %in% c("gene", i)] %>%
     .[order(.[i], decreasing = TRUE), ] %>%
     mutate(rank = seq_len(nrow(.))) %>%
     mutate(cell_type = i) %>%
@@ -822,7 +821,7 @@ kidney_ctrl_enriched_top_genes <- do.call(bind_rows, gene_diff_ctrl) # collapsin
 gene_diff_ctrl <- list() # creating empty list to store within
 
 for (i in cell_names) {
-  rank_ctrl <- ctrl_enriched[, names(ctrl_enriched) %in% c("gene", i)] %>% 
+  rank_ctrl <- ctrl_enriched[, names(ctrl_enriched) %in% c("gene", i)] %>%
     .[order(.[i], decreasing = TRUE), ] %>%
     mutate(rank = seq_len(nrow(.))) %>%
     mutate(cell_type = i) %>%
@@ -893,14 +892,14 @@ for (i in cell_names) {
 [1] "pathways investigated and plotted in smcs"
 
 ```{r}
-proc.time()
+fptm <- proc.time() - ptm
+fptm[3] / 60
 ```
-  user   system  elapsed 
-2505.406  508.738 3237.780
+
 
 ```{r}
 # run style
-style_file(here("src/network_scripts/differential_targeting/Setbp1_DiffTargetingKidney_01.Rmd"))
+style_file(here("src/network_scripts/differential_targeting/01_Setbp1_DiffTargetingWithin_Kidney.Rmd"))
 # lintr was run as well
 ```
 
