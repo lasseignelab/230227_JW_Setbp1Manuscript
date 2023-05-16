@@ -22,6 +22,7 @@ library(magrittr)
 library(circlize)
 library(readr)
 library(gprofiler2)
+library(ggridges)
 library(here)
 source(here("src/functions/functions.R"))
 library(styler)
@@ -272,6 +273,45 @@ write.csv(gene_targeting_all_ctrl, file = here("results/diff_targeting/kidney_ge
 write.csv(gene_targeting_all_het, file = here("results/diff_targeting/kidney_gene_targeting_het.csv"))
 ```
 
+```{r ridgeline-plot-targeting-scores}
+combined <- merge(gene_targeting_all_ctrl, gene_targeting_all_het, by = "gene")
+
+colnames(combined)
+
+colnames(combined) <- c("gene", "Bcell_ctrl", "CDIC_typeA_ctrl",
+                        "CDIC_typeB_ctrl", "CDPC_ctrl", "DCT_ctrl", "DLH_ctrl",
+                        "LOH_ctrl", "PCTS1_ctrl", "PCTS2_ctrl", "PST_ctrl",
+                        "PT_ctrl", "endothelial_ctrl", "fibroblasts_ctrl",
+                        "macrophages_ctrl", "pericytes_ctrl", "podocytes_ctrl",
+                        "smcs_ctrl", "Bcell_het", "CDIC_typeA_het",
+                        "CDIC_typeB_het", "CDPC_het", "DCT_het", "DLH_het", 
+                        "LOH_het", "PCTS1_het", "PCTS2_het", "PST_het",
+                        "PT_het", "endothelial_het", "fibroblasts_het",
+                        "macrophages_het", "pericytes_het", "podocytes_het",
+                        "smcs_het")
+
+combined <- melt(combined) #melting data
+variable_info <- t(as.data.frame(strsplit(sub("(_)(?=[^_]+$)", " ", combined$variable, perl = TRUE), " "))) #adding cell type and condition annotation info
+
+combined <- cbind(combined, variable_info)
+colnames(combined) <- c("gene", "variable_info", "targeting_score", "cell_type", "condition")
+
+png(here("results/diff_targeting/kidney_targeting_score_ridgeline_condition.png"), height = 500, width = 800)
+ggplot(combined) +
+  geom_density_ridges(aes(x = targeting_score, y = cell_type, fill = condition), alpha = 0.8) +
+  scale_fill_manual(values = c("#FE6100", "#FFB000")) + 
+  theme_bw() +
+  ggtitle("Gene Targeting Score Distribution in Kidney")
+dev.off()
+
+# png(here("results/diff_targeting/kidney_targeting_score_ridgeline_celltypes.png"), height = 500, width = 800)
+# ggplot(combined) +
+#   geom_density_ridges(aes(x = targeting_score, y = cell_type, group = interaction(cell_type, condition), fill = cell_type, alpha = condition)) +
+#   theme_bw() +
+#   scale_fill_manual(values = c("#FFBE1D", "#4E3801", "#EEDF37", "#F03F00", "#6D0404", "#AA6320", "#CF9400", "#FFC8C4", "#AA937E", "#C70F0F", "#A85A5A", "#BD085E", "#948802", "#FFE196", "#FF7600", "#F8766D", "#FFE196")) +
+#   scale_alpha_manual(values = c(0.25, 0.8))
+# dev.off()
+```
 
 # Investigate targeting rank within each Het cell type
 
