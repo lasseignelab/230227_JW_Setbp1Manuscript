@@ -1,0 +1,81 @@
+---
+title: "Fig3"
+author: "Jordan Whitlock"
+date: '2023-05-16'
+output: html_document
+---
+
+```{r}
+library(ggridges)
+library(ggplot2)
+library(here)
+library(reshape2)
+library(cowplot)
+library(patchwork)
+```
+
+Panel 3A
+```{r ridgeline-plot-targeting-scores}
+load(here("data/kidney_gene_targeting_ctrl.Rdata"))
+load(here("data/kidney_gene_targeting_het.Rdata"))
+
+combined <- merge(gene_targeting_all_ctrl, gene_targeting_all_het, by = "gene")
+
+colnames(combined)
+
+colnames(combined) <- c("gene", "Bcell_ctrl", "CDIC_typeA_ctrl",
+                        "CDIC_typeB_ctrl", "CDPC_ctrl", "DCT_ctrl", "DLH_ctrl",
+                        "LOH_ctrl", "PCTS1_ctrl", "PCTS2_ctrl", "PST_ctrl",
+                        "PT_ctrl", "endothelial_ctrl", "fibroblasts_ctrl",
+                        "macrophages_ctrl", "pericytes_ctrl", "podocytes_ctrl",
+                        "smcs_ctrl", "Bcell_het", "CDIC_typeA_het",
+                        "CDIC_typeB_het", "CDPC_het", "DCT_het", "DLH_het", 
+                        "LOH_het", "PCTS1_het", "PCTS2_het", "PST_het",
+                        "PT_het", "endothelial_het", "fibroblasts_het",
+                        "macrophages_het", "pericytes_het", "podocytes_het",
+                        "smcs_het")
+
+combined <- melt(combined) #melting data
+variable_info <- t(as.data.frame(strsplit(sub("(_)(?=[^_]+$)", " ", combined$variable, perl = TRUE), " "))) #adding cell type and condition annotation info
+
+combined <- cbind(combined, variable_info)
+colnames(combined) <- c("gene", "variable_info", "targeting_score", "cell_type", "condition")
+
+
+rk <- ggplot(combined) +
+  geom_density_ridges(aes(x = targeting_score, y = cell_type, fill = condition), alpha = 0.8) +
+  scale_fill_manual(values = c("#FE6100", "#FFB000")) + 
+  theme_bw() +
+  labs(y = "cell type")
+  #ggtitle("Gene Targeting Score Distribution in Kidney")
+```
+
+
+```{r ridgeline-plot-targeting-scores}
+load(here("data/gene_targeting_ctrl.Rdata"))
+load(here("data/gene_targeting_het.Rdata"))
+
+combined <- merge(gene_targeting_all_ctrl, gene_targeting_all_het, by = "gene")
+
+colnames(combined) <- c("gene", "astrocytes_ctrl", "excitatory_neurons_ctrl", "cortex_fibroblasts_ctrl", "inhibitory_neurons_ctrl", "microglia_ctrl", "mural_ctrl", "oligodendrocytes_ctrl", "opcs_ctrl", "astrocytes_het", "excitatory_neurons_het", "cortex_fibroblasts_het", "inhibitory_neurons_het", "microglia_het", "mural_het", "oligodendrocytes_het", "opcs_het")
+
+combined <- melt(combined) #melting data
+variable_info <- t(as.data.frame(strsplit(sub("(_)(?=[^_]+$)", " ", combined$variable, perl = TRUE), " "))) #adding cell type and condition annotation info
+
+combined <- cbind(combined, variable_info)
+colnames(combined) <- c("gene", "variable_info", "targeting_score", "cell_type", "condition")
+
+rc <- ggplot(combined) +
+  geom_density_ridges(aes(x = targeting_score, y = cell_type, fill = condition), alpha = 0.8) +
+  scale_fill_manual(values = c("#644DD4","#5F9EFD")) + 
+  theme_bw() +
+  labs(y = "cell type")
+  #ggtitle("Gene Targeting Score Distribution in Cerebral Cortex")
+```
+
+```{r}
+panel_3A <- (rc / rk) + plot_layout(heights = c(1, 1.5))
+panel_3A
+```
+
+

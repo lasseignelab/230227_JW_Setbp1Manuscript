@@ -1,0 +1,617 @@
+---
+title: "Figure2"
+output: html_document
+date: '2022-12-01'
+---
+
+```{r}
+set.seed(2178)
+library(Seurat)
+library(ggplot2)
+library(magrittr)
+library(dplyr)
+library(ComplexHeatmap)
+library(circlize)
+library(tidyr)
+library(here)
+library(patchwork)
+library(cowplot)
+source(here("src/functions/functions.R"))
+```
+
+# Figure 2A and 2B
+
+## loading in the object needed from DGE
+```{r}
+load(here("data/kidney_integrated_celltypes_postSoup.Rdata"))
+load(here("data/setbp1_cerebralintcelltypes.Rdata"))
+```
+
+## plotting split violin
+```{r}
+# cortex
+setbp1_exp <- FetchData(cerebral_int_celltypes, vars = c("Setbp1", "cell_type", "type"))
+colnames(setbp1_exp) <- c("expression", "cell type", "condition")
+
+cs <- ggplot(setbp1_exp, aes(`cell type`, expression, fill = condition)) +
+  geom_split_violin() +
+  theme_bw() +
+  scale_fill_manual(values = c("control" = "#644DD4", "heterozygous" = "#5F9EFD")) + 
+  theme(text = element_text(family = "Helvetica")) +
+  theme(axis.text.x = element_text(angle = 45, color = "black", hjust = 1)) + 
+  theme(axis.title.x = element_blank()) + 
+  theme(axis.text = element_text(face = "bold")) +
+  theme(legend.title = element_text(face = "bold")) +
+  theme(axis.title.y = element_text(face = "bold"))
+  #ggtitle("Setbp1 Expression Across Cerebral Cortex")
+
+#kidney
+setbp1_exp <- FetchData(kidney_int_celltypes,
+  vars = c("Setbp1", "cell_type", "type")
+)
+colnames(setbp1_exp) <- c("expression", "cell type", "condition")
+
+ks <- ggplot(setbp1_exp, aes(`cell type`, expression, fill = condition)) +
+  geom_split_violin() +
+  theme_bw() +
+  scale_fill_manual(values = c("control" = "#FE6100", "heterozygous" = "#FFB000")) + 
+  theme(text = element_text(family = "Helvetica")) +
+  theme(axis.text.x = element_text(angle = 45, color = "black", hjust = 1)) + 
+  theme(axis.title.x = element_blank()) +
+  theme(axis.text = element_text(face = "bold")) + 
+  theme(legend.title = element_text(face = "bold"))+
+  theme(axis.title.y = element_text(face = "bold"))
+
+panel_2AB <- cs / ks
+panel_2AB
+
+png()
+ggsave(here("results/figures/Fig2AB.png"), dpi = 250)
+panel_2AB
+dev.off()
+```
+
+FIGURE 2C:
+Setbp1 target gene list was constructed in 'Setbp1_target_list_construction.Rmd' 
+```{r}
+setbp1_genes <- read.csv(here("results/seurat/setbp1_targets.csv"))
+setbp1_genes <- setbp1_genes[, -1]
+setbp1_genes <- append(setbp1_genes, "Setbp1")
+```
+
+```{r}
+DEGs_kidneycells <- read.csv(here("results/seurat/DGE_06/DEGs_kidneycells.csv"))
+DEGs_cerebralcells <- read.csv(here("results/seurat/DGE_06/DEGs_cerebralcells.csv"))
+```
+
+```{r}
+# filter DEG list for just setbp1 targets
+cerebral_subset <- DEGs_cerebralcells[DEGs_cerebralcells$gene %in% setbp1_genes, ]
+
+# grab just log2fc values from DEG matrix, keep rownames and then order (below) by rowname
+genes_mat <- cerebral_subset[, c("avg_log2FC", "cell_type", "gene", "cluster", "p_val_adj"), drop = FALSE]
+
+# filtering for significant values
+genes_mat <- genes_mat[genes_mat$p_val_adj < 0.5, ]
+genes_mat <- genes_mat[, -5]
+
+genes_pivot <- pivot_wider(genes_mat, names_from = c("cell_type", "cluster"), values_from = "avg_log2FC", names_repair = "minimal")
+genes_pivot[is.na(genes_pivot)] <- 0
+rownames <- genes_pivot$gene # add gene names as rownames
+genes_pivot <- genes_pivot[, -1, drop = FALSE] # drop gene column
+rownames(genes_pivot) <- rownames
+
+# grab meta data for plot:
+meta <- as.data.frame(colnames(genes_pivot))
+meta.data <- t(as.data.frame(strsplit(sub("(_)(?=[^_]+$)", " ", meta$`colnames(genes_pivot)`, perl = TRUE), " ")))
+rownames(meta.data) <- meta$`colnames(genes_pivot)`
+colnames(meta.data) <- c("cell_type", "condition")
+
+
+# define order of annotations and colors:
+ordered.meta.data <- meta.data[order(rownames(meta.data)), ] # order by cell type
+
+
+annotation_colors <- list("condition" = c("control" = "#644DD4", "heterozygous" = "#5F9EFD"), "cell_type" = c("excitatory_neurons" = "#DC71FA", "inhibitory_neurons" = "#00BBDB", "oligodendrocytes" = "#7997FF", "astrocytes" = "#6968B4", "microglia" = "#C216B7", "opcs" = "#00C1AA", "mural_cells" = "#027461", "fibroblasts" = "#0a2f6f"))
+
+# set heatmap annotations:
+heat.anno <- HeatmapAnnotation(df = ordered.meta.data, show_annotation_name = TRUE, col = annotation_colors)
+
+
+# ensure the column order of the expression data matches row order of annotation table
+genes_pivot <- genes_pivot[, rownames(ordered.meta.data), drop = FALSE]
+rownames(genes_pivot) <- rownames
+
+# convert dataframe to matrix
+mat <- as.matrix(genes_pivot)
+
+# plot heatmap
+# Heatmap
+col_fun <- colorRamp2(c(-0.5, 0, 0.5), c("purple", "black", "yellow"))
+
+cd <- Heatmap(mat,
+  col = col_fun,
+  heatmap_legend_param = list(title = "avg_log2FC"),
+  cluster_rows = TRUE,
+  cluster_columns = FALSE,
+  column_order = NULL,
+  show_row_dend = TRUE,
+  show_column_dend = FALSE,
+  row_names_gp = gpar(fontface = "bold", fontfamily = "Helvetica"),
+  show_row_names = TRUE,
+  show_column_names = FALSE,
+  use_raster = TRUE,
+  raster_device = c("png"),
+  bottom_annotation = NULL,
+  row_title_gp = gpar(fontface = "bold"),
+  top_annotation = heat.anno,
+  row_title = "Setbp1 Gene Set",
+  #column_title = "Differential Expression of Setbp1 Targets Across Cell-types in Cerebral Cortex", row_title = "Setbp1 Targets", row_title_side = "right"
+)
+
+
+
+panel_2C <- plot_grid(grid.grabExpr(draw(cd)))
+png(here("results/figures/Fig2C.png"), res = 250, width = 1500, height = 800)
+panel_2C
+dev.off()
+```
+
+Figure 2D:
+```{r}
+# filter DEG list for just setbp1 targets
+kidney_subset <- DEGs_kidneycells[DEGs_kidneycells$gene %in% setbp1_genes, ]
+
+# grab just log2fc values from DEG matrix, keep rownames and then order (below) by rowname
+genes_mat <- kidney_subset[, c("avg_log2FC", "cell_type", "gene", "cluster", "p_val_adj"),
+  drop = FALSE
+]
+
+# filtering for significant values
+genes_mat <- genes_mat[genes_mat$p_val_adj < 0.5, ]
+genes_mat <- genes_mat[, -5]
+
+genes_pivot <- pivot_wider(genes_mat,
+  names_from = c("cell_type", "cluster"),
+  values_from = "avg_log2FC",
+  names_repair = "minimal"
+)
+genes_pivot[is.na(genes_pivot)] <- 0
+rownames <- genes_pivot$gene # add gene names as rownames
+genes_pivot <- genes_pivot[, -1, drop = FALSE] # drop gene column
+rownames(genes_pivot) <- rownames
+
+# grab meta data for plot:
+meta <- as.data.frame(colnames(genes_pivot))
+meta.data <- t(as.data.frame(strsplit(sub("(_)(?=[^_]+$)", " ", meta$`colnames(genes_pivot)`, perl = TRUE), " ")))
+rownames(meta.data) <- meta$`colnames(genes_pivot)`
+colnames(meta.data) <- c("cell_type", "condition")
+
+
+# define order of annotations and colors:
+ordered.meta.data <- meta.data[order(rownames(meta.data)), ] # order by cell type
+
+
+annotation_colors <- list(
+  "condition" = c(
+    "control" = "#FE6100",
+    "heterozygous" = "#FFB000"
+  ),
+  "cell_type" = c(
+    "B_cells" = "#FFBE1D",
+    "CDIC_typeA" = "#4E3801",
+    "CDIC_typeB" = "#EEDF37",
+    "CDPC" = "#F03F00",
+    "DCT" = "#6D0404",
+    "DLH" = "#AA6320",
+    "endothelial" = "#CF9400",
+    "fibroblasts" = "#FFC8C4",
+    "LOH" = "#AA937E",
+    "macrophages" = "#C70F0F",
+    "PCTS1" = "#A85A5A",
+    "podocytes" = "#BD085E",
+    "PST" = "#948802",
+    "pericytes" = "#FFE196",
+    "PCTS2" = "#FF7600",
+    "proximal_tubule" = "#F8766D",
+    "smooth_muscle_cells" = "#FFE196"
+  )
+)
+
+# set heatmap annotations:
+heat.anno <- HeatmapAnnotation(
+  df = ordered.meta.data,
+  show_annotation_name = TRUE,
+  col = annotation_colors
+)
+
+
+# ensure the column order of the expression data matches row order of annotation table
+genes_pivot <- genes_pivot[, rownames(ordered.meta.data), drop = FALSE]
+rownames(genes_pivot) <- rownames
+
+# convert dataframe to matrix
+mat <- as.matrix(genes_pivot)
+
+# plot heatmap
+# Heatmap
+col_fun <- colorRamp2(c(-1, 0, 1), c("purple", "black", "yellow"))
+
+par(family = "Roboto")
+
+kd <- Heatmap(mat,
+  col = col_fun,
+  heatmap_legend_param = list(title = "avg_log2FC"),
+  cluster_rows = TRUE,
+  cluster_columns = FALSE,
+  row_names_gp = gpar(fontface = "bold", fontfamily = "Helvetica"),
+  column_order = NULL,
+  show_row_dend = TRUE,
+  show_column_dend = TRUE,
+  show_row_names = TRUE,
+  show_column_names = FALSE,
+  use_raster = TRUE,
+  row_title = "Setbp1 Gene Set",
+  row_title_gp = gpar(fontface = "bold"),
+  raster_device = c("png"),
+  bottom_annotation = NULL,
+  top_annotation = heat.anno,
+  #column_title = "Differential Expression of Setbp1 Targets Across Cell-types in Kidney", row_title = "Setbp1 Targets", row_title_side = "right"
+)
+
+
+panel_2D <- plot_grid(grid.grabExpr(draw(kd)))
+
+# png()
+# ggsave(here("results/figures/Fig2D.png"), dpi = 250, width = 15, height = 20)
+# panel_2D
+# dev.off()
+
+panel_2D <- plot_grid(grid.grabExpr(draw(kd)))
+png(here("results/figures/Fig2D.png"), res = 250, width = 2000, height = 2800)
+panel_2D
+dev.off()
+```
+# SUPPLEMENTARY FIGS
+```{r}
+load(file = here("data/kidney_integrated_celltypes_postSoup.Rdata"))
+load(here("data/setbp1_cerebralintcelltypes.Rdata"))
+```
+
+SUPP UMAP:
+```{r}
+c1 <- DimPlot(cerebral_int_celltypes,
+              reduction = "umap_harmony",
+              group.by = "type",
+              cols = c("control" = "#644DD4", "heterozygous" = "#5F9EFD"))+
+  theme(
+    text = element_text(size = 20),
+    legend.title = element_text(face = "bold")
+  ) +
+  labs(color = "Condition", title = NULL)
+
+
+u1 <- DimPlot(cerebral_int_celltypes,
+              reduction = "umap_harmony",
+              group.by = "cell_type",
+              cols = c("excitatory_neurons" = "#DC71FA",
+                       "inhibitory_neurons" = "#00BBDB",
+                       "oligodendrocytes" = "#7997FF",
+                       "astrocytes" = "#6968B4",
+                       "microglia" = "#C216B7",
+                       "opcs" = "#00C1AA",
+                       "mural_cells" = "#027461",
+                       "fibroblasts" = "#0a2f6f"),
+              shuffle = TRUE) +
+  theme(
+    text = element_text(size = 20),
+    legend.title = element_text(face = "bold")
+  ) +
+  labs(color = "cortex cell types", title = NULL)
+
+c2 <- DimPlot(kidney_int_celltypes,
+  reduction = "umap_harmony",
+  group.by = "type",
+  cols = c(
+    "control" = "#FE6100",
+    "heterozygous" = "#FFB000"
+  )
+) +
+  theme(
+    text = element_text(size = 20),
+    legend.title = element_text(face = "bold")
+  ) +
+  labs(color = "Condition", title = NULL)
+
+
+
+u2 <- DimPlot(kidney_int_celltypes,
+  reduction = "umap_harmony",
+  group.by = "cell_type",
+  cols = c(
+    "B_cells" = "#FFBE1D",
+    "CDIC_typeA" = "#4E3801",
+    "CDIC_typeB" = "#EEDF37",
+    "CDPC" = "#F03F00",
+    "DCT" = "#6D0404",
+    "DLH" = "#AA6320",
+    "endothelial" = "#CF9400",
+    "fibroblasts" = "#FFC8C4",
+    "LOH" = "#AA937E",
+    "macrophages" = "#C70F0F",
+    "PCTS1" = "#A85A5A",
+    "podocytes" = "#BD085E",
+    "PST" = "#948802",
+    "pericytes" = "#FFE196",
+    "PCTS2" = "#FF7600",
+    "proximal_tubule" = "#F8766D",
+    "smooth_muscle_cells" = "#FFE196"
+  )
+) +
+  theme(
+    text = element_text(size = 20),
+    legend.title = element_text(face = "bold")
+  ) +
+  labs(color = "kidney cell types", title = NULL)
+
+s1 <- DimPlot(kidney_int_celltypes,
+  reduction = "umap_harmony",
+  group.by = "orig.ident"
+)+
+  theme(
+    text = element_text(size = 20),
+    legend.title = element_text(face = "bold")
+  ) +
+  labs(color = "kidney sample", title = NULL)
+
+
+s2 <- DimPlot(cerebral_int_celltypes,
+  reduction = "umap_harmony",
+  group.by = "orig.ident"
+)+
+  theme(
+    text = element_text(size = 20),
+    legend.title = element_text(face = "bold")
+  ) +
+  labs(color = "cortex sample", title = NULL)
+```
+
+```{r}
+supp_UMAP1 <- c1 + c2
+supp_UMAP2 <- s1 + s2
+supp_UMAP3 <- u1 + u2
+
+
+png(filename = here("results/figures/SUPP_setbp1_UMAP.png"),
+    width = 1200,
+    height = 1000)
+    supp_UMAP1 / supp_UMAP2 / supp_UMAP3 + theme_bw()
+dev.off()
+```
+
+
+SUPP markers:
+#kidney 
+```{r}
+kidney_features <- c(
+  "Atp1a2", # smooth muscle cells
+  "Pdgfra", # fibro
+  "Nphs1", "Nphs2", "Wt1", # podocytes
+  "Cd79b", "Bank1", # Bcells
+  "Hmx2", # CDIC_typeB
+  "Aqp6", # CDIC_typeA
+  "Atp6v1g3", "Atp6v0d2", # CDIC
+  "Bst1", "Akr1b3", # DLH
+  "Runx1", "Ptprc", # macrophages
+  "Slc12a3", # DCT
+  "Aqp2", "Hsd11b2", # CDPC
+  "Slc12a1", # LOH
+  "Fxyd2", # PCTS2
+  "Slc5a2", "Slc5a12", # PCTS1
+  "Slc22a7", "Atp11a", # PST
+  "Slc34a1", "Slc13a3", # proximaltubule
+  "Kdr", "Ptprb", # endothelial
+  "Pdgfrb" # pericytes
+) 
+
+kv <- VlnPlot(kidney_int_celltypes,
+  kidney_features,
+  stack = TRUE,
+  sort = FALSE,
+  flip = TRUE,
+  assay = "RNA",
+  group.by = "cell_type",
+  fill.by = "ident",
+  cols = c(
+    "B_cells" = "#FFBE1D",
+    "CDIC_typeA" = "#4E3801",
+    "CDIC_typeB" = "#EEDF37",
+    "CDPC" = "#F03F00",
+    "DCT" = "#6D0404",
+    "DLH" = "#AA6320",
+    "endothelial" = "#CF9400",
+    "fibroblasts" = "#FFC8C4",
+    "LOH" = "#AA937E",
+    "macrophages" = "#C70F0F",
+    "PCTS1" = "#A85A5A",
+    "podocytes" = "#BD085E",
+    "PST" = "#948802",
+    "pericytes" = "#FFE196",
+    "PCTS2" = "#FF7600",
+    "proximal_tubule" = "#F8766D",
+    "smooth_muscle_cells" = "#FFE196"
+  )
+) +
+  labs(fill = "Cell Type") +
+  theme_bw() +
+  theme(legend.position = "left") +
+  theme(axis.text.x = element_blank()) +
+  theme(axis.title.x = element_blank()) +
+  theme(panel.grid = element_blank()) +
+  theme(strip.text.y.right = element_text(angle = 0))
+
+pt <- table(kidney_int_celltypes@meta.data$cell_type, kidney_int_celltypes@meta.data$type)
+pt <- as.data.frame(pt)
+pt$Var1 <- as.character(pt$Var1)
+pt$Var2 <- as.character(pt$Var2)
+colnames(pt) <- c("cell_type", "condition", "Freq")
+
+kp <- ggplot(pt, aes(x = cell_type, y = Freq, fill = condition)) +
+  geom_bar(position = "dodge", stat = "identity") +
+  #ggtitle("Kidney Cortex Cell-type Nuclei Proportions and Identity Markers") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  ylab("Nuclei Counts") +
+  geom_text(aes(label = Freq),
+    position = position_dodge(width = 0.9),
+    vjust = 0.5, angle = 90, hjust = -.1
+  ) +
+  scale_fill_manual(values = c("control" = "#FE6100", "heterozygous" = "#FFB000")) +
+  theme_bw() +
+  theme(
+    panel.border = element_blank(),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()
+  ) +
+  theme(axis.text.x = element_blank()) +
+  theme(axis.text.y = element_blank()) +
+  theme(axis.title.x = element_blank()) +
+  theme(axis.ticks = element_blank()) +
+  theme(legend.position = "left")
+kp
+
+kd <- DotPlot(kidney_int_celltypes,
+  unique(kidney_features),
+  assay = "RNA",
+  group.by = "cell_type",
+  #cols = c("black", "#EECB00")
+) +
+  labs(fill = "Cell Type") +
+  theme_bw() +
+  theme(legend.position = "left") +
+  theme(axis.title.x = element_blank()) +
+  theme(panel.grid = element_blank()) +
+  theme(axis.text.x = element_text(face = "bold" ,angle = 90, hjust = 0.5, vjust = 0.5)) +
+  coord_flip()
+kd
+
+SUPP_kid_markers_alt <- (kp / kv) + theme_bw() + plot_layout(ncol = 1, heights = c(1,5))
+SUPP_kid_markers_alt
+
+png(filename = here("results/figures/SUPP_kid_markers_alt.png"),
+    width = 3500,
+    height = 5000)
+    SUPP_kid_markers_alt
+dev.off()
+
+#FINAL SUP FIGURE:
+design <- 
+"
+A
+B
+"
+
+png()
+list(
+  kp,
+  kd,
+  guide_area()
+) |>
+  wrap_plots() +
+  plot_layout(heights = c(4,8), guides = "collect", design = design) + 
+  theme_bw()
+ggsave(here("results/figures/SUPP_kid_markers.png"), dpi = 230)
+dev.off()
+```
+
+#cortex
+```{r}
+cerebral_features <- c("Slc17a7", "Pcp4", "Synpr", "Gad1", "Hapln2", "Olig2", "Pdgfra", "Aqp4", "Phka1", "Gja1", "Slc1a3", "Cx3cr1", "Csf1r", "Dock8", "Vtn", "Nr4a2", "Ptgds", "Opalin", "Bnc2")
+
+cv <- VlnPlot(cerebral_int_celltypes, cerebral_features, stack = TRUE, sort = FALSE, flip = TRUE, assay = "RNA", group.by = "cell_type", fill.by = "ident", cols = c("excitatory_neurons" = "#DC71FA", "inhibitory_neurons" = "#00BBDB", "oligodendrocytes" = "#7997FF", "astrocytes" = "#6968B4", "microglia" = "#BF80FF", "opcs" = "#00C1AA", "mural_cells" = "#027461", "fibroblasts" = "#0a2f6f")) + labs(fill = "Cell Type") +
+  theme_bw() +
+  theme(legend.position = "left") +
+  theme(axis.text.x = element_blank()) +
+  theme(axis.title.x = element_blank()) +
+  theme(panel.grid = element_blank()) +
+  theme(strip.text.y.right = element_text(angle = 0))
+
+pt <- table(cerebral_int_celltypes@meta.data$cell_type, cerebral_int_celltypes@meta.data$type)
+pt <- as.data.frame(pt)
+pt$Var1 <- as.character(pt$Var1)
+pt$Var2 <- as.character(pt$Var2)
+colnames(pt) <- c("cell_type", "condition", "Freq")
+
+cp <- ggplot(pt, aes(x = cell_type, y = Freq, fill = condition)) +
+  geom_bar(position = "dodge", stat = "identity") +
+  #ggtitle("Kidney Cortex Cell-type Nuclei Proportions and Identity Markers") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  ylab("Nuclei Counts") +
+  geom_text(aes(label = Freq),
+    position = position_dodge(width = 0.9),
+    vjust = 0.5, angle = 90, hjust = -.1
+  ) +
+  scale_fill_manual(values = c("control" = "#644DD4", "heterozygous" = "#5F9EFD")) +
+  theme_bw() +
+  theme(
+    panel.border = element_blank(),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()
+  ) +
+  theme(axis.text.x = element_blank()) +
+  theme(axis.text.y = element_blank()) +
+  theme(axis.title.x = element_blank()) +
+  theme(axis.ticks = element_blank()) +
+  theme(legend.position = "left")
+
+cd <- DotPlot(cerebral_int_celltypes,
+  unique(kidney_features),
+  assay = "RNA",
+  group.by = "cell_type",
+  #cols = c("black", "#EECB00")
+) +
+  labs(fill = "Cell Type") +
+  theme_bw() +
+  theme(legend.position = "left") +
+  theme(axis.title.x = element_blank()) +
+  theme(panel.grid = element_blank()) +
+  theme(axis.text.x = element_text(angle = 90)) +
+  coord_flip()
+cd
+
+SUPP_cortex_markers_alt <- (cp / cv) + theme_bw() + plot_layout(ncol = 1, heights = c(1,5))
+SUPP_cortex_markers_alt
+
+png(filename = here("results/figures/SUPP_cortex_markers_alt.png"),
+    width = 3500,
+    height = 5000)
+    SUPP_cortex_markers_alt
+dev.off()
+
+#FINAL SUP FIGURE:
+design <- 
+"
+A
+B
+"
+
+png()
+list(
+  cp,
+  cd,
+  guide_area()
+) |>
+  wrap_plots() +
+  plot_layout(heights = c(4,8), guides = "collect", design = design) + 
+  theme_bw()
+ggsave(here("results/figures/SUPP_cortex_markers.png"), dpi = 230)
+dev.off()
+
+# SUPP_cortex_markers <- (cp / cd) + theme_bw() + plot_layout(ncol = 1, heights = c(1,5))
+# SUPP_cortex_markers
+# 
+# png(filename = here("results/figures/SUPP_cortex_markers.png"))
+#     SUPP_cortex_markers
+# dev.off()
+```
+
+ 
