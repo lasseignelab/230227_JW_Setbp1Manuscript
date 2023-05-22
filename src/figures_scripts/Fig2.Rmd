@@ -42,6 +42,8 @@ cs <- ggplot(setbp1_exp, aes(`cell type`, expression, fill = condition)) +
   theme(axis.title.x = element_blank()) + 
   theme(axis.text = element_text(face = "bold")) +
   theme(legend.title = element_text(face = "bold")) +
+  theme(legend.text = element_text(face = "bold")) +
+  labs(y = "Expression") +
   theme(axis.title.y = element_text(face = "bold"))
   #ggtitle("Setbp1 Expression Across Cerebral Cortex")
 
@@ -60,6 +62,8 @@ ks <- ggplot(setbp1_exp, aes(`cell type`, expression, fill = condition)) +
   theme(axis.title.x = element_blank()) +
   theme(axis.text = element_text(face = "bold")) + 
   theme(legend.title = element_text(face = "bold"))+
+  theme(legend.text = element_text(face = "bold")) +
+  labs(y = "Expression") +
   theme(axis.title.y = element_text(face = "bold"))
 
 panel_2AB <- cs / ks
@@ -112,7 +116,7 @@ colnames(meta.data) <- c("cell_type", "condition")
 ordered.meta.data <- meta.data[order(rownames(meta.data)), ] # order by cell type
 
 
-annotation_colors <- list("condition" = c("control" = "#644DD4", "heterozygous" = "#5F9EFD"), "cell_type" = c("excitatory_neurons" = "#DC71FA", "inhibitory_neurons" = "#00BBDB", "oligodendrocytes" = "#7997FF", "astrocytes" = "#6968B4", "microglia" = "#C216B7", "opcs" = "#00C1AA", "mural_cells" = "#027461", "fibroblasts" = "#0a2f6f"))
+annotation_colors <- list("condition" = c("control" = "#644DD4", "heterozygous" = "#5F9EFD"), "cell_type" = c("excitatory_neurons" = "#DC71FA", "inhibitory_neurons" = "#00BBDB", "oligodendrocytes" = "#7997FF", "astrocytes" = "#6968B4", "microglia" = "#C216B7", "opcs" = "#00C1AA", "pericytes" = "#027461", "fibroblasts" = "#0a2f6f"))
 
 # set heatmap annotations:
 heat.anno <- HeatmapAnnotation(df = ordered.meta.data, show_annotation_name = TRUE, col = annotation_colors)
@@ -300,7 +304,7 @@ u1 <- DimPlot(cerebral_int_celltypes,
                        "astrocytes" = "#6968B4",
                        "microglia" = "#C216B7",
                        "opcs" = "#00C1AA",
-                       "mural_cells" = "#027461",
+                       "pericytes" = "#027461",
                        "fibroblasts" = "#0a2f6f"),
               shuffle = TRUE) +
   theme(
@@ -480,6 +484,8 @@ kp <- ggplot(pt, aes(x = cell_type, y = Freq, fill = condition)) +
   theme(text = element_text(family = "Helvetica")) +
   theme(axis.title.y = element_text(face = "bold" , color = "black")) +
   theme(legend.title = element_text(face = "bold")) +
+  theme(legend.text = element_text(face = "bold")) +
+  ylim(c(0, 8500)) +
   coord_cartesian(clip = "off")
 kp
 
@@ -499,6 +505,7 @@ kd <- DotPlot(kidney_int_celltypes,
   coord_flip() +
   theme(text = element_text(family = "Helvetica")) +
   theme(axis.title.y = element_text(face = "bold" , color = "black")) +
+  theme(legend.text = element_text(face = "bold")) +
   theme(legend.title = element_text(face = "bold"))
   
 kd
@@ -536,7 +543,7 @@ dev.off()
 ```{r}
 cerebral_features <- c("Slc17a7", "Pcp4", "Synpr", "Gad1", "Hapln2", "Olig2", "Pdgfra", "Aqp4", "Phka1", "Gja1", "Slc1a3", "Cx3cr1", "Csf1r", "Dock8", "Vtn", "Nr4a2", "Ptgds", "Opalin", "Bnc2")
 
-cv <- VlnPlot(cerebral_int_celltypes, cerebral_features, stack = TRUE, sort = FALSE, flip = TRUE, assay = "RNA", group.by = "cell_type", fill.by = "ident", cols = c("excitatory_neurons" = "#DC71FA", "inhibitory_neurons" = "#00BBDB", "oligodendrocytes" = "#7997FF", "astrocytes" = "#6968B4", "microglia" = "#BF80FF", "opcs" = "#00C1AA", "mural_cells" = "#027461", "fibroblasts" = "#0a2f6f")) + labs(fill = "Cell Type") +
+cv <- VlnPlot(cerebral_int_celltypes, cerebral_features, stack = TRUE, sort = FALSE, flip = TRUE, assay = "RNA", group.by = "cell_type", fill.by = "ident", cols = c("excitatory_neurons" = "#DC71FA", "inhibitory_neurons" = "#00BBDB", "oligodendrocytes" = "#7997FF", "astrocytes" = "#6968B4", "microglia" = "#BF80FF", "opcs" = "#00C1AA", "pericytes" = "#027461", "fibroblasts" = "#0a2f6f")) + labs(fill = "Cell Type") +
   theme_bw() +
   theme(legend.position = "left") +
   theme(axis.text.x = element_blank()) +
@@ -574,7 +581,9 @@ cp <- ggplot(pt, aes(x = cell_type, y = Freq, fill = condition)) +
   theme(text = element_text(family = "Helvetica")) +
   theme(axis.title.y = element_text(face = "bold" , color = "black")) +
   theme(legend.title = element_text(face = "bold")) +
-  coord_cartesian(clip = "off")
+  theme(legend.text = element_text(face = "bold")) +
+  coord_cartesian(clip = "off") +
+  ylim(c(0,22700))
 
 cd <- DotPlot(cerebral_int_celltypes,
   unique(kidney_features),
