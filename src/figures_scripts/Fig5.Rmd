@@ -1,5 +1,5 @@
 ---
-title: "Fig3"
+title: "Fig5"
 author: "Jordan Whitlock"
 date: '2023-05-16'
 output: html_document
@@ -14,7 +14,7 @@ library(cowplot)
 library(patchwork)
 ```
 
-Panel 3A
+Panel 5A
 ```{r ridgeline-plot-targeting-scores}
 load(here("data/kidney_gene_targeting_ctrl.Rdata"))
 load(here("data/kidney_gene_targeting_het.Rdata"))
@@ -46,11 +46,17 @@ rk <- ggplot(combined) +
   geom_density_ridges(aes(x = targeting_score, y = cell_type, fill = condition), alpha = 0.8) +
   scale_fill_manual(values = c("#FE6100", "#FFB000")) + 
   theme_bw() +
-  labs(y = "cell type")
+  labs(y = "kidney cortex cell type") +
+  theme(text = element_text(family = "Helvetica")) +
+  theme(axis.title.x = element_text(face = "bold")) +
+  theme(axis.title.y = element_text(face = "bold")) +
+  theme(axis.text.y = element_text(face = "bold", color = "black")) +
+  theme(legend.text = element_text(face = "bold")) +
+  theme(legend.title = element_text(face = "bold"))
   #ggtitle("Gene Targeting Score Distribution in Kidney")
 ```
 
-
+Panel 5B
 ```{r ridgeline-plot-targeting-scores}
 load(here("data/gene_targeting_ctrl.Rdata"))
 load(here("data/gene_targeting_het.Rdata"))
@@ -69,13 +75,57 @@ rc <- ggplot(combined) +
   geom_density_ridges(aes(x = targeting_score, y = cell_type, fill = condition), alpha = 0.8) +
   scale_fill_manual(values = c("#644DD4","#5F9EFD")) + 
   theme_bw() +
-  labs(y = "cell type")
+  labs(y = "cerebral cortex cell type") +
+  theme(text = element_text(family = "Helvetica")) +
+  theme(axis.title.x = element_text(face = "bold")) +
+  theme(axis.title.y = element_text(face = "bold")) +
+  theme(axis.text.y = element_text(face = "bold", color = "black")) +
+  theme(legend.text = element_text(face = "bold")) +
+  theme(legend.title = element_text(face = "bold"))
   #ggtitle("Gene Targeting Score Distribution in Cerebral Cortex")
 ```
 
 ```{r}
-panel_3A <- (rc / rk) + plot_layout(heights = c(1, 1.5))
-panel_3A
+panel_5AB <- (rc / rk) + plot_layout(heights = c(1, 2))
+
+png()
+ggsave(here("results/figures/Fig5AB.png"), dpi = 250)
+panel_5AB
+dev.off()
 ```
+Panel 5C
+
+```{r}
+load(here("results/diff_targeting/global_diff_targeting.Rdata"))
+
+
+panel_5C <- ggplot() +
+  geom_segment(aes(x=reorder(cell_type, pos), xend=cell_type, y=pos, yend=neg), color="#2e2e2d") +
+  geom_point( aes(x=cell_type, y=pos), color= "purple", size=3 ) +
+  geom_point( aes(x=cell_type, y=neg), color="#e0da22", size=3 ) +
+  coord_flip()+
+  theme_bw() +
+  theme(
+    legend.position = "right",
+  ) +
+  xlab("Cell Type") +
+  ylab("Total Differential Targeting Score") +
+  theme(axis.text.y = element_text(face = "bold", color = "black")) +
+  #theme(axis.text.x = element_text(face = "bold", color = "black")) +
+  theme(axis.title.y = element_text(face = "bold", color = "black")) +
+  theme(axis.title.x = element_text(face = "bold", color = "black")) + 
+  theme(text = element_text(family = "Helvetica")) +
+  scale_y_continuous(labels = function(x) format(x, scientific = FALSE)) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "#1E88E5", size = 0.25) 
+
+png()
+ggsave(here("results/figures/Fig5C.png"), dpi = 250)
+panel_5C
+
+
+dev.off()
+```
+
+
 
 

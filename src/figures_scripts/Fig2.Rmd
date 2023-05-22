@@ -288,7 +288,7 @@ c1 <- DimPlot(cerebral_int_celltypes,
     text = element_text(size = 20),
     legend.title = element_text(face = "bold")
   ) +
-  labs(color = "Condition", title = NULL)
+  labs(color = "condition", title = NULL)
 
 
 u1 <- DimPlot(cerebral_int_celltypes,
@@ -321,7 +321,7 @@ c2 <- DimPlot(kidney_int_celltypes,
     text = element_text(size = 20),
     legend.title = element_text(face = "bold")
   ) +
-  labs(color = "Condition", title = NULL)
+  labs(color = "condition", title = NULL)
 
 
 
@@ -476,7 +476,11 @@ kp <- ggplot(pt, aes(x = cell_type, y = Freq, fill = condition)) +
   theme(axis.text.y = element_blank()) +
   theme(axis.title.x = element_blank()) +
   theme(axis.ticks = element_blank()) +
-  theme(legend.position = "left")
+  theme(legend.position = "left") +
+  theme(text = element_text(family = "Helvetica")) +
+  theme(axis.title.y = element_text(face = "bold" , color = "black")) +
+  theme(legend.title = element_text(face = "bold")) +
+  coord_cartesian(clip = "off")
 kp
 
 kd <- DotPlot(kidney_int_celltypes,
@@ -490,8 +494,13 @@ kd <- DotPlot(kidney_int_celltypes,
   theme(legend.position = "left") +
   theme(axis.title.x = element_blank()) +
   theme(panel.grid = element_blank()) +
-  theme(axis.text.x = element_text(face = "bold" ,angle = 90, hjust = 0.5, vjust = 0.5)) +
-  coord_flip()
+  theme(axis.text.x = element_text(face = "bold" ,angle = 90, hjust = 0.95, vjust = 0.2, color = "black")) +
+  theme(axis.text.y = element_text(face = "bold" , color = "black")) +
+  coord_flip() +
+  theme(text = element_text(family = "Helvetica")) +
+  theme(axis.title.y = element_text(face = "bold" , color = "black")) +
+  theme(legend.title = element_text(face = "bold"))
+  
 kd
 
 SUPP_kid_markers_alt <- (kp / kv) + theme_bw() + plot_layout(ncol = 1, heights = c(1,5))
@@ -561,7 +570,11 @@ cp <- ggplot(pt, aes(x = cell_type, y = Freq, fill = condition)) +
   theme(axis.text.y = element_blank()) +
   theme(axis.title.x = element_blank()) +
   theme(axis.ticks = element_blank()) +
-  theme(legend.position = "left")
+  theme(legend.position = "left") +
+  theme(text = element_text(family = "Helvetica")) +
+  theme(axis.title.y = element_text(face = "bold" , color = "black")) +
+  theme(legend.title = element_text(face = "bold")) +
+  coord_cartesian(clip = "off")
 
 cd <- DotPlot(cerebral_int_celltypes,
   unique(kidney_features),
@@ -574,8 +587,12 @@ cd <- DotPlot(cerebral_int_celltypes,
   theme(legend.position = "left") +
   theme(axis.title.x = element_blank()) +
   theme(panel.grid = element_blank()) +
-  theme(axis.text.x = element_text(angle = 90)) +
-  coord_flip()
+  theme(axis.text.x = element_text(face = "bold" ,angle = 90, hjust = 0.95, vjust = 0.2, color = "black")) +
+  theme(axis.text.y = element_text(face = "bold" , color = "black")) +
+  coord_flip() +
+  theme(text = element_text(family = "Helvetica")) +
+  theme(axis.title.y = element_text(face = "bold" , color = "black")) +
+  theme(legend.title = element_text(face = "bold"))
 cd
 
 SUPP_cortex_markers_alt <- (cp / cv) + theme_bw() + plot_layout(ncol = 1, heights = c(1,5))
@@ -605,13 +622,6 @@ list(
   theme_bw()
 ggsave(here("results/figures/SUPP_cortex_markers.png"), dpi = 230)
 dev.off()
-
-# SUPP_cortex_markers <- (cp / cd) + theme_bw() + plot_layout(ncol = 1, heights = c(1,5))
-# SUPP_cortex_markers
-# 
-# png(filename = here("results/figures/SUPP_cortex_markers.png"))
-#     SUPP_cortex_markers
-# dev.off()
 ```
 
  
