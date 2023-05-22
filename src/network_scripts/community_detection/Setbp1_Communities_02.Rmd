@@ -88,14 +88,14 @@ opcs_ctrl$ctrl_weight <- ifelse(opcs_ctrl$ctrl_weight < 0, 0, opcs_ctrl$ctrl_wei
 
 opcs_all <- merge(opcs_ctrl, opcs_het, by = c("TF", "gene"))
 
-#mural ----------
-mural_het <- as.data.frame(mural.heterozygous_regNet) %>% mutate(TF = rownames(mural.heterozygous_regNet)) %>% pivot_longer(names_to = "gene", values_to = "het_weight", cols = c(1:22033))
-mural_het$het_weight <- ifelse(mural_het$het_weight < 0, 0, mural_het$het_weight)
+#pericytes ----------
+pericytes_het <- as.data.frame(pericytes.heterozygous_regNet) %>% mutate(TF = rownames(pericytes.heterozygous_regNet)) %>% pivot_longer(names_to = "gene", values_to = "het_weight", cols = c(1:22033))
+pericytes_het$het_weight <- ifelse(pericytes_het$het_weight < 0, 0, pericytes_het$het_weight)
 
-mural_ctrl <- as.data.frame(mural.control_regNet) %>% mutate(TF = rownames(mural.control_regNet)) %>% pivot_longer(names_to = "gene", values_to = "ctrl_weight", cols = c(1:22033))
-mural_ctrl$ctrl_weight <- ifelse(mural_ctrl$ctrl_weight < 0, 0, mural_ctrl$ctrl_weight)
+pericytes_ctrl <- as.data.frame(pericytes.control_regNet) %>% mutate(TF = rownames(pericytes.control_regNet)) %>% pivot_longer(names_to = "gene", values_to = "ctrl_weight", cols = c(1:22033))
+pericytes_ctrl$ctrl_weight <- ifelse(pericytes_ctrl$ctrl_weight < 0, 0, pericytes_ctrl$ctrl_weight)
 
-mural_all <- merge(mural_ctrl, mural_het, by = c("TF", "gene"))
+pericytes_all <- merge(pericytes_ctrl, pericytes_het, by = c("TF", "gene"))
 
 save(astro_all, file = here("data/processed/network_analysis/astro_regNet_pos.Rdata"))
 save(micro_all, file = here("data/processed/network_analysis/micro_regNet_pos.Rdata"))
@@ -103,7 +103,7 @@ save(excitatory_all, file = here("data/processed/network_analysis/ex_regNet_pos.
 save(inhibitory_all, file = here("data/processed/network_analysis/in_regNet_pos.Rdata"))
 save(oligodendrocyte_all, file = here("data/processed/network_analysis/oligo_regNet_pos.Rdata"))
 save(opcs_all, file = here("data/processed/network_analysis/opcs_regNet_pos.Rdata"))
-save(mural_all, file = here("data/processed/network_analysis/mural_regNet_pos.Rdata"))
+save(pericytes_all, file = here("data/processed/network_analysis/pericytes_regNet_pos.Rdata"))
 
 load(here("data/processed/network_analysis/astro_regNet_pos.Rdata"))
 load(here("data/processed/network_analysis/micro_regNet_pos.Rdata"))
@@ -111,7 +111,7 @@ load(here("data/processed/network_analysis/ex_regNet_pos.Rdata"))
 load(here("data/processed/network_analysis/in_regNet_pos.Rdata"))
 load(here("data/processed/network_analysis/oligo_regNet_pos.Rdata"))
 load(here("data/processed/network_analysis/opcs_regNet_pos.Rdata"))
-load(here("data/processed/network_analysis/mural_regNet_pos.Rdata"))
+load(here("data/processed/network_analysis/pericytes_regNet_pos.Rdata"))
 ```
 
 ALPACA input: A table of edges, with the first column representing the TFs ("from" nodes) and the second column representing the targets ("to" nodes). The third column contains the edge weights corresponding to the control or healthy network, and the fourth column contains the edge weights for the disease network or network of interest. Note that the below `alpaca` function runs CONDOR within it. Communities are first detected then differential communities are identified. "_A" indicates a TF, "_B" indicates a gene.
@@ -156,12 +156,12 @@ names(micro_alpaca_memberships) <- names(micro_alpaca_mat)
 micro_alpaca_memberships
 ```
 
-```{r mural-alpaca}
-mural_alpaca <- alpaca(mural_all, file.stem = here("results/alpaca/mural"), verbose = TRUE)
-mural_alpaca_mat <- mural_alpaca[[1]] 
-mural_alpaca_memberships <- as.vector(mural_alpaca_mat)
-names(mural_alpaca_memberships) <- names(mural_alpaca_mat)
-mural_alpaca_memberships
+```{r pericytes-alpaca}
+pericytes_alpaca <- alpaca(pericytes_all, file.stem = here("results/alpaca/pericytes"), verbose = TRUE)
+pericytes_alpaca_mat <- pericytes_alpaca[[1]] 
+pericytes_alpaca_memberships <- as.vector(pericytes_alpaca_mat)
+names(pericytes_alpaca_memberships) <- names(pericytes_alpaca_mat)
+pericytes_alpaca_memberships
 ```
 
 ```{r oligo-alpaca}
@@ -182,7 +182,7 @@ opcs_alpaca_memberships
 
 
 ```{r GO-gene-enrichment-differenital-alpaca-modules}
-toevaluate <- c("astro", "ex") #comment in rest later: , "in", "micro", "mural", "oligo", "opcs")
+toevaluate <- c("astro", "ex") #comment in rest later: , "in", "micro", "pericytes", "oligo", "opcs")
 
 for(t in 1:length(toevaluate)){
 
@@ -344,7 +344,7 @@ dev.off()
 
 
 ```{r GO-TF-enrichment-differenital-alpaca-modules}
-toevaluate <- c("astro") #comment in rest later: , "ex", "in", "micro", "mural", "oligo", "opcs")
+toevaluate <- c("astro") #comment in rest later: , "ex", "in", "micro", "pericytes", "oligo", "opcs")
 
 for(t in 1:length(toevaluate)){
 

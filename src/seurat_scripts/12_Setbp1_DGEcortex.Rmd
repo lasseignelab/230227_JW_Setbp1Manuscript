@@ -161,25 +161,25 @@ microglia_het$diffexpressed[microglia_het$avg_log2FC < -0.1 & microglia_het$p_va
 ```
 
 
----mural---
+---pericytes---
 ```{r}
 # subset seurat object for each cell type
-mural <- subset(x = cerebral_int_celltypes, idents = "mural_cells")
-Idents(mural) <- mural@meta.data$type
-mural_cells_data <- FindAllMarkers(mural, logfc.threshold = 0.1, test.use = "wilcox", only.pos = FALSE, assay = "RNA")
-head(mural_cells_data, n = 5)
+pericytes <- subset(x = cerebral_int_celltypes, idents = "pericytes")
+Idents(pericytes) <- pericytes@meta.data$type
+pericytes_data <- FindAllMarkers(pericytes, logfc.threshold = 0.1, test.use = "wilcox", only.pos = FALSE, assay = "RNA")
+head(pericytes_data, n = 5)
 ```
 
 ```{r}
-mural_cells_het <- mural_cells_data[mural_cells_data$p_val_adj < 0.5 & mural_cells_data$avg_log2FC > 0.1 | mural_cells_data$avg_log2FC < -0.1, ]
-mural_cells_het <- mural_cells_het[mural_cells_het$cluster == "heterozygous", ]
+pericytes_het <- pericytes_data[pericytes_data$p_val_adj < 0.5 & pericytes_data$avg_log2FC > 0.1 | pericytes_data$avg_log2FC < -0.1, ]
+pericytes_het <- pericytes_het[pericytes_het$cluster == "heterozygous", ]
 
 # add column to data to indicate if DE or not:
-mural_cells_het$diffexpressed <- "NO"
+pericytes_het$diffexpressed <- "NO"
 # if log2Foldchange > 0.1 and pvalue < 0.05, set as "UP"
-mural_cells_het$diffexpressed[mural_cells_het$avg_log2FC > 0.1 & mural_cells_het$p_val_adj < 0.05] <- "UP"
+pericytes_het$diffexpressed[pericytes_het$avg_log2FC > 0.1 & pericytes_het$p_val_adj < 0.05] <- "UP"
 # if log2Foldchange < -0.1 and pvalue < 0.05, set as "DOWN"
-mural_cells_het$diffexpressed[mural_cells_het$avg_log2FC < -0.1 & mural_cells_het$p_val_adj < 0.05] <- "DOWN"
+pericytes_het$diffexpressed[pericytes_het$avg_log2FC < -0.1 & pericytes_het$p_val_adj < 0.05] <- "DOWN"
 ```
 
 ---opcs---
@@ -255,7 +255,7 @@ write.csv(astrocytes_het, here("results/seurat/DGE_06/DEG_astrocytes.csv"), row.
 write.csv(excitatory_neurons_het, here("results/seurat/DGE_06/DEG_excitatory_neurons.csv"), row.names = FALSE)
 write.csv(inhibitory_neurons_het, here("results/seurat/DGE_06/DEG_inhibitory_neurons.csv"), row.names = FALSE)
 write.csv(microglia_het, here("results/seurat/DGE_06/DEG_microglia.csv"), row.names = FALSE)
-write.csv(mural_cells_het, here("results/seurat/DGE_06/DEG_mural_cells.csv"), row.names = FALSE)
+write.csv(pericytes_het, here("results/seurat/DGE_06/DEG_pericytes_cortex.csv"), row.names = FALSE)
 write.csv(oligodendrocytes_het, here("results/seurat/DGE_06/DEG_oligodendrocytes.csv"), row.names = FALSE)
 write.csv(opcs_het, here("results/seurat/DGE_06/DEG_opcs.csv"), row.names = FALSE)
 write.csv(fibroblasts_het, here("results/seurat/DGE_06/DEG_fibroblasts.csv"), row.names = FALSE)
@@ -268,7 +268,7 @@ save(excitatory_neurons_het, file = here("results/DEG/excitatory_het_DEG01.Rdata
 save(inhibitory_neurons_het, file = here("results/DEG/inhibitory_het_DEG01.Rdata"))
 save(oligodendrocytes_het, file = here("results/DEG/oligo_het_DEG01.Rdata"))
 save(opcs_het, file = here("results/DEG/opcs_het_DEG01.Rdata"))
-save(mural_cells_het, file = here("results/DEG/mural_het_DEG01.Rdata"))
+save(pericytes_het, file = here("results/DEG/pericytes_het_DEG01.Rdata"))
 save(microglia_het, file = here("results/DEG/micro_het_DEG01.Rdata"))
 save(fibroblasts_het, file = here("results/DEG/fibro_het_DEG01.Rdata"))
 ```
@@ -302,7 +302,7 @@ for (i in celltypes) {
 
 write.csv(DEGs_cerebralcells, file = here("results/seurat/DGE_06/DEGs_cerebralcells.csv")) #written out once then commented out
 
-DEGs_cerebralcells <- read.csv(here("results/seurat/DGE_06/DEGs_cerebralcells.csv"))
+#DEGs_cerebralcells <- read.csv(here("results/seurat/DGE_06/DEGs_cerebralcells.csv"))
 ```
 
 #### Heatmap of expression of regulators and targets of Setbp1 across cell types:
@@ -347,7 +347,7 @@ colnames(meta.data) <- c("cell_type", "condition")
 ordered.meta.data <- meta.data[order(rownames(meta.data)), ] # order by cell type
 
 
-annotation_colors <- list("condition" = c("control" = "#644DD4", "heterozygous" = "#5F9EFD"), "cell_type" = c("excitatory_neurons" = "#DC71FA", "inhibitory_neurons" = "#00BBDB", "oligodendrocytes" = "#7997FF", "astrocytes" = "#6968B4", "microglia" = "#C216B7", "opcs" = "#00C1AA", "mural_cells" = "#027461", "fibroblasts" = "#0a2f6f"))
+annotation_colors <- list("condition" = c("control" = "#644DD4", "heterozygous" = "#5F9EFD"), "cell_type" = c("excitatory_neurons" = "#DC71FA", "inhibitory_neurons" = "#00BBDB", "oligodendrocytes" = "#7997FF", "astrocytes" = "#6968B4", "microglia" = "#C216B7", "opcs" = "#00C1AA", "pericytes" = "#027461", "fibroblasts" = "#0a2f6f"))
 
 # set heatmap annotations:
 heat.anno <- HeatmapAnnotation(df = ordered.meta.data, show_annotation_name = TRUE, col = annotation_colors)

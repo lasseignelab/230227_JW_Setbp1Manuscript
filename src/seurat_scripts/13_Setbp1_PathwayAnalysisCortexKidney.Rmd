@@ -57,7 +57,7 @@ cortex_list <- list(
   opcs = opcs_het,
   oligodendrocytes = oligodendrocytes_het,
   astrocytes = astrocytes_het,
-  mural_cells = mural_cells_het,
+  pericytes = pericytes_het,
   fibroblasts = fibroblasts_het
 )
 
@@ -222,7 +222,7 @@ for (i in cell_types) {
   }
 }
 
-# note: no DEGs for mural_cells
+# note: no DEGs for pericytes
 
 save(cortex_UP_result_list, file = here("results/seurat/Pathways_07/cortex_het_fea_DGE_UP.Rdata"))
 
@@ -517,7 +517,7 @@ for (i in cell_types) {
 [1] "no DE targets in opcs"
 [1] "too few DEG in oligodendrocytes use fea not combined_fea"
 [1] "too few DEG in astrocytes use fea not combined_fea"
-[1] "no DE targets in mural_cells"
+[1] "no DE targets in pericytes"
 [1] "no DE targets in fibroblasts"
 
 Investigating cell types with too few Setbp1 target DEGs for cortex with fea:

@@ -193,9 +193,9 @@ save(microglia,
   file = here("data/processed/expression_inputs/microglia_controlcortexexpression.Rdata")
 )
 
-mural <- as.data.frame(control_cerebral_agg$mural_cells)
-save(mural,
-  file = here("data/processed/expression_inputs/mural_controlcortexexpression.Rdata")
+pericytes <- as.data.frame(control_cerebral_agg$pericytes)
+save(pericytes,
+  file = here("data/processed/expression_inputs/pericytes_controlcortexexpression.Rdata")
 )
 
 fibro_cortex <- as.data.frame(control_cerebral_agg$fibroblasts)
@@ -232,9 +232,9 @@ save(opcs,
 microglia <- as.data.frame(heterozygous_cerebral_agg$microglia)
 save(microglia, file = here("data/processed/expression_inputs/microglia_heterozygouscortexexpression.Rdata"))
 
-mural <- as.data.frame(heterozygous_cerebral_agg$mural_cells)
-save(mural,
-  file = here("data/processed/expression_inputs/mural_heterozygouscortexexpression.Rdata")
+pericytes <- as.data.frame(heterozygous_cerebral_agg$pericytes)
+save(pericytes,
+  file = here("data/processed/expression_inputs/pericytes_heterozygouscortexexpression.Rdata")
 )
 
 fibro_cortex <- as.data.frame(heterozygous_cerebral_agg$fibroblasts)
