@@ -1,0 +1,34 @@
+---
+title: "CollecTRI_prior"
+author: "Jordan Whitlock"
+date: '2023-05-26'
+output: html_document
+---
+
+```{r}
+library(OmnipathR)
+library(decoupleR)
+library(here) #must be with R version 4.3 and decoupleR version 2.6.0
+```
+
+# mouse prior
+accessed 230525
+```{r}
+mouse_tri_complex <- get_collectri(organism='mouse', split_complexes=FALSE)
+mouse_prior <- mouse_tri_complex %>%
+  mutate(across(everything(), ~tools::toTitleCase(tolower(.))))
+mouse_prior$mor <- as.numeric(mouse_prior$mor)
+write.csv(mouse_prior, here("data/processed/decoupleR_prior_CollecTRI/mouse_prior_tri.csv"), row.names = FALSE)
+```
+
+# human prior
+accessed 230525
+```{r}
+human_tri_complex <- get_collectri(organism='human', split_complexes=FALSE)
+human_prior <- human_tri_complex %>%
+  mutate(across(everything(), ~tools::toTitleCase(tolower(.))))
+human_prior$mor <- as.numeric(human_prior$mor)
+write.csv(human_prior, here("data/processed/decoupleR_prior_CollecTRI/human_prior_tri.csv"), row.names = FALSE)
+```
+
+
