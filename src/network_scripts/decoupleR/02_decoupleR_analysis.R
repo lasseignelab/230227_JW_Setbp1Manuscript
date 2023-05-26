@@ -36,7 +36,7 @@ tf_activity <- function(mat, net, cell_type, min_n, tissue){
 acts <- tf_activity(mat, net, cell_type, min_n, tissue)
 
 # Specify output path
-output_path <- paste("/data/user/jbarham3/230227_JW_Setbp1Manuscript/results/decoupleR/", cell_type, "_acts.RData", sep="")
+output_path <- paste("/data/user/jbarham3/230227_JW_Setbp1Manuscript/results/decoupleR/", cell_type, "_acts.RData", sep="") # Note: when running cortex be sure to change '_acts.Rdata' to '_cortex_acts.Rdata' due to duplicate cell types across tissues 
 
 # Save the output
 save(acts, file = output_path)
