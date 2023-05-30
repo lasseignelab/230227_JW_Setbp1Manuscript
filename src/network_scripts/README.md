@@ -1,7 +1,7 @@
 README
 ================
 Jordan Whitlock
-2023-05-16
+2023-05-30
 
 # Network Construction and Analysis
 
@@ -40,47 +40,6 @@ for both human and mouse.
     ## +-- 04_HumanMouse_ppi.Rmd
     ## \-- 05_MouseSetbp1_expression.Rmd
 
-#### decoupleR Input Construction:
-
-This directory contains all scripts needed for setting up required
-inputs for [decoupleR](https://saezlab.github.io/decoupleR/). In order
-to measure TF activity, a prior network containing regulatory
-relationships between TF and genes for all cell types per condition for
-both tissues was built using PANDA. These networks were restructured
-here to be a 3 column matrix containing “source” (TFs), “target”
-(genes), and “mor” (edge weight). In addition to a prior network,
-decoupleR also needs an expression input in the format of a gene x cell
-matrix for each cell type and each condition.
-
-    ## decoupleR_input_construction
-    ## +-- 01_decoupleR_formatting_prior.Rmd
-    ## \-- 02_MouseSetbp1_decoupleR_expression.Rmd
-
-#### decoupleR PANDA:
-
-Gene regulatory networks were constructed using the scripts in this
-directory. In addition, the *.err* and *.out* files for each array job
-are included here to provide detailed information on the jobs. Prior to
-building PANDA networks, the user must first construct the inputs needed
-(ppi, TF-motif, and expression) and then build the *.txt*, which is a
-list of expression input file paths needed for the array job. Here we
-constructed a prior network for decoupleR containing all cell types for
-each tissue and both conditions.
-
-    ## decoupleR_PANDA
-    ## +-- 01_MouseSetbp1_decoupleR_priorNetwork_expression.Rmd
-    ## +-- 02_array_construction.R
-    ## +-- 03_PANDA_array.sh
-    ## +-- PANDA.R
-    ## +-- dePANDA_20235539_0.err
-    ## +-- dePANDA_20235539_0.out
-    ## +-- dePANDA_20235539_1.err
-    ## +-- dePANDA_20235539_1.out
-    ## +-- dePANDA_20235539_2.err
-    ## +-- dePANDA_20235539_2.out
-    ## +-- dePANDA_20235539_3.err
-    ## \-- dePANDA_20235539_3.out
-
 #### PANDA:
 
 Gene regulatory networks were constructed using the scripts in this
@@ -107,8 +66,53 @@ Schinzel-Giedion Syndrome mice are within this directory.
     ## differential_targeting
     ## +-- 01_Setbp1_DiffTargetingWithin_Cortex.Rmd
     ## +-- 01_Setbp1_DiffTargetingWithin_Kidney.Rmd
-    ## +-- 02_Setbp1_DiffTargetingAcross_Cortex.Rmd
-    ## \-- 02_Setbp1_DiffTargetingAcross_Kidney.Rmd
+    ## +-- 02_Setbp1_DiffTargeting_Ts_Cs.Rmd
+    ## +-- 03_Setbp1_DiffTargeting_StressCycle.Rmd
+    ## \-- Rplot001.png
+
+#### decoupleR Input Construction and TF Activity Analysis:
+
+This directory contains all scripts needed for setting up required
+inputs for [decoupleR](https://saezlab.github.io/decoupleR/). In order
+to measure TF activity, a prior network containing regulatory
+relationships between TF and genes for all cell types per condition for
+both tissues was constructed using
+[CollecTRI](https://github.com/saezlab/CollecTRI) (accessed on 230528,
+prior is provided with this repository for both human and mouse). More
+information
+[here](https://www.biorxiv.org/content/10.1101/2023.03.30.534849v1).
+Additionally a script was included for users to constructed a new prior
+using CollecTRI. The prior network for each species was restructured to
+be a 3 column matrix containing “source” (TFs), “target” (genes), and
+“mor” (edge weight). In addition to a prior network, decoupleR also
+needs an expression input in the format of a gene x cell matrix for each
+cell type and each condition. In addition, the *.err* and *.out* files
+for each array job are included here to provide detailed information on
+the jobs.
+
+    ## decoupleR
+    ## +-- 01_MouseSetbp1_decoupleR_inputs.Rmd
+    ## +-- 02_decoupleR_analysis.R
+    ## +-- 02_decoupleR_array_job.sh
+    ## +-- CollecTRI_prior.Rmd
+    ## +-- cor_decoupleR_20424698_0.err
+    ## +-- cor_decoupleR_20424698_0.out
+    ## +-- cor_decoupleR_20424698_1.err
+    ## +-- cor_decoupleR_20424698_1.out
+    ## +-- cor_decoupleR_20424698_2.err
+    ## +-- cor_decoupleR_20424698_2.out
+    ## +-- cor_decoupleR_20424698_3.err
+    ## +-- cor_decoupleR_20424698_3.out
+    ## +-- cor_decoupleR_20424698_4.err
+    ## +-- cor_decoupleR_20424698_4.out
+    ## +-- cor_decoupleR_20424698_5.err
+    ## +-- cor_decoupleR_20424698_5.out
+    ## +-- kid_decoupleR_20410280_0.err
+    ## +-- kid_decoupleR_20410280_0.out
+    ## +-- kid_decoupleR_20410280_1.err
+    ## +-- kid_decoupleR_20410280_1.out
+    ## +-- kid_decoupleR_20410280_2.err
+    ## \-- kid_decoupleR_20410280_2.out
 
 #### Community Detection:
 
