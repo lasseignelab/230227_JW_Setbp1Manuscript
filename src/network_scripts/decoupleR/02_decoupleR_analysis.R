@@ -28,7 +28,6 @@ net <- data.frame(read.csv(prior_net), header = TRUE)
 # Define function
 tf_activity <- function(mat, net, cell_type, min_n, tissue){
   acts <- run_mlm(mat, net, .source = "source", .target = "target", .mor = "mor", minsize = min_n) %>% mutate(cell_type = cell_type)
-  #summarize_acts <- acts %>% group_by(source) %>% summarise(mean = mean(score)) %>% mutate(cell_type = cell_type)
   return(acts)
 }
 
