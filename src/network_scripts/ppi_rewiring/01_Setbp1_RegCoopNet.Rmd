@@ -1,0 +1,44 @@
+---
+title: "01_Setbp1_RegCoopNet"
+author: "Jordan Whitlock"
+date: '2023-05-25'
+output: html_document
+---
+
+```{r}
+set.seed(2178)
+library(reshape2)
+library(dplyr)
+library(here)
+library(data.table)
+library(ggplot2)
+library(plotly)
+```
+
+```{r loading-data}
+setbp1_genes <- read.csv(here("results/seurat/setbp1_targets.csv"))
+setbp1_genes <- setbp1_genes[, -1]
+setbp1_genes <- append(setbp1_genes, "Setbp1")
+```
+
+```{r formatting-data}
+files <- list.files(here("results/PANDA"), full.names = TRUE)
+
+filtered_coopNet <- list()
+
+#run for loop
+for(i in files){
+  #load in the pandaResults
+  load(i)
+  coopNet <- pandaResults@coopNet
+  coopNet <- reshape2::melt(coopNet, varnames = c("ppi_1", "ppi_2"), value.name = "coopNet_score")
+  name <- sub("expression_PANDA.Rdata", "", basename(i))
+  filtered <- coopNet[coopNet$ppi_1 %in% setbp1_genes,] 
+  filtered_coopNet[[name]] <- filtered
+  rm(pandaResults)
+  rm(coopNet)
+  print(paste0(name, "_coopNet filtered and saved and saved."))
+}
+
+save(filtered_coopNet, file = here("results/ppi_rewiring/filtered_coopNet.Rdata"))
+```
