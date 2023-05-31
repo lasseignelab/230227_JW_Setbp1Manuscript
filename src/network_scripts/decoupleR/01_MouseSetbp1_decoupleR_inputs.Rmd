@@ -4,7 +4,6 @@ author: "Jordan Whitlock"
 date: '2023-05-12'
 output: html_document
 ---
-NOTE TO REVIEWER: THIS WAS RUN IN 1.0.6 VERSION OF DOCKER (PLEASE REMOVE THIS AFTER YOU ARE SECOND CODE REVIEWER OR LEAVE A COMMENT FOR ME TO DO SO)
 
 ```{r}
 set.seed(2178)

@@ -28,7 +28,6 @@ net <- data.frame(read.csv(prior_net), header = TRUE)
 # Define function
 tf_activity <- function(mat, net, cell_type, min_n, tissue){
   acts <- run_mlm(mat, net, .source = "source", .target = "target", .mor = "mor", minsize = min_n) %>% mutate(cell_type = cell_type)
-  #summarize_acts <- acts %>% group_by(source) %>% summarise(mean = mean(score)) %>% mutate(cell_type = cell_type)
   return(acts)
 }
 
@@ -36,7 +35,7 @@ tf_activity <- function(mat, net, cell_type, min_n, tissue){
 acts <- tf_activity(mat, net, cell_type, min_n, tissue)
 
 # Specify output path
-#output_path <- paste("/data/user/jbarham3/230227_JW_Setbp1Manuscript/results/decoupleR/cortex/", cell_type, "_acts.RData", sep="") # Note: when running cortex be sure to uncomment '/decoupleR/kidney/' for 'decoupleR/cortex/' due to duplicate cell types across tissues 
-output_path <- paste("/data/user/jbarham3/230227_JW_Setbp1Manuscript/results/decoupleR/kidney/", cell_type, "_acts.RData", sep="") 
+#output_path <- paste("/data/user/jbarham3/230227_JW_Setbp1Manuscript/results/decoupleR/cortex/", cell_type, "_acts.RData", sep = "") # Note: when running cortex be sure to uncomment '/decoupleR/kidney/' for 'decoupleR/cortex/' due to duplicate cell types across tissues 
+output_path <- paste("/data/user/jbarham3/230227_JW_Setbp1Manuscript/results/decoupleR/kidney/", cell_type, "_acts.RData", sep = "") 
 # Save the output
 save(acts, file = output_path)
