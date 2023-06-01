@@ -5,6 +5,13 @@ date: '2023-05-25'
 output: html_document
 ---
 
+Goal: Determine PPI in reference to TF-gene regulation in Setbp1 S858R mice. 
+
+Step 1. Filter regNet for only Setbp1 as a TF
+Step 2. Filter PPI for proteins in Setbp1 gene set
+Step 3. Map Setbp1 and the genes it regulates in the regNet to their corresponing PPI. 
+Step 4. Create final data frame with Setbp1 TF, target gene, regNet scores, PPI, and coopNet scores.
+
 ```{r}
 set.seed(2178)
 library(reshape2)
@@ -21,24 +28,45 @@ setbp1_genes <- setbp1_genes[, -1]
 setbp1_genes <- append(setbp1_genes, "Setbp1")
 ```
 
-```{r formatting-data}
+
+```{r}
 files <- list.files(here("results/PANDA"), full.names = TRUE)
 
-filtered_coopNet <- list()
+combo_net <- list()
 
 #run for loop
 for(i in files){
   #load in the pandaResults
   load(i)
+  name <- sub("expression_PANDA.Rdata", "", basename(i))
+  #extracting-networks
   coopNet <- pandaResults@coopNet
   coopNet <- reshape2::melt(coopNet, varnames = c("ppi_1", "ppi_2"), value.name = "coopNet_score")
-  name <- sub("expression_PANDA.Rdata", "", basename(i))
-  filtered <- coopNet[coopNet$ppi_1 %in% setbp1_genes,] 
-  filtered_coopNet[[name]] <- filtered
+  
+  regNet <- pandaResults@regNet
+  regNet <- reshape2::melt(regNet, varnames = c("TF", "gene"), value.name = "regNet_score")
+  
+  #filtering-regNet-for-Setbp1TF
+  filtered_regNet <- regNet[regNet$TF == "Setbp1",]
+  
+  #filtering-ppi-for-geneset
+  filtered_coopNet<- coopNet[coopNet$ppi_1 %in% setbp1_genes,]
+  colnames(filtered_coopNet) <- c("gene", "ppi_2", "coopNet_score")
+  
+  #grabbing-overlap
+  combo <- merge(filtered_regNet, filtered_coopNet, by = "gene", all = FALSE)
+  colnames(combo) <- c("gene_ppi_1", "TF", "regNet_score", "ppi_2", "coopNet_score") 
+  
+  #store in list
+  combo_net[[name]] <- combo
+  
+  #clean up env
   rm(pandaResults)
   rm(coopNet)
-  print(paste0(name, "_coopNet filtered and saved and saved."))
+  rm(regNet)
+  
+  print(paste0(name, " filtered, combined, and saved."))
 }
 
-save(filtered_coopNet, file = here("results/ppi_rewiring/filtered_coopNet.Rdata"))
+save(combo_net, file = here("results/ppi_rewiring/regNet_coopNet_combo.Rdata"))
 ```
