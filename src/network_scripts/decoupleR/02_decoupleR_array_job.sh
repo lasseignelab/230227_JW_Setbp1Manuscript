@@ -10,8 +10,8 @@
 #SBATCH --ntasks=1
 #SBATCH --mem-per-cpu=255000
 #SBATCH --nodes=1
-#SBATCH --time=120:00:00 #Note: '24:00:00 hours for brain, when running kidney this needs to be changed to 5 days as '120:00:00' (this may end up being 120 for both because of ex neurons)
-#SBATCH --partition=largemem-long #partition info here: https://docs.rc.uab.edu/cheaha/hardware/#partitions
+#SBATCH --time=50:00:00 #Note: '50:00:00 hours for brain, when running kidney this needs to be changed to 5 days as '120:00:00' (this may end up being 120 for both because of ex neurons)
+#SBATCH --partition=largemem #Note: when running brain, can use largemem. Partition info here: https://docs.rc.uab.edu/cheaha/hardware/#partitions
 #
 #SBATCH --output=%x_%A_%a.out
 #SBATCH --error=%x_%A_%a.err

@@ -1,4 +1,5 @@
 #!/usr/bin/env Rscript
+set.seed(2178)
 
 # Load necessary libraries
 library(dplyr)

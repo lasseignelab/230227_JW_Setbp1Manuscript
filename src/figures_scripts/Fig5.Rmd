@@ -9,9 +9,15 @@ output: html_document
 library(ggridges)
 library(ggplot2)
 library(here)
+library(dplyr)
+library(tidyverse)
 library(reshape2)
 library(cowplot)
 library(patchwork)
+library(ComplexHeatmap)
+library(RColorBrewer)
+library(gprofiler2)
+source(here("src/functions/functions.R"))
 ```
 
 Panel 5A
@@ -50,7 +56,8 @@ rk <- ggplot(combined) +
   theme(text = element_text(family = "Helvetica")) +
   theme(axis.title.x = element_text(face = "bold")) +
   theme(axis.title.y = element_text(face = "bold")) +
-  theme(axis.text.y = element_text(face = "bold", color = "black")) +
+  theme(axis.text.y = element_text(face = "bold", color = "black")) + 
+  theme(axis.text.x = element_text(color = "black")) +
   theme(legend.text = element_text(face = "bold")) +
   theme(legend.title = element_text(face = "bold"))
   #ggtitle("Gene Targeting Score Distribution in Kidney")
@@ -80,6 +87,7 @@ rc <- ggplot(combined) +
   theme(axis.title.x = element_text(face = "bold")) +
   theme(axis.title.y = element_text(face = "bold")) +
   theme(axis.text.y = element_text(face = "bold", color = "black")) +
+  theme(axis.text.x = element_text(color = "black")) +
   theme(legend.text = element_text(face = "bold")) +
   theme(legend.title = element_text(face = "bold"))
   #ggtitle("Gene Targeting Score Distribution in Cerebral Cortex")
@@ -93,38 +101,496 @@ ggsave(here("results/figures/Fig5AB.png"), dpi = 250)
 panel_5AB
 dev.off()
 ```
-Panel 5C
 
+Panel 5C
 ```{r}
 load(here("results/diff_targeting/global_diff_targeting.Rdata"))
 
+data_plot <- pivot_longer(data[,c(1:3)], cols = c(1,2), values_to = "sum")
+data_label <- pivot_longer(data[,c(4, 5)], cols = c(1,2), values_to = "sum")
+data_plot$num <- data_label$sum
 
-panel_5C <- ggplot() +
-  geom_segment(aes(x=reorder(cell_type, pos), xend=cell_type, y=pos, yend=neg), color="#2e2e2d") +
-  geom_point( aes(x=cell_type, y=pos), color= "purple", size=3 ) +
-  geom_point( aes(x=cell_type, y=neg), color="#e0da22", size=3 ) +
-  coord_flip()+
+data_plot$norm <- data_plot$sum/data_plot$num #normalize data by number of genes with enriched targeting
+
+#setting plot order
+data_plot <- arrange(data_plot, desc(norm))
+data_plot$order <- seq(1:16)
+
+panel_5C <- 
+ggplot(data_plot, aes(x = norm, y = reorder(cell_type, norm))) +
   theme_bw() +
+  geom_point(shape = 21, aes(fill = name, color = name, size = num)) +
+  scale_color_manual(values = c("black", "black"), guide = FALSE) +
+  scale_fill_manual(values = c("purple", "#e0da22"), labels = c("Decreased in S858R condition", "Increased in S858R condition")) +
+  labs(fill = "Differential Gene Targeting", size = "Number of Genes") +
+  theme(text = element_text(family = "Helvetica")) +
   theme(
     legend.position = "right",
   ) +
-  xlab("Cell Type") +
-  ylab("Total Differential Targeting Score") +
-  theme(axis.text.y = element_text(face = "bold", color = "black")) +
-  #theme(axis.text.x = element_text(face = "bold", color = "black")) +
+  ylab("Cerebral Cortex Cell Type") +
+  xlab("Total Differential Targeting Score Normalized by Number of Genes") +
+  theme(axis.text.x = element_text(color = "black")) +
+  theme(axis.title.x = element_text(face = "bold", color = "black")) +
   theme(axis.title.y = element_text(face = "bold", color = "black")) +
-  theme(axis.title.x = element_text(face = "bold", color = "black")) + 
-  theme(text = element_text(family = "Helvetica")) +
-  scale_y_continuous(labels = function(x) format(x, scientific = FALSE)) +
-  geom_hline(yintercept = 0, linetype = "dashed", color = "#1E88E5", size = 0.25) 
+  geom_text(aes(label = num), vjust = -0.7) +
+  theme(axis.text.y = element_text(face = "bold", color = "black")) +
+  theme(legend.title = element_text(face = "bold")) +
+  theme(legend.text = element_text(face = "bold")) +
+  xlim(c(-350, 399))
 
 png()
 ggsave(here("results/figures/Fig5C.png"), dpi = 250)
 panel_5C
-
-
 dev.off()
 ```
+
+Panel 5D
+```{r}
+load(here("results/diff_targeting/global_diff_targeting_kidney.Rdata"))
+
+#formatting data
+data_plot <- pivot_longer(data[,c(1:3)], cols = c(1,2), values_to = "sum")
+data_label <- pivot_longer(data[,c(4, 5)], cols = c(1,2), values_to = "sum")
+data_plot$num <- data_label$sum
+
+data_plot$norm <- data_plot$sum/data_plot$num #normalize data by number of genes with enriched targeting
+
+#setting plot order
+data_plot <- arrange(data_plot, desc(norm))
+data_plot$order <- seq(1:34)
+
+panel_5D <- ggplot(data_plot, aes(x = norm, y = reorder(cell_type, norm))) +
+  theme_bw() +
+  geom_point(shape = 21, aes(fill = name, color = name, size = num)) +
+  scale_color_manual(values = c("black", "black"), guide = FALSE) +
+  scale_fill_manual(values = c("purple", "#e0da22"), labels = c("Decreased in S858R condition", "Increased in S858R condition")) +
+  labs(size = "Number of Genes", fill = "Differential gene targeting", ) +
+  theme(text = element_text(family = "Helvetica")) +
+  theme(
+    legend.position = "right",
+  ) +
+  ylab("Kidney Cortex Cell Type") +
+  xlab("Total Differential Targeting Score Normalized by Number of Genes") +
+  theme(axis.text.x = element_text(color = "black")) +
+  theme(axis.title.x = element_text(face = "bold", color = "black")) +
+  theme(axis.title.y = element_text(face = "bold", color = "black")) +
+  geom_text(aes(label = num), vjust = -0.8) +
+  theme(axis.text.y = element_text(face = "bold", color = "black")) +
+  theme(legend.title = element_text(face = "bold")) +
+  scale_y_discrete(expand=expansion(mult=c(0.05,0.05))) +
+  xlim(c(-350, 400)) +
+  theme(legend.text = element_text(face = "bold"))
+
+png()
+ggsave(here("results/figures/Fig5D.png"), dpi = 250)
+panel_5D
+dev.off()
+```
+
+```{r}
+#panel_5CD <- (panel_5C / panel_5D) + plot_layout(heights = c(5,5.5))
+
+##FINAL 5CD FIGURE:
+# design <- 
+# "
+# A
+# B
+# "
+# 
+# png()
+# list(
+#   panel_5C,
+#   panel_5D,
+#   guide_area()
+# ) |>
+#   wrap_plots() +
+#   plot_layout(heights = c(4,8), guides = "collect", design = design) + 
+#   theme_bw()
+# ggsave(here("results/figures/Fig5CD.png"), dpi = 250)
+# dev.off()
+```
+Panel 5E
+```{r}
+# loading data
+load(here("results/diff_targeting/cortex_het_enriched_gene.Rdata"))
+
+# loading gene set
+setbp1_genes <- read.csv(here("results/seurat/setbp1_targets.csv"))
+setbp1_genes <- setbp1_genes[, -1] %>% as.vector()
+setbp1_genes <- append(setbp1_genes, "Setbp1")
+
+data <- het_enriched
+
+data <- pivot_longer(data, cols = c(2:9), values_to = "DT Score", names_to = "Cell Type")
+data <- subset(data, `DT Score` != 0)
+
+#taking top Q3 and looking at fea
+quartiles <- apply(data[,-c(1:2)], 2, quantile, probs = c(0.25, 0.5, 0.75))
+quartiles # Q3 = 166.784
+data <- subset(data, `DT Score` >= 166.784)
+
+data <- data[data$gene %in% setbp1_genes, ]
+
+# # formatting data
+# data <- pivot_longer(data, cols = c(2:9), values_to = "DT Score", names_to = "Cell Type")
+# data <- subset(data, `DT Score` != 0)
+# 
+# #taking top Q3 and looking at fea
+# quartiles <- apply(data[,-c(1:2)], 2, quantile, probs = c(0.25, 0.5, 0.75))
+# quartiles # Q3 = 138.703
+# data <- subset(data, `DT Score` >= 138.703)
+
+# subsetting for top 10 from Q3 data
+data <- data %>%
+  group_by(`Cell Type`) %>%
+  top_n(10, `DT Score`) %>%
+  ungroup()
+
+panel_5E <- ggplot(data, aes(x = `Cell Type`, y = gene)) +
+  theme_bw() +
+  geom_point(shape = 21, aes(fill = `Cell Type`, size = `DT Score`)) +
+  #scale_color_manual(values = c("black", "black"), guide = FALSE) +
+  scale_fill_manual(values = c("#6968B4",
+                                "#DC71FA",
+                                "#0a2f6f",
+                                "#00BBDB",
+                                "#C216B7",
+                                "#027461",
+                                "#7997FF",
+                                "#00C1AA")) +
+  labs(size = "DT Score", fill = "Cell Type", ) +
+  theme(text = element_text(family = "Helvetica")) +
+  theme(
+    legend.position = "right",
+  ) +
+  ylab("Setbp1 Gene Set") +
+  xlab("Cortex Cell Types") +
+  theme(axis.text.x = element_text(color = "black")) +
+  theme(axis.title.x = element_text(face = "bold", color = "black")) +
+  theme(axis.title.y = element_text(face = "bold", color = "black")) +
+  theme(axis.text.y = element_text(face = "bold", color = "black")) +
+  theme(legend.title = element_text(face = "bold")) +
+  theme(legend.text = element_text(face = "bold")) +
+  theme(axis.text.x = element_text(face = "bold", angle = 90, hjust = 0.95, vjust = 0.2))
+
+png()
+ggsave(here("results/figures/Fig5E.png"), dpi = 250)
+panel_5E
+dev.off()
+
+# fea plot 
+genes <- as.character(data$gene)
+fea_result_filt <- gost(query = genes, organism = "mmusculus", ordered_query = FALSE, multi_query = FALSE, evcodes = TRUE, correction_method = "bonferroni", sources = c("GO:BP", "KEGG", "REAC", "HP", "WP")) # could also use TF
+
+# plotting FEA
+data_GO <- fea_result_filt$result
+data_GO_plot <- select(data_GO,
+                       term_name,
+                       p_value,
+                       source,
+                       intersection)
+
+data_GO_plot <- data_GO_plot %>% 
+  mutate(intersection = strsplit(as.character(intersection), ",")) %>%
+  unnest(intersection)
+
+# data_GO_plot <- pivot_wider(data_GO_plot, values_from = p_value, names_from = intersection)
+data_GO_plot <- pivot_wider(data_GO_plot, values_from = p_value, names_from = intersection)
+data_GO_plot[is.na(data_GO_plot)] <- 0
+
+names <- data_GO_plot$term_name # add names as rownames
+fea_source <- data_GO_plot$source
+data_GO_plot <- data_GO_plot[, -c(1,2), drop = FALSE] # drop gene column
+rownames(data_GO_plot) <- names
+
+meta <- as.data.frame(fea_source)
+colnames(meta) <- "FEA Source"
+
+data_GO_plot <- t(data_GO_plot)
+  
+annotation_colors <- list(`FEA Source` = c("GO:BP" = "red", "HP" = "pink", "KEGG" = "light green", "WP" = "purple", "REAC" = "yellow"))
+##set heatmap annotations
+heat.anno = HeatmapAnnotation(df = meta, show_annotation_name = TRUE, col = annotation_colors)
+  
+##convert data to matrix
+mat <- as.matrix(data_GO_plot)
+  
+  ##plot heatmap 
+Heatmap(mat,
+        col = colorRampPalette(rev(brewer.pal(8,"Blues"))) (25),
+        heatmap_legend_param = list(title = "Significance"),
+        cluster_rows = TRUE,
+        cluster_columns = TRUE,
+        column_order = NULL,
+        show_row_dend = TRUE,
+        show_column_dend = TRUE,
+                show_row_names = TRUE,
+                show_column_names = TRUE,
+                use_raster = TRUE,
+                raster_device = c("png"),
+                bottom_annotation = NULL,
+                top_annotation = heat.anno,
+                column_title = plot_title, row_title = rowtitle, row_title_side = "right")
+
+
+```
+
+
+
+Panel 5F alt
+```{r}
+# loading data
+load(here("results/diff_targeting/kidney_het_enriched_gene.Rdata"))
+
+# loading gene set
+setbp1_genes <- read.csv(here("results/seurat/setbp1_targets.csv"))
+setbp1_genes <- setbp1_genes[, -1] %>% as.vector()
+setbp1_genes <- append(setbp1_genes, "Setbp1")
+
+# setting annotation colors
+annotation_colors <- list("cell_type" = c("Bcell" = "#FFBE1D", "CDIC_typeA" = "#4E3801", "CDIC_typeB" = "#EEDF37", "CDPC" = "#F03F00", "DCT" = "#6D0404", "DLH" = "#AA6320", "LOH" = "#CF9400", "PCTS1" = "#FFC8C4", "PCTS2" = "#AA937E", "PST" = "#C70F0F", "PT" = "#A85A5A", "endothelial" = "#BD085E", "fibroblasts" = "#948802", "macrophages" = "#FFE196", "pericytes" = "#FF7600", "podocytes" = "#F8766D", "smcs" = "#FFE196"))
+
+# filtering for gene set
+data <- het_enriched[het_enriched$gene %in% setbp1_genes, ]
+
+
+names <- data$gene # add names as rownames
+data <- data[, -1, drop = FALSE] # drop gene column
+rownames(data) <- names
+# setting meta colname
+meta_colname <- "cell_type"
+# setting plot path
+plot_path <- here("results/figures/Fig5F_alt.png")
+# setting rowtitle
+rowtitle <- "genes"
+# setting columntitle
+plot_title <- ""
+
+targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title, show_names = TRUE, height = 2200)
+```
+
+Panel 5F
+```{r}
+# loading data
+load(here("results/diff_targeting/kidney_het_enriched_gene.Rdata"))
+
+# loading gene set
+setbp1_genes <- read.csv(here("results/seurat/setbp1_targets.csv"))
+setbp1_genes <- setbp1_genes[, -1] %>% as.vector()
+setbp1_genes <- append(setbp1_genes, "Setbp1")
+
+data <- het_enriched[het_enriched$gene %in% setbp1_genes, ]
+
+# formatting data
+data <- pivot_longer(data, cols = c(2:18), values_to = "DT Score", names_to = "Cell Type")
+data <- subset(data, `DT Score` != 0)
+
+#taking top Q3 and looking at fea
+quartiles <- apply(data[,-c(1:2)], 2, quantile, probs = c(0.25, 0.5, 0.75))
+quartiles # Q3 = 219.30255
+data <- subset(data, `DT Score` >= 219.30255)
+
+# subsetting for top 10 from Q3 data
+data <- data %>%
+  group_by(`Cell Type`) %>%
+  top_n(10, `DT Score`) %>%
+  ungroup()
+
+panel_5F <- ggplot(data, aes(x = `Cell Type`, y = gene)) +
+  theme_bw() +
+  geom_point(shape = 21, aes(fill = `Cell Type`, size = `DT Score`)) +
+  #scale_color_manual(values = c("black", "black"), guide = FALSE) +
+  scale_fill_manual(values = c("#FFBE1D", "#4E3801", "#EEDF37", "#F03F00", "#6D0404", "#AA6320", "#CF9400", "#FFC8C4", "#AA937E", "#C70F0F", "#A85A5A", "#BD085E", "#948802", "#FFE196", "#FF7600", "#F8766D", "#FFE196")) +
+  labs(size = "DT Score", fill = "Cell Type", ) +
+  theme(text = element_text(family = "Helvetica")) +
+  theme(
+    legend.position = "right",
+  ) +
+  ylab("Setbp1 Gene Set") +
+  xlab("Kidney Cell Types") +
+  theme(axis.text.x = element_text(color = "black")) +
+  theme(axis.title.x = element_text(face = "bold", color = "black")) +
+  theme(axis.title.y = element_text(face = "bold", color = "black")) +
+  theme(axis.text.y = element_text(face = "bold", color = "black")) +
+  theme(legend.title = element_text(face = "bold")) +
+  theme(legend.text = element_text(face = "bold")) +
+  theme(axis.text.x = element_text(face = "bold", angle = 90, hjust = 0.95, vjust = 0.2))
+
+png()
+ggsave(here("results/figures/Fig5F.png"), dpi = 250)
+panel_5F
+dev.off()
+
+# fea plot 
+genes <- as.character(data$gene)
+fea_result_filt <- gost(query = genes, organism = "mmusculus", ordered_query = FALSE, multi_query = FALSE, evcodes = TRUE, correction_method = "bonferroni", sources = c("GO:BP", "KEGG", "REAC", "HP", "WP")) # could also use TF
+
+# plotting FEA
+data_GO <- fea_result_filt$result
+data_GO_plot <- select(data_GO,
+                       term_name,
+                       p_value,
+                       source,
+                       intersection)
+
+data_GO_plot <- data_GO_plot %>% 
+  mutate(intersection = strsplit(as.character(intersection), ",")) %>%
+  unnest(intersection)
+
+# data_GO_plot <- pivot_wider(data_GO_plot, values_from = p_value, names_from = intersection)
+data_GO_plot <- pivot_wider(data_GO_plot, values_from = p_value, names_from = intersection)
+data_GO_plot[is.na(data_GO_plot)] <- 0
+
+names <- data_GO_plot$term_name # add names as rownames
+fea_source <- data_GO_plot$source
+data_GO_plot <- data_GO_plot[, -c(1,2), drop = FALSE] # drop gene column
+rownames(data_GO_plot) <- names
+
+meta <- as.data.frame(fea_source)
+colnames(meta) <- "FEA Source"
+
+data_GO_plot <- t(data_GO_plot)
+  
+annotation_colors <- list(`FEA Source` = c("GO:BP" = "red", "HP" = "pink", "KEGG" = "light green", "WP" = "purple"))
+##set heatmap annotations
+heat.anno = HeatmapAnnotation(df = meta, show_annotation_name = TRUE, col = annotation_colors)
+  
+##convert data to matrix
+mat <- as.matrix(data_GO_plot)
+  
+  ##plot heatmap 
+Heatmap(mat,
+        col = colorRampPalette(rev(brewer.pal(8,"Blues"))) (25),
+        heatmap_legend_param = list(title = "Significance"),
+        cluster_rows = TRUE,
+        cluster_columns = TRUE,
+        column_order = NULL,
+        show_row_dend = TRUE,
+        show_column_dend = TRUE,
+                show_row_names = TRUE,
+                show_column_names = TRUE,
+                use_raster = TRUE,
+                raster_device = c("png"),
+                bottom_annotation = NULL,
+                top_annotation = heat.anno,
+                column_title = plot_title, row_title = rowtitle, row_title_side = "right")
+
+```
+
+Panel 5F
+```{r}
+# loading data
+load(here("results/diff_targeting/kidney_het_enriched_gene.Rdata"))
+
+# loading gene set
+setbp1_genes <- read.csv(here("results/seurat/setbp1_targets.csv"))
+setbp1_genes <- setbp1_genes[, -1] %>% as.vector()
+setbp1_genes <- append(setbp1_genes, "Setbp1")
+
+data <- het_enriched[het_enriched$gene %in% setbp1_genes, ]
+
+# formatting data
+data <- pivot_longer(data, cols = c(2:18), values_to = "DT Score", names_to = "Cell Type")
+data <- subset(data, `DT Score` != 0)
+
+# #taking top Q3 and looking at fea
+# quartiles <- apply(data[,-c(1:2)], 2, quantile, probs = c(0.25, 0.5, 0.75))
+# quartiles # Q3 = 219.30255
+# data <- subset(data, `DT Score` >= 219.30255)
+
+# subsetting for top 10 from Q3 data
+# data <- data %>%
+#   group_by(`Cell Type`) %>%
+#   top_n(10, `DT Score`) %>%
+#   ungroup()
+
+# panel_5F <- ggplot(data, aes(x = `Cell Type`, y = gene)) +
+#   theme_bw() +
+#   geom_point(shape = 21, aes(fill = `Cell Type`, size = `DT Score`)) +
+#   #scale_color_manual(values = c("black", "black"), guide = FALSE) +
+#   scale_fill_manual(values = c("#FFBE1D", "#4E3801", "#EEDF37", "#F03F00", "#6D0404", "#AA6320", "#CF9400", "#FFC8C4", "#AA937E", "#C70F0F", "#A85A5A", "#BD085E", "#948802", "#FFE196", "#FF7600", "#F8766D", "#FFE196")) +
+#   labs(size = "DT Score", fill = "Cell Type", ) +
+#   theme(text = element_text(family = "Helvetica")) +
+#   theme(
+#     legend.position = "right",
+#   ) +
+#   ylab("Setbp1 Gene Set") +
+#   xlab("Kidney Cell Types") +
+#   theme(axis.text.x = element_text(color = "black")) +
+#   theme(axis.title.x = element_text(face = "bold", color = "black")) +
+#   theme(axis.title.y = element_text(face = "bold", color = "black")) +
+#   theme(axis.text.y = element_text(face = "bold", color = "black")) +
+#   theme(legend.title = element_text(face = "bold")) +
+#   theme(legend.text = element_text(face = "bold")) +
+#   theme(axis.text.x = element_text(face = "bold", angle = 90, hjust = 0.95, vjust = 0.2))
+# 
+# png()
+# ggsave(here("results/figures/Fig5F.png"), dpi = 250)
+# panel_5F
+# dev.off()
+
+# fea plot 
+genes <- as.character(data$gene)
+fea_result_filt <- gost(query = genes, organism = "mmusculus", ordered_query = FALSE, multi_query = FALSE, evcodes = TRUE, correction_method = "bonferroni", sources = c("GO:BP", "KEGG", "REAC", "HP", "WP")) # could also use TF
+
+# plotting FEA
+data_GO <- fea_result_filt$result
+data_GO_plot <- select(data_GO,
+                       term_name,
+                       recall,
+                       source,
+                       intersection)
+
+data_GO_plot <- data_GO_plot %>% 
+  mutate(intersection = strsplit(as.character(intersection), ",")) %>%
+  unnest(intersection)
+
+# data_GO_plot <- pivot_wider(data_GO_plot, values_from = recall, names_from = intersection)
+data_GO_plot <- pivot_wider(data_GO_plot, values_from = recall, names_from = intersection)
+data_GO_plot[is.na(data_GO_plot)] <- 0
+
+names <- data_GO_plot$term_name # add names as rownames
+fea_source <- data_GO_plot$source
+data_GO_plot <- data_GO_plot[, -c(1,2), drop = FALSE] # drop gene column
+rownames(data_GO_plot) <- names
+
+meta <- as.data.frame(fea_source)
+colnames(meta) <- "FEA Source"
+
+data_GO_plot <- t(data_GO_plot)
+  
+annotation_colors <- list(`FEA Source` = c("GO:BP" = "red", "HP" = "pink", "KEGG" = "light green", "WP" = "purple"))
+##set heatmap annotations
+heat.anno = HeatmapAnnotation(df = meta, show_annotation_name = TRUE, col = annotation_colors)
+  
+##convert data to matrix
+mat <- as.matrix(data_GO_plot)
+  
+  ##plot heatmap 
+test <- Heatmap(mat,
+        col = colorRampPalette(c("white", "purple")) (4),
+        heatmap_legend_param = list(title = "Recall"),
+        cluster_rows = TRUE,
+        cluster_columns = TRUE,
+        column_order = NULL,
+        show_row_dend = TRUE,
+        show_column_dend = TRUE,
+                show_row_names = TRUE,
+                show_column_names = TRUE,
+                use_raster = TRUE,
+                raster_device = c("png"),
+                bottom_annotation = NULL,
+                top_annotation = heat.anno,
+                column_title = plot_title, row_title = rowtitle, row_title_side = "right")
+
+plot <- plot_grid(grid.grabExpr(draw(test)))
+png(here("results/figures/test.png"), res = 250, width = 4000, height = 6800)
+plot
+dev.off()
+```
+
+
+
 
 
 
