@@ -11,6 +11,11 @@ Step 1. Filter regNet for only Setbp1 as a TF
 Step 2. Filter PPI for proteins in Setbp1 gene set
 Step 3. Map Setbp1 and the genes it regulates in the regNet to their corresponing PPI. 
 Step 4. Create final data frame with Setbp1 TF, target gene, regNet scores, PPI, and coopNet scores.
+Step 5. Removing self-interactions
+Step 6. plotting distributions of scores for regNet and coopNet
+Step 7. comparing gene regualtion presence to ppi presence (using sign change as a metric)
+Step 8. compare seed ppi and ppi after running PANDA
+
 
 ```{r}
 set.seed(2178)
@@ -18,6 +23,8 @@ library(reshape2)
 library(dplyr)
 library(here)
 library(data.table)
+library(tidyr)
+library(ggridges)
 library(ggplot2)
 library(plotly)
 ```
@@ -29,7 +36,7 @@ setbp1_genes <- append(setbp1_genes, "Setbp1")
 ```
 
 
-```{r}
+```{r combined-network-dataframe}
 files <- list.files(here("results/PANDA"), full.names = TRUE)
 
 combo_net <- list()
@@ -68,5 +75,159 @@ for(i in files){
   print(paste0(name, " filtered, combined, and saved."))
 }
 
-save(combo_net, file = here("results/ppi_rewiring/regNet_coopNet_combo.Rdata"))
+save(combo_net, file = here("results/ppi_rewiring/regNet_coopNet_combo_ppi_1_gene.Rdata"))
 ```
+
+```{r removing self-interactions}
+# removing relationships where gene/ppi_1 is the same as ppi_2 (example: Ncoa1 - Ncoa1)
+combo_net_nondup <- list()
+
+for(i in seq_along(combo_net)){
+  combo <- combo_net[[i]]
+  combo_nondup <- combo[as.character(combo$gene_ppi_1) != as.character(combo$ppi_2), ]
+  combo_net_nondup[[i]] <- combo_nondup
+}
+
+names(combo_net_nondup) <- names(combo_net)
+```
+
+
+```{r visualizing-score-distributions}
+pdf(here("results/ppi_rewiring/combo_net_nondup-distribution.pdf"))
+
+plot <- ggplot(combo_net_nondup$smcs_heterozygouskidney) +
+  geom_density(aes(x = regNet_score)) +
+  theme_bw() +
+  labs(y = "regNet score") +
+  theme(text = element_text(family = "Helvetica")) +
+  ggtitle("het smcs regNet Score Distribution") 
+
+plot
+
+plot2 <- ggplot(combo_net_nondup$smcs_heterozygouskidney) +
+  geom_density(aes(x = coopNet_score)) +
+  theme_bw() +
+  labs(y = "coopNet score") +
+  theme(text = element_text(family = "Helvetica")) +
+  ggtitle("het smcs coopNet Score Distribution")
+
+plot2
+
+plot3 <- ggplot(combo_net_nondup$astrocytes_heterozygouscortex) +
+  geom_density(aes(x = regNet_score)) +
+  theme_bw() +
+  labs(y = "regNet score") +
+  theme(text = element_text(family = "Helvetica")) +
+  ggtitle("het astrocytes regNet Score Distribution") 
+
+plot3
+
+plot4 <- ggplot(combo_net_nondup$astrocytes_heterozygouscortex) +
+  geom_density(aes(x = coopNet_score)) +
+  theme_bw() +
+  labs(y = "coopNet score") +
+  theme(text = element_text(family = "Helvetica")) +
+  ggtitle("het astrocytes coopNet Score Distribution")
+
+plot4
+
+dev.off()
+```
+
+```{r change-in-regulation-ppi}
+combo_nondup <- combo_net_nondup$Bcell_controlkidney
+dim(combo_nondup) 
+
+occurrence <- table(sign(combo_nondup$regNet_score), sign(combo_nondup$coopNet_score))
+occurrence
+
+total_occurrence <- occurrence[1,1] + occurrence[1,-1] + occurrence[-1,1] + occurrence[-1,-1]
+total_occurrence # adds up to dimension of original input dataframe 
+```
+
+
+```{r combined-network-dataframe-gene-ppi2}
+files <- list.files(here("results/PANDA"), full.names = TRUE)
+
+combo_net <- list()
+
+#run for loop
+for(i in files){
+  #load in the pandaResults
+  load(i)
+  name <- sub("expression_PANDA.Rdata", "", basename(i))
+  #extracting-networks
+  coopNet <- pandaResults@coopNet
+  coopNet <- reshape2::melt(coopNet, varnames = c("ppi_1", "ppi_2"), value.name = "coopNet_score")
+  
+  regNet <- pandaResults@regNet
+  regNet <- reshape2::melt(regNet, varnames = c("TF", "gene"), value.name = "regNet_score")
+  
+  #filtering-regNet-for-Setbp1TF
+  filtered_regNet <- regNet[regNet$TF == "Setbp1",]
+  
+  #filtering-ppi-for-geneset
+  filtered_coopNet<- coopNet[coopNet$ppi_2 %in% setbp1_genes,]
+  colnames(filtered_coopNet) <- c("gene", "ppi_1", "coopNet_score")
+  
+  #grabbing-overlap
+  combo <- merge(filtered_regNet, filtered_coopNet, by = "gene", all = FALSE)
+  colnames(combo) <- c("gene_ppi_2", "TF", "regNet_score", "ppi_1", "coopNet_score") 
+  
+  #store in list
+  combo_net[[name]] <- combo
+  
+  #clean up env
+  rm(pandaResults)
+  rm(coopNet)
+  rm(regNet)
+  
+  print(paste0(name, " filtered, combined, and saved."))
+}
+
+save(combo_net, file = here("results/ppi_rewiring/regNet_coopNet_combo_ppi_2_gene.Rdata"))
+```
+
+```{r comparing-seed-ppi-to-coopNet}
+seed_ppi <- read.table(file = "/data/user/jbarham3/230227_JW_Setbp1Manuscript/data/processed/ppi_inputs/mm10_ppi.txt", sep = "\t") #load in ppi data
+seed_ppi$from_to <- paste(seed_ppi$from, seed_ppi$to, sep = "_")
+
+load(files[1])
+coopNet <- pandaResults@coopNet
+coopNet <- reshape2::melt(coopNet, varnames = c("from", "to"), value.name = "score")
+coopNet$from_to <- paste(coopNet$from, coopNet$to, sep = "_")
+
+seed_coopNet_combo <- merge(coopNet, seed_ppi, by = "from_to", all = FALSE)
+seed_coopNet_combo <- seed_coopNet_combo[,c(1,4,7)]
+colnames(seed_coopNet_combo) <- c("from_to", "coopNet_score", "seed_score")
+
+# #transforming to z score to allow comparisons 
+# seed_coopNet_combo$coop_z_scores <- scale(seed_coopNet_combo$coopNet_score)
+# seed_coopNet_combo$seed_z_scores <- scale(seed_coopNet_combo$seed_score)
+
+# transforming to min-max and find difference
+seed_coopNet_combo$coop_min_max <- (seed_coopNet_combo$coopNet_score - min(seed_coopNet_combo$coopNet_score)) / (max(seed_coopNet_combo$coopNet_score) - min(seed_coopNet_combo$coopNet_score))
+
+seed_coopNet_combo$seed_min_max <- (seed_coopNet_combo$seed_score - min(seed_coopNet_combo$seed_score)) / (max(seed_coopNet_combo$seed_score) - min(seed_coopNet_combo$seed_score))
+
+seed_coopNet_combo$min_max_diff <- seed_coopNet_combo$coop_min_max - seed_coopNet_combo$seed_min_max
+
+# unsplit from_to and filter based off of TFs that are in the FROM column:
+seed_coopNet_combo <- separate(seed_coopNet_combo, from_to, into = c("from", "to"), sep = "_")
+
+#filter for just TFs
+regNet <- pandaResults@regNet
+regNet <- reshape2::melt(regNet, varnames = c("TF", "gene"), value.name = "regNet_score")
+
+
+TF_list <- c("Setbp1", "Tfdp2", "Mybl1") #randomly selected TFs from GTRD(https://gtrd.biouml.org/#!table/gtrd_current.tf_links/Brief)
+TFs_from <- seed_coopNet_combo[seed_coopNet_combo$from %in% TF_list,]
+TFs_to <- seed_coopNet_combo[seed_coopNet_combo$to %in% TF_list,]
+# genes <- seed_coopNet_combo[seed_coopNet_combo$from %in% regNet$gene,]
+#filter for just genes
+
+# taking the seed_score (from STRING values ranging from 0-999 and subtracting the absolute value of the CoopNet)
+```
+
+
+
