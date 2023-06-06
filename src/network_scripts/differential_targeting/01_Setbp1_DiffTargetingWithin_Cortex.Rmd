@@ -579,8 +579,6 @@ for (i in cell_names) {
 }
 
 het_enriched <- diff_gene_targeting
-#het_enriched <- replace(diff_gene_targeting, diff_gene_targeting[, ] < 0, 0) # creating dataframe where the differential is enriched in the het condition (commented out because of above note)
-save(het_enriched, file = here("results/diff_targeting/cortex_het_enriched_gene.Rdata"))
 ```
 
 ```{r ID-top-quantile-threshold}
@@ -639,22 +637,22 @@ microglia<- subset(microglia, microglia <= -49.718 | microglia >= 101.878)
 colnames(microglia) <- c("gene", "targeting_score")
 microglia$cell_type <- "microglia"
 
-pericytes<- het_enriched[, c(1,7)]
-pericytes<- subset(pericytes, pericytes <= -49.718 | pericytes >= 101.878)
-colnames(pericytes) <- c("gene", "targeting_score")
-pericytes$cell_type <- "pericytes"
-
-oligodendrocytes<- het_enriched[, c(1,8)]
+oligodendrocytes<- het_enriched[, c(1,7)]
 oligodendrocytes<- subset(oligodendrocytes, oligodendrocytes <= -49.718 | oligodendrocytes >= 101.878)
 colnames(oligodendrocytes) <- c("gene", "targeting_score")
 oligodendrocytes$cell_type <- "oligodendrocytes"
 
-opcs<- het_enriched[, c(1,9)]
+opcs<- het_enriched[, c(1,8)]
 opcs<- subset(opcs, opcs <= -49.718 | opcs >= 101.878)
 colnames(opcs) <- c("gene", "targeting_score")
 opcs$cell_type <- "opcs"
 
-filtered_het <- bind_rows(astrocytes, excitatory_neurons, fibro_cortex, inhibitory_neurons, microglia, pericytes, oligodendrocytes, opcs)
+pericytes<- het_enriched[, c(1,9)]
+pericytes<- subset(pericytes, pericytes <= -49.718 | pericytes >= 101.878)
+colnames(pericytes) <- c("gene", "targeting_score")
+pericytes$cell_type <- "pericytes"
+
+filtered_het <- bind_rows(astrocytes, excitatory_neurons, fibro_cortex, inhibitory_neurons, microglia, oligodendrocytes, opcs, pericytes)
 ```
 
 Looking globally at differential targeting
@@ -686,7 +684,7 @@ neg <- colSums(neg[,-1])
 
 
 data <- as.data.frame(cbind(pos,neg))
-rownames(data) <- c("astrocytes", "excitatory neurons", "fibroblasts", "inhibitory neurons", "microglia", "pericytes", "oligodendrocytes", "opcs")
+rownames(data) <- c("astrocytes", "excitatory neurons", "fibroblasts", "inhibitory neurons", "microglia", "oligodendrocytes", "opcs", "pericytes")
 data$cell_type <- rownames(data)
 data$pos_sum <- pos_non_zero_counts
 data$neg_sum <- neg_non_zero_counts
@@ -695,31 +693,46 @@ data <- data[order(data$pos, decreasing = TRUE),]
 
 save(data, file = here("results/diff_targeting/global_diff_targeting.Rdata"))
 
+#formatting data
+data_plot <- pivot_longer(data[,c(1:3)], cols = c(1,2), values_to = "sum")
+data_label <- pivot_longer(data[,c(4, 5)], cols = c(1,2), values_to = "sum")
+data_plot$num <- data_label$sum
+
+data_plot$norm <- data_plot$sum/data_plot$num #normalize data by number of genes with enriched targeting
+
+#setting plot order
+data_plot <- arrange(data_plot, desc(norm))
+data_plot$order <- seq(1:16)
+
 png()
 ggsave(here("results/diff_targeting/total_differential_targeting.png"), dpi = 250)
-ggplot() +
-  geom_segment(aes(x=reorder(cell_type, pos), xend=cell_type, y=pos, yend=neg), color="#2e2e2d") +
-  geom_point( aes(x=cell_type, y=pos), color= "purple", size=3 ) +
-  geom_point( aes(x=cell_type, y=neg), color="#e0da22", size=3 ) +
-  coord_flip()+
+ggplot(data_plot, aes(x = norm, y = reorder(cell_type, norm))) +
   theme_bw() +
-  theme(
-    legend.position = "none",
-  ) +
-  xlab("Cell Type") +
-  ylab("Total Differential Targeting Score") +
-  theme(axis.text.y = element_text(face = "bold", color = "black")) +
-  theme(axis.text.x = element_text(face = "bold", color = "black")) +
-  theme(axis.title.y = element_text(face = "bold", color = "black")) +
-  theme(axis.title.x = element_text(face = "bold", color = "black")) + 
+  geom_point(shape = 21, aes(fill = name, color = name, size = num)) +
+  scale_color_manual(values = c("black", "black"), guide = FALSE) +
+  scale_fill_manual(values = c("#e0da22", "purple"), labels = c("decreased in S858R condition", "increased in S858R condition")) +
+  labs(fill = "Differential gene targeting") +
   theme(text = element_text(family = "Helvetica")) +
-  scale_y_continuous(labels = function(x) format(x, scientific = FALSE)) +
-  geom_hline(yintercept = 0, linetype = "dashed", color = "#1E88E5", size = 0.25)
+  theme(
+    legend.position = "right",
+  ) +
+  ylab("cerebral cortex cell type") +
+  xlab("Total differential targeting score normalized by number of genes") +
+  theme(axis.text.x = element_text(face = "bold", color = "black")) +
+  theme(axis.title.x = element_text(face = "bold", color = "black")) +
+  theme(axis.title.y = element_text(face = "bold", color = "black")) +
+  geom_text(aes(label = num), vjust = -0.7) +
+  theme(axis.text.y = element_text(face = "bold", color = "black")) +
+  theme(legend.title = element_text(face = "bold")) +
+  xlim(c(-350, 399))
 dev.off()
 ```
+Saving het_enriched without negatives for rest of plotting: 
+```{r}
+het_enriched <- replace(diff_gene_targeting, diff_gene_targeting[, ] < 0, 0) # creating dataframe where the differential is enriched in the het condition
+save(het_enriched, file = here("results/diff_targeting/cortex_het_enriched_gene.Rdata"))
+```
 
-
-#################
 
 ```{r calculate-ctrl-enriched-diff-targeting}
 # creating empty data frame

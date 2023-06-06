@@ -303,14 +303,6 @@ ggplot(combined) +
   theme_bw() +
   ggtitle("Gene Targeting Score Distribution in Kidney")
 dev.off()
-
-# png(here("results/diff_targeting/kidney_targeting_score_ridgeline_celltypes.png"), height = 500, width = 800)
-# ggplot(combined) +
-#   geom_density_ridges(aes(x = targeting_score, y = cell_type, group = interaction(cell_type, condition), fill = cell_type, alpha = condition)) +
-#   theme_bw() +
-#   scale_fill_manual(values = c("#FFBE1D", "#4E3801", "#EEDF37", "#F03F00", "#6D0404", "#AA6320", "#CF9400", "#FFC8C4", "#AA937E", "#C70F0F", "#A85A5A", "#BD085E", "#948802", "#FFE196", "#FF7600", "#F8766D", "#FFE196")) +
-#   scale_alpha_manual(values = c(0.25, 0.8))
-# dev.off()
 ```
 
 # Investigate targeting rank within each Het cell type
@@ -555,8 +547,207 @@ for (i in cell_names) {
     diff_gene_targeting[[diff_colname]] <- diff_col
   }
 }
+het_enriched <- diff_gene_targeting
+```
 
-het_enriched <- replace(diff_gene_targeting, diff_gene_targeting[, ] < 0, 0) # creating dataframe where the differential is enriched in the het condition
+```{r ID-top-quantile-threshold}
+# Create a list to store the histograms
+histograms <- list()
+
+# Create histograms for each column
+for (col in colnames(het_enriched[,-1])) {
+  p <- ggplot(het_enriched, aes(x = .data[[col]])) +
+    geom_histogram(binwidth = 0.5, fill = "blue", color = "black") +
+    labs(title = col, x = col, y = "Frequency")
+  plot(p)
+  histograms[[col]] <- p
+}
+
+# calculate quartile for each cell type
+quartiles <- apply(het_enriched[,-1], 2, quantile, probs = c(0.25, 0.5, 0.75))
+
+# Print the quartiles
+print(quartiles)
+```
+Note: all histograms of differential targeting scores that are het enriched are normally distributed. 
+
+Quartiles of differential targeting scores for each cell type:       
+         Bcell CDIC_typeA CDIC_typeB       CDPC       DCT       DLH      LOH     PCTS1      PCTS2       PST        PT endothelial fibroblasts
+25% -101.62126  -59.78703  -231.4564 -86.694704  92.38063  89.56326 212.6720 -83.69039   1.566147 -91.64527  45.34969    12.25046  -129.08209
+50%  -17.76872  -11.35910  -154.0229  -8.261845 171.09272 157.20370 271.0089 -15.33135  25.472118 -24.44960 102.20607    90.82121   -50.69332
+75%   16.94885   47.45649   -46.6720  60.219076 251.63137 254.90153 361.2707  46.17184 151.313144  32.43497 229.60423   174.46237    33.22284
+    macrophages  pericytes   podocytes        smcs
+25%   -286.7542 -242.11353 -139.109281 -140.379322
+50%   -174.6189 -158.62863  -80.767655  -86.957509
+75%   -105.0566  -37.85299   -2.302682   -8.890787
+
+
+Based off the above, all of the het enriched targeting scores will be filtered for each cell type (column) to only include all values <= Q1 (25%) and >= Q3 (75%)
+
+```{r filtering-data-based-of-quartiles}
+Bcell <- het_enriched[,c(1,2)]
+Bcell <- subset(Bcell, Bcell <= -101.621 | Bcell >= 16.949)
+colnames(Bcell) <- c("gene", "targeting_score")
+Bcell$cell_type <- "Bcell"
+
+CDIC_typeA<- het_enriched[, c(1,3)]
+CDIC_typeA<- subset(CDIC_typeA, CDIC_typeA <= -59.787 | CDIC_typeA >= 47.456)
+colnames(CDIC_typeA) <- c("gene", "targeting_score")
+CDIC_typeA$cell_type <- "CDIC_typeA"
+
+CDIC_typeB<- het_enriched[, c(1,4)]
+CDIC_typeB<- subset(CDIC_typeB, CDIC_typeB <= -231.456 | CDIC_typeB >= -46.672)
+colnames(CDIC_typeB) <- c("gene", "targeting_score")
+CDIC_typeB$cell_type <- "CDIC_typeB"
+
+
+CDPC<- het_enriched[, c(1,5)]
+CDPC<- subset(CDPC, CDPC <= -86.695 | CDPC >= 60.219)
+colnames(CDPC) <- c("gene", "targeting_score")
+CDPC$cell_type <- "CDPC"
+
+DCT<- het_enriched[, c(1,6)]
+DCT<- subset(DCT, DCT <= 92.381 | DCT >= 251.631)
+colnames(DCT) <- c("gene", "targeting_score")
+DCT$cell_type <- "DCT"
+
+DLH<- het_enriched[, c(1,7)]
+DLH<- subset(DLH, DLH <= 89.563 | DLH >= 254.901)
+colnames(DLH) <- c("gene", "targeting_score")
+DLH$cell_type <- "DLH"
+
+LOH<- het_enriched[, c(1,8)]
+LOH<- subset(LOH, LOH <= 212.672| LOH >= 361.271)
+colnames(LOH) <- c("gene", "targeting_score")
+LOH$cell_type <- "LOH"
+
+PCTS1<- het_enriched[, c(1,9)]
+PCTS1<- subset(PCTS1, PCTS1 <= -83.69 | PCTS1 >= 46.172)
+colnames(PCTS1) <- c("gene", "targeting_score")
+PCTS1$cell_type <- "PCTS1"
+
+PCTS2<- het_enriched[, c(1,10)]
+PCTS2<- subset(PCTS2, PCTS2 <= 1.566 | PCTS2 >= 151.313)
+colnames(PCTS2) <- c("gene", "targeting_score")
+PCTS2$cell_type <- "PCTS2"
+
+PST<- het_enriched[, c(1,11)]
+PST<- subset(PST, PST <= -91.645 | PST >= 32.435)
+colnames(PST) <- c("gene", "targeting_score")
+PST$cell_type <- "PST"
+
+PT<- het_enriched[, c(1,12)]
+PT<- subset(PT, PT <= 45.350 | PT >= 229.604)
+colnames(PT) <- c("gene", "targeting_score")
+PT$cell_type <- "PT"
+
+endothelial<- het_enriched[, c(1,13)]
+endothelial<- subset(endothelial, endothelial <= 12.250 | endothelial >= 174.462)
+colnames(endothelial) <- c("gene", "targeting_score")
+endothelial$cell_type <- "endothelial"
+
+fibroblasts<- het_enriched[, c(1,14)]
+fibroblasts<- subset(fibroblasts, fibroblasts <= -129.08 | fibroblasts >= 33.223)
+colnames(fibroblasts) <- c("gene", "targeting_score")
+fibroblasts$cell_type <- "fibroblasts"
+
+macrophages<- het_enriched[, c(1,15)]
+macrophages<- subset(macrophages, macrophages <= -285.752 | macrophages >= -105.057)
+colnames(macrophages) <- c("gene", "targeting_score")
+macrophages$cell_type <- "macrophages"
+
+pericytes<- het_enriched[, c(1,16)]
+pericytes<- subset(pericytes, pericytes <= -242.113 | pericytes >= -37.853)
+colnames(pericytes) <- c("gene", "targeting_score")
+pericytes$cell_type <- "pericytes"
+
+podocytes<- het_enriched[, c(1,17)]
+podocytes<- subset(podocytes, podocytes <= -139.110 | podocytes >= -2.302)
+colnames(podocytes) <- c("gene", "targeting_score")
+podocytes$cell_type <- "podocytes"
+
+smcs<- het_enriched[, c(1,18)]
+smcs<- subset(smcs, smcs <= -140.379 | smcs >= -8.891)
+colnames(smcs) <- c("gene", "targeting_score")
+smcs$cell_type <- "smcs"
+
+filtered_het <- bind_rows(Bcell, CDIC_typeA, CDIC_typeB, CDPC, DCT, DLH, LOH, PCTS1, PCTS2, PST, PT, endothelial, fibroblasts, macrophages, pericytes, podocytes, smcs)
+```
+
+Looking globally at differential targeting
+```{r}
+filtered_het_wide <- pivot_wider(filtered_het, values_from = "targeting_score", names_from = "cell_type")
+
+# positivies 
+
+## replace all negatives and NA with 0
+pos <- filtered_het_wide %>%
+  mutate_at(vars(-gene), ~replace(., is.na(.) | . < 0, 0))
+pos_non_zero_counts <- sapply(pos[-1], function(x) sum(x != 0))
+pos_non_zero_counts
+
+## sum diff targeting by cell type
+pos <- colSums(pos[,-1])
+
+# negatives
+
+## replace all positives and NA with 0
+neg <- filtered_het_wide %>%
+  mutate_at(vars(-gene), ~replace(., is.na(.) | . > 0, 0))
+neg_non_zero_counts <- sapply(neg[-1], function(x) sum(x != 0))
+neg_non_zero_counts
+
+
+## sum diff targeting by cell type
+neg <- colSums(neg[,-1])
+
+
+data <- as.data.frame(cbind(pos,neg))
+data$cell_type <- rownames(data) #rownames are cell type names
+data$pos_sum <- pos_non_zero_counts
+data$neg_sum <- neg_non_zero_counts
+
+data <- data[order(data$pos, decreasing = TRUE),]
+
+save(data, file = here("results/diff_targeting/global_diff_targeting_kidney.Rdata"))
+
+#formatting data
+data_plot <- pivot_longer(data[,c(1:3)], cols = c(1,2), values_to = "sum")
+data_label <- pivot_longer(data[,c(4, 5)], cols = c(1,2), values_to = "sum")
+data_plot$num <- data_label$sum
+
+data_plot$norm <- data_plot$sum/data_plot$num #normalize data by number of genes with enriched targeting
+
+#setting plot order
+data_plot <- arrange(data_plot, desc(norm))
+data_plot$order <- seq(1:34)
+
+png()
+ggsave(here("results/diff_targeting/total_differential_targeting_kidney.png"), dpi = 250)
+ggplot(data_plot, aes(x = norm, y = reorder(cell_type, norm))) +
+  theme_bw() +
+  geom_point(shape = 21, aes(fill = name, color = name, size = num)) +
+  scale_color_manual(values = c("black", "black"), guide = FALSE) +
+  scale_fill_manual(values = c("#e0da22", "purple"), labels = c("decreased in S858R condition", "increased in S858R condition")) +
+  labs(fill = "Differential gene targeting", size = "Number of Genes") +
+  theme(text = element_text(family = "Helvetica")) +
+  theme(
+    legend.position = "right",
+  ) +
+  ylab("Kidney Cortex Cell Type") +
+  xlab("Total Differential Targeting Score Normalized by Number of Genes") +
+  theme(axis.text.x = element_text(face = "bold", color = "black")) +
+  theme(axis.title.x = element_text(face = "bold", color = "black")) +
+  theme(axis.title.y = element_text(face = "bold", color = "black")) +
+  geom_text(aes(label = num), vjust = -0.8) +
+  theme(axis.text.y = element_text(face = "bold", color = "black")) +
+  theme(legend.title = element_text(face = "bold")) +
+  scale_y_discrete(expand=expansion(mult=c(0.05,0.05)))
+dev.off()
+```
+Saving het_enriched without negatives for plotting:
+```{r}
+het_enriched <- replace(het_enriched, het_enriched[, ] < 0, 0) # creating dataframe where the differential is enriched in the het condition
 save(het_enriched, file = here("results/diff_targeting/kidney_het_enriched_gene.Rdata"))
 ```
 
