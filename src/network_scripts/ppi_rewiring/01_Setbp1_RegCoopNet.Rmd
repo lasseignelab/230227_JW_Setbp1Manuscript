@@ -9,37 +9,42 @@ Goal: Determine PPI in reference to TF-gene regulation in Setbp1 S858R mice.
 
 Step 1. Filter regNet for only Setbp1 as a TF
 Step 2. Filter PPI for proteins in Setbp1 gene set
-Step 3. Map Setbp1 and the genes it regulates in the regNet to their corresponing PPI. 
+Step 3. Map Setbp1 and the genes it regulates in the regNet to their corresponding PPI. 
 Step 4. Create final data frame with Setbp1 TF, target gene, regNet scores, PPI, and coopNet scores.
 Step 5. Removing self-interactions
 Step 6. plotting distributions of scores for regNet and coopNet
-Step 7. comparing gene regualtion presence to ppi presence (using sign change as a metric)
+Step 7. comparing gene regulation presence to ppi presence (using sign change as a metric)
 Step 8. compare seed ppi and ppi after running PANDA
+Step 9. 
 
 
-```{r}
+```{r loading-libraries}
 set.seed(2178)
 library(reshape2)
+library(stringr)
 library(dplyr)
+library(ggplot2)
 library(here)
 library(data.table)
+library(ComplexHeatmap)
 library(tidyr)
 library(ggridges)
+library(purrr)
 library(ggplot2)
 library(plotly)
+ptm <- proc.time()
 ```
 
 ```{r loading-data}
 setbp1_genes <- read.csv(here("results/seurat/setbp1_targets.csv"))
-setbp1_genes <- setbp1_genes[, -1]
+setbp1_genes <- setbp1_genes[, -1] %>% as.vector()
 setbp1_genes <- append(setbp1_genes, "Setbp1")
 ```
-
 
 ```{r combined-network-dataframe}
 files <- list.files(here("results/PANDA"), full.names = TRUE)
 
-combo_net <- list()
+combo_net_gene_ppi_1 <- list()
 
 #run for loop
 for(i in files){
@@ -65,7 +70,7 @@ for(i in files){
   colnames(combo) <- c("gene_ppi_1", "TF", "regNet_score", "ppi_2", "coopNet_score") 
   
   #store in list
-  combo_net[[name]] <- combo
+  combo_net_gene_ppi_1[[name]] <- combo
   
   #clean up env
   rm(pandaResults)
@@ -75,22 +80,21 @@ for(i in files){
   print(paste0(name, " filtered, combined, and saved."))
 }
 
-save(combo_net, file = here("results/ppi_rewiring/regNet_coopNet_combo_ppi_1_gene.Rdata"))
+#save(combo_net_gene_ppi_1, file = here("results/ppi_rewiring/regNet_coopNet_combo_ppi_1_gene.Rdata"))
 ```
 
 ```{r removing self-interactions}
 # removing relationships where gene/ppi_1 is the same as ppi_2 (example: Ncoa1 - Ncoa1)
 combo_net_nondup <- list()
 
-for(i in seq_along(combo_net)){
-  combo <- combo_net[[i]]
+for(i in seq_along(combo_net_gene_ppi_1)){
+  combo <- combo_net_gene_ppi_1[[i]]
   combo_nondup <- combo[as.character(combo$gene_ppi_1) != as.character(combo$ppi_2), ]
   combo_net_nondup[[i]] <- combo_nondup
 }
 
-names(combo_net_nondup) <- names(combo_net)
+names(combo_net_nondup) <- names(combo_net_gene_ppi_1)
 ```
-
 
 ```{r visualizing-score-distributions}
 pdf(here("results/ppi_rewiring/combo_net_nondup-distribution.pdf"))
@@ -145,11 +149,10 @@ total_occurrence <- occurrence[1,1] + occurrence[1,-1] + occurrence[-1,1] + occu
 total_occurrence # adds up to dimension of original input dataframe 
 ```
 
-
 ```{r combined-network-dataframe-gene-ppi2}
 files <- list.files(here("results/PANDA"), full.names = TRUE)
 
-combo_net <- list()
+combo_net_gene_ppi_2 <- list()
 
 #run for loop
 for(i in files){
@@ -175,7 +178,7 @@ for(i in files){
   colnames(combo) <- c("gene_ppi_2", "TF", "regNet_score", "ppi_1", "coopNet_score") 
   
   #store in list
-  combo_net[[name]] <- combo
+  combo_net_gene_ppi_2[[name]] <- combo
   
   #clean up env
   rm(pandaResults)
@@ -185,7 +188,7 @@ for(i in files){
   print(paste0(name, " filtered, combined, and saved."))
 }
 
-save(combo_net, file = here("results/ppi_rewiring/regNet_coopNet_combo_ppi_2_gene.Rdata"))
+#save(combo_net_gene_ppi_2, file = here("results/ppi_rewiring/regNet_coopNet_combo_ppi_2_gene.Rdata"))
 ```
 
 ```{r comparing-seed-ppi-to-coopNet}
@@ -229,5 +232,622 @@ TFs_to <- seed_coopNet_combo[seed_coopNet_combo$to %in% TF_list,]
 # taking the seed_score (from STRING values ranging from 0-999 and subtracting the absolute value of the CoopNet)
 ```
 
+# Investigating regNet --> coopNet sign change:
+1. Annotating sign change for both the gene-ppi_1 overlap and gene-ppi_2 overlap to see where the regNet score and coopNet score
+2. Subsetting for only the sign change that was "both_positive" where the TF is Setbp1 
+3. Filtering for the Banfi et al proteins
+4. Wrangling back into a single dataframe
+5. Assigning mechanims from Setbp1 literature
+5. Filtering for protein from coopNet that is in setbp1 gene set 
 
+```{r sign-change-assignment}
+combo_net_gene_ppi_1 <- lapply(combo_net_gene_ppi_1, function(df) {
+  df %>%
+    mutate(annotation = case_when(
+      regNet_score > 0 & coopNet_score > 0 ~ "both_positive",
+      regNet_score < 0 & coopNet_score < 0 ~ "both_negative",
+      regNet_score < 0 & coopNet_score > 0 ~ "neg_pos",
+      regNet_score > 0 & coopNet_score < 0 ~ "pos_neg",
+      TRUE ~ NA_character_
+    ))
+})
+
+combo_net_gene_ppi_2 <- lapply(combo_net_gene_ppi_2, function(df) {
+  df %>%
+    mutate(annotation = case_when(
+      regNet_score > 0 & coopNet_score > 0 ~ "both_positive",
+      regNet_score < 0 & coopNet_score < 0 ~ "both_negative",
+      regNet_score < 0 & coopNet_score > 0 ~ "neg_pos",
+      regNet_score > 0 & coopNet_score < 0 ~ "pos_neg",
+      TRUE ~ NA_character_
+    ))
+})
+```
+
+## filtering for proteins in literature mechanisms (Banfi et al):
+```{r filtering-Banfi-lit-mech}
+Banfi <- c("Akt1", "Akt", "Anp32a", "Apex1", "Apex", "Cdk2", "Hcif1", "Hcf1", "Hmg2", "Hmgb2", "Kmt2a", "Nme1", "Ppp2r1a", "Set", "Taf1a", "Tceal1", "Trex1", "Trp53", "Tp53")
+
+filtered_gene_ppi_1 <- lapply(combo_net_gene_ppi_1, function(df) subset(df, gene_ppi_1 == Banfi))
+filtered_ppi_2 <- lapply(combo_net_gene_ppi_1, function(df) subset(df, ppi_2 == Banfi))
+filtered_gene_ppi_2 <- lapply(combo_net_gene_ppi_2, function(df) subset(df, gene_ppi_2 == Banfi))
+filtered_ppi_1 <- lapply(combo_net_gene_ppi_2, function(df) subset(df, ppi_1 == Banfi))
+
+# renaming columns since the interaction is not directional
+for(i in seq_along(filtered_gene_ppi_1)) {
+  filtered_gene_ppi_1[[i]] <- rename(filtered_gene_ppi_1[[i]], gene_ppi = gene_ppi_1)
+  filtered_gene_ppi_1[[i]] <- rename(filtered_gene_ppi_1[[i]], ppi = ppi_2)
+}
+
+for(i in seq_along(filtered_ppi_2)) {
+  filtered_ppi_2[[i]] <- rename(filtered_ppi_2[[i]], gene_ppi = gene_ppi_1)
+  filtered_ppi_2[[i]] <- rename(filtered_ppi_2[[i]], ppi = ppi_2)
+}
+
+for(i in seq_along(filtered_gene_ppi_2)) {
+  filtered_gene_ppi_2[[i]] <- rename(filtered_gene_ppi_2[[i]], gene_ppi = gene_ppi_2)
+  filtered_gene_ppi_2[[i]] <- rename(filtered_gene_ppi_2[[i]], ppi = ppi_1)
+} 
+
+for(i in seq_along(filtered_ppi_1)) {
+  filtered_ppi_1[[i]] <- rename(filtered_ppi_1[[i]], gene_ppi = gene_ppi_2)
+  filtered_ppi_1[[i]] <- rename(filtered_ppi_1[[i]], ppi = ppi_1)
+}
+
+# combining dataframes from both lists into one single dataframe 
+Banfi_combined_filtered <- mapply(function(df1, df2, df3, df4) {
+  bind_rows(df1, df2, df3, df4)
+}, filtered_ppi_1, filtered_ppi_2, filtered_ppi_1, filtered_ppi_2, SIMPLIFY = FALSE)
+
+# unlisting the object and combining based on tissue
+kidney <- Banfi_combined_filtered[grepl("kidney", names(Banfi_combined_filtered))]
+kidney_banfi <- kidney %>%
+  map_df(~ tibble::as_tibble(.x), .id = "source")
+
+# keep unique rows
+kidney_banfi <- unique(kidney_banfi)
+
+# unlisting the object and combining based on tissue
+cortex <- Banfi_combined_filtered[grepl("cortex", names(Banfi_combined_filtered))]
+cortex_banfi <- cortex %>%
+  map_df(~ tibble::as_tibble(.x), .id = "source")
+
+# keep unique rows
+cortex_banfi <- unique(cortex_banfi)
+```
+
+```{r annotate-mechanism}
+# annotate for mechanism based off of Banfi et al (can be 'cell cycle', 'chromatin remodeling', 'DNA damage', 'phosphorylation', 'binding')
+binding <- c("Kmt2a", "Hcif1") #from "epigenetic hub" paper
+cell_cycle <- c("Cdk2", "Trp53", "Tp53", "Tceal1", "Set")
+chromatin_remodeling <- c("Anp32a", "Taf1a", "Set")
+dna_damage <- c("Apex1", "Anp32a", "Apex", "Hmg2", "Hmgb2", "Nme1", "Set", "Trex1")
+phosphorylation <- c("Ppp2r1a", "Anp32a", "Set", "Akt", "Akt1")
+
+## cortex
+cortex_banfi$binding_gene <- ifelse(cortex_banfi$gene_ppi %in% binding, "binding", NA)
+cortex_banfi$binding_ppi <- ifelse(cortex_banfi$ppi %in% binding, "binding", NA)
+
+cortex_banfi$cellcycle_gene <- ifelse(cortex_banfi$gene_ppi %in% cell_cycle, "cell cycle", NA)
+cortex_banfi$cellcycle_ppi <- ifelse(cortex_banfi$ppi %in% cell_cycle, "cell cycle", NA)
+
+cortex_banfi$chromatin_remodeling_gene <- ifelse(cortex_banfi$gene_ppi %in% chromatin_remodeling, "chromatin remodeling", NA)
+cortex_banfi$chromatin_remodeling_ppi <- ifelse(cortex_banfi$ppi %in% chromatin_remodeling, "chromatin remodleing", NA)
+
+cortex_banfi$dna_damage_gene <- ifelse(cortex_banfi$gene_ppi %in% dna_damage, "DNA damage", NA)
+cortex_banfi$dna_damage_ppi <- ifelse(cortex_banfi$ppi %in% dna_damage, "DNA damage", NA)
+
+cortex_banfi$phosphorylation_gene <- ifelse(cortex_banfi$gene_ppi %in% phosphorylation, "phosphorylation", NA)
+cortex_banfi$phosphorylation_ppi <- ifelse(cortex_banfi$ppi %in% phosphorylation, "phosphorylation", NA)
+
+## kidney 
+kidney_banfi$binding_gene <- ifelse(kidney_banfi$gene_ppi %in% binding, "binding", NA)
+kidney_banfi$binding_ppi <- ifelse(kidney_banfi$ppi %in% binding, "binding", NA)
+
+kidney_banfi$cellcycle_gene <- ifelse(kidney_banfi$gene_ppi %in% cell_cycle, "cell cycle", NA)
+kidney_banfi$cellcycle_ppi <- ifelse(kidney_banfi$ppi %in% cell_cycle, "cell cycle", NA)
+
+kidney_banfi$chromatin_remodeling_gene <- ifelse(kidney_banfi$gene_ppi %in% chromatin_remodeling, "chromatin remodeling", NA)
+kidney_banfi$chromatin_remodeling_ppi <- ifelse(kidney_banfi$ppi %in% chromatin_remodeling, "chromatin remodleing", NA)
+
+kidney_banfi$dna_damage_gene <- ifelse(kidney_banfi$gene_ppi %in% dna_damage, "DNA damage", NA)
+kidney_banfi$dna_damage_ppi <- ifelse(kidney_banfi$ppi %in% dna_damage, "DNA damage", NA)
+
+kidney_banfi$phosphorylation_gene <- ifelse(kidney_banfi$gene_ppi %in% phosphorylation, "phosphorylation", NA)
+kidney_banfi$phosphorylation_ppi <- ifelse(kidney_banfi$ppi %in% phosphorylation, "phosphorylation", NA)
+
+# remove columns with all NA
+kidney_banfi <- kidney_banfi[, !apply(is.na(kidney_banfi), 2, all)]
+cortex_banfi <- cortex_banfi[, !apply(is.na(cortex_banfi), 2, all)]
+
+# combine mechanisms into one column
+kidney_banfi$mechanism <- ifelse(is.na(kidney_banfi$cellcycle_ppi), kidney_banfi$dna_damage_ppi,
+                                 ifelse(is.na(kidney_banfi$dna_damage_ppi), kidney_banfi$cellcycle_ppi, paste(kidney_banfi$cellcycle_ppi,
+                                                                                                              kidney_banfi$dna_damage_ppi, sep = ",")))
+cortex_banfi$mechanism <- ifelse(is.na(cortex_banfi$cellcycle_ppi), cortex_banfi$dna_damage_ppi,
+                                 ifelse(is.na(cortex_banfi$dna_damage_ppi), cortex_banfi$cellcycle_ppi, paste(cortex_banfi$cellcycle_ppi,
+                                                                                                              cortex_banfi$dna_damage_ppi, sep = ",")))
+# remove old columns 
+columns_to_remove <- c("cellcycle_ppi", "dna_damage_ppi")
+
+cortex_banfi <- cortex_banfi[, -which(names(cortex_banfi) %in% columns_to_remove)]
+
+kidney_banfi <- kidney_banfi[, -which(names(kidney_banfi) %in% columns_to_remove)]
+
+# save
+# write.csv(cortex_banfi, here("results/ppi_rewiring/all_mxn_cortex_banfi.csv")) 
+# write.csv(kidney_banfi, here("results/ppi_rewiring/all_mxn_kidney_banfi.csv")) 
+```
+
+```{r splitting-by-condition}
+kidney_banfi_het <- kidney_banfi[apply(kidney_banfi, 1, function(row) any(grepl("heterozygous", row))),]
+kidney_banfi_ctrl <- kidney_banfi[apply(kidney_banfi, 1, function(row) any(grepl("control", row))),]
+cortex_banfi_het <- cortex_banfi[apply(cortex_banfi, 1, function(row) any(grepl("heterozygous", row))),]
+cortex_banfi_ctrl <- cortex_banfi[apply(cortex_banfi, 1, function(row) any(grepl("control", row))),]
+```
+
+## plot colored by annotation and grouped by mechanism
+
+### het cortex
+```{r visualizing-mechanisms-sign-change-for-geneset-het}
+# curious...going to subset for Setbp1 gene set in gene_ppi column
+het_cortex <- cortex_banfi_het[cortex_banfi_het$gene_ppi %in% setbp1_genes,]
+het_cortex$cell_type <- sub("_heterozygouscortex", "", het_cortex$source)
+
+#write.csv(het_cortex, file = here("results/ppi_rewiring/het_cortex_mechanisms.csv"))
+
+## grab just values from cell_type, annotation, gene_ppi, and mechanism, keep rownames and then order (below) by rowname
+het_cortex <- het_cortex[, c("annotation", "cell_type", "gene_ppi", "mechanism"), drop = FALSE]
+
+
+het_cortex_pivot <- pivot_wider(het_cortex, names_from = c("cell_type"), values_from = "annotation", names_repair = "minimal")
+het_cortex_pivot[is.na(het_cortex_pivot)] <- 0
+rownames <- het_cortex_pivot$gene_ppi # add gene names as rownames
+het_cortex_pivot <- het_cortex_pivot[, -1, drop = FALSE] # drop gene column
+
+rowmeta <- as.data.frame(het_cortex_pivot$mechanism)
+
+het_cortex_pivot <- het_cortex_pivot[, -1, drop = FALSE]
+rownames(het_cortex_pivot) <- rownames
+rownames(rowmeta) <- rownames(het_cortex_pivot)
+colnames(rowmeta) <- "mechanism"
+
+# grab meta data for plot:
+meta <- as.data.frame(colnames(het_cortex_pivot))
+# meta.data <- t(as.data.frame(strsplit(sub("(_)(?=[^_]+$)", " ", meta$`colnames(het_cortex_pivot)`, perl = TRUE), " ")))
+rownames(meta) <- meta$`colnames(het_cortex_pivot)`
+colnames(meta) <- c("cell_type")
+
+
+# define order of annotations and colors:
+annotation_colors <- list("cell_type" = c("excitatory_neurons" = "#DC71FA",
+                                          "inhibitory_neurons" = "#00BBDB",
+                                          "oligodendrocytes" = "#7997FF",
+                                          "astrocytes" = "#6968B4",
+                                          "microglia" = "#C216B7",
+                                          "opcs" = "#00C1AA",
+                                          "pericytes" = "#027461",
+                                          "fibro_cortex" = "#0a2f6f")) 
+
+# set heatmap annotations:
+heat.anno <- HeatmapAnnotation(df = meta, show_annotation_name = TRUE, col = annotation_colors)
+
+# convert dataframe to matrix
+mat <- as.matrix(het_cortex_pivot)
+
+# plot heatmap
+# Heatmap
+
+plot <- Heatmap(mat,
+  col = c("both_negative" = "red", "both_positive" = "#628D56", "neg_pos" = "#E9C61D", "pos_neg" = "#E7872B"),
+  heatmap_legend_param = list(title = "regNet to CoopNet score change"),
+  cluster_rows = TRUE,
+  cluster_columns = TRUE,
+  column_order = NULL,
+  show_row_dend = TRUE,
+  show_column_dend = FALSE,
+  row_names_gp = gpar(fontface = "bold", fontfamily = "Helvetica"),
+  show_row_names = TRUE,
+  show_column_names = FALSE,
+  use_raster = TRUE,
+  raster_device = c("png"),
+  bottom_annotation = NULL,
+  row_title_gp = gpar(fontface = "bold"),
+  top_annotation = heat.anno,
+)
+
+png(here("results/ppi_rewiring/cortex_het_sign_change_heatmap.png"),
+  res = 250,
+  height = 3000,
+  width = 2000
+)
+plot
+dev.off()
+```
+
+### control cortex
+```{r visualizing-mechanisms-sign-change-for-geneset-ctrl}
+# curious...going to subset for Setbp1 gene set in gene_ppi column
+ctrl_cortex <- cortex_banfi_ctrl[cortex_banfi_ctrl$gene_ppi %in% setbp1_genes,]
+ctrl_cortex$cell_type <- sub("_controlcortex", "", ctrl_cortex$source)
+
+#write.csv(ctrl_cortex, file = here("results/ppi_rewiring/ctrl_cortex_mechanisms.csv"))
+
+## grab just values from cell_type, annotation, gene_ppi, and mechanism, keep rownames and then order (below) by rowname
+ctrl_cortex <- ctrl_cortex[, c("annotation", "cell_type", "gene_ppi", "mechanism"), drop = FALSE]
+
+
+ctrl_cortex_pivot <- pivot_wider(ctrl_cortex, names_from = c("cell_type"), values_from = "annotation", names_repair = "minimal")
+ctrl_cortex_pivot[is.na(ctrl_cortex_pivot)] <- 0
+rownames <- ctrl_cortex_pivot$gene_ppi # add gene names as rownames
+ctrl_cortex_pivot <- ctrl_cortex_pivot[, -1, drop = FALSE] # drop gene column
+
+rowmeta <- as.data.frame(ctrl_cortex_pivot$mechanism)
+
+ctrl_cortex_pivot <- ctrl_cortex_pivot[, -1, drop = FALSE]
+rownames(ctrl_cortex_pivot) <- rownames
+rownames(rowmeta) <- rownames(ctrl_cortex_pivot)
+colnames(rowmeta) <- "mechanism"
+
+# grab meta data for plot:
+meta <- as.data.frame(colnames(ctrl_cortex_pivot))
+# meta.data <- t(as.data.frame(strsplit(sub("(_)(?=[^_]+$)", " ", meta$`colnames(ctrl_cortex_pivot)`, perl = TRUE), " ")))
+rownames(meta) <- meta$`colnames(ctrl_cortex_pivot)`
+colnames(meta) <- c("cell_type")
+
+
+# define order of annotations and colors:
+annotation_colors <- list("cell_type" = c("excitatory_neurons" = "#DC71FA",
+                                          "inhibitory_neurons" = "#00BBDB",
+                                          "oligodendrocytes" = "#7997FF",
+                                          "astrocytes" = "#6968B4",
+                                          "microglia" = "#C216B7",
+                                          "opcs" = "#00C1AA",
+                                          "pericytes" = "#027461",
+                                          "fibro_cortex" = "#0a2f6f")) 
+
+# set heatmap annotations:
+heat.anno <- HeatmapAnnotation(df = meta, show_annotation_name = TRUE, col = annotation_colors)
+
+# convert dataframe to matrix
+mat <- as.matrix(ctrl_cortex_pivot)
+
+# plot heatmap
+# Heatmap
+
+plot <- Heatmap(mat,
+  col = c("both_negative" = "red", "both_positive" = "#628D56", "neg_pos" = "#E9C61D", "pos_neg" = "#E7872B"),
+  heatmap_legend_param = list(title = "regNet to CoopNet score change in ctrl"),
+  cluster_rows = TRUE,
+  cluster_columns = TRUE,
+  column_order = NULL,
+  show_row_dend = TRUE,
+  show_column_dend = FALSE,
+  row_names_gp = gpar(fontface = "bold", fontfamily = "Helvetica"),
+  show_row_names = TRUE,
+  #row_ha = rowAnnotation(Group = rowmeta$mechanism, col = c("DNA damage" = "red", "cell cycle" = "blue")),
+  show_column_names = FALSE,
+  use_raster = TRUE,
+  raster_device = c("png"),
+  bottom_annotation = NULL,
+  row_title_gp = gpar(fontface = "bold"),
+  top_annotation = heat.anno,
+)
+
+
+png(here("results/ppi_rewiring/cortex_ctrl_sign_change_heatmap.png"),
+  res = 250,
+  height = 3000,
+  width = 2000
+)
+plot
+dev.off()
+```
+
+## looking at STRING prior scores for coopNet regNet edges returned in subset above 
+```{r load-ppi}
+mm10_ppi <- read.table(here("data/processed/ppi_inputs/mm10_ppi.txt"))
+```
+
+In order to confirm if the proteins that are "both positive" above, we wanted to see what the initial interactions were in string
+```{r subset-ppi-for-het-interactions}
+moi <- c("Apex1", "Tp53", "Trp53") # proteins for mechanisms of interest
+poi <- c("Hmga1", "Parp1", "E4f1", "Mef2c", "Mzf1", "Pbrm1") #proteins of interest
+
+from_to <- mm10_ppi[mm10_ppi$from %in% poi,] %>% .[.$to %in% moi,]
+to_from <- mm10_ppi[mm10_ppi$to %in% poi,]  %>% .[.$from %in% moi,]
+
+prior_evidence <- rbind(from_to, to_from)
+prior_evidence
+```
+
+## visualizing regNet and coopNet scores for het cortex and kidney
+Because the scores for the regNet and coopNet are on different scales, we divided all scores for the entire network by the maximum in both the positive and negative directions so that all scores for both networks would be between -1 and 1.
+
+In the resultant dot plots, the size of the circle represents the regNet score and color represents the coopNet score.
+
+```{r scaling-entire-regNet-gene-ppi-1}
+files <- list.files(here("results/PANDA"), full.names = TRUE)
+
+scaled_combo_net_gene_ppi_1 <- list()
+
+#run for loop
+for(i in files){
+  #load in the pandaResults
+  load(i)
+  name <- sub("expression_PANDA.Rdata", "", basename(i))
+  #extracting-networks
+  coopNet <- pandaResults@coopNet
+  coopNet <- reshape2::melt(coopNet, varnames = c("ppi_1", "ppi_2"), value.name = "coopNet_score")
+  
+  regNet <- pandaResults@regNet
+  regNet <- reshape2::melt(regNet, varnames = c("TF", "gene"), value.name = "regNet_score")
+  
+  #scaling regNet based off of max positive and negative values
+      regNet_column <- regNet$regNet_score
+      
+      # Get the maximum positive value
+      max_positive <- max(regNet_column[regNet_column > 0])
+      
+      # Replace positive values with their division by the maximum positive
+      regNet_column[regNet_column > 0] <- regNet_column[regNet_column > 0] / max_positive
+      
+      # Get the most negative value
+      max_negative <- min(regNet_column[regNet_column < 0])
+      
+      # Replace negative values with their division by the most negative
+      regNet_column[regNet_column < 0] <- regNet_column[regNet_column < 0] / abs(max_negative) #here we use absolute because a negative divided by negative is positive 
+      
+      # Update the 'regNet' column in the data frame
+      regNet$regNet_score <- regNet_column
+      
+  #scaling coopNet based off of max positive and negative
+        coopNet_column <- coopNet$coopNet_score
+        # Get the maximum positive value
+        max_positive <- max(coopNet_column[coopNet_column > 0])
+        
+        # Replace positive values with their division by the maximum positive
+        coopNet_column[coopNet_column > 0] <- coopNet_column[coopNet_column > 0] / max_positive
+        
+        # Get the most negative value
+        max_negative <- min(coopNet_column[coopNet_column < 0])
+        
+        # Replace negative values with their division by the most negative
+        coopNet_column[coopNet_column < 0] <- coopNet_column[coopNet_column < 0] / abs(max_negative) #use absolute because a negative divided by negative is positive 
+        # Update the 'coopNet' column in the data frame
+        coopNet$coopNet_score <- coopNet_column
+    
+  #filtering-regNet-for-Setbp1TF
+  filtered_regNet <- regNet[regNet$TF == "Setbp1",]
+  
+  #filtering-ppi-for-geneset
+  filtered_coopNet<- coopNet[coopNet$ppi_2 %in% setbp1_genes,]
+  colnames(filtered_coopNet) <- c("gene", "ppi_1", "coopNet_score")
+  
+  #grabbing-overlap
+  combo <- merge(filtered_regNet, filtered_coopNet, by = "gene", all = FALSE)
+  colnames(combo) <- c("gene_ppi_1", "TF", "regNet_score", "ppi_2", "coopNet_score") 
+  
+  #store in list
+  scaled_combo_net_gene_ppi_1[[name]] <- combo
+  
+  #clean up env
+  rm(pandaResults)
+  rm(coopNet)
+  rm(regNet)
+  
+  print(paste0(name, " scaled, filtered, combined, and saved."))
+}
+
+# assigning sign change
+scaled_combo_net_gene_ppi_1 <- lapply(scaled_combo_net_gene_ppi_1, function(df) {
+  df %>%
+    mutate(annotation = case_when(
+      regNet_score > 0 & coopNet_score > 0 ~ "both_positive",
+      regNet_score < 0 & coopNet_score < 0 ~ "both_negative",
+      regNet_score < 0 & coopNet_score > 0 ~ "neg_pos",
+      regNet_score > 0 & coopNet_score < 0 ~ "pos_neg",
+      TRUE ~ NA_character_
+    ))
+})
+```
+
+```{r scaling-entire-regNet-gene-ppi-2}
+scaled_combo_net_gene_ppi_2 <- list()
+
+#run for loop
+for(i in files){
+  #load in the pandaResults
+  load(i)
+  name <- sub("expression_PANDA.Rdata", "", basename(i))
+  #extracting-networks
+  coopNet <- pandaResults@coopNet
+  coopNet <- reshape2::melt(coopNet, varnames = c("ppi_1", "ppi_2"), value.name = "coopNet_score")
+  
+  regNet <- pandaResults@regNet
+  regNet <- reshape2::melt(regNet, varnames = c("TF", "gene"), value.name = "regNet_score")
+  
+  #scaling regNet based off of max positive and negative values
+      regNet_column <- regNet$regNet_score
+      
+      # Get the maximum positive value
+      max_positive <- max(regNet_column[regNet_column > 0])
+      
+      # Replace positive values with their division by the maximum positive
+      regNet_column[regNet_column > 0] <- regNet_column[regNet_column > 0] / max_positive
+      
+      # Get the most negative value
+      max_negative <- min(regNet_column[regNet_column < 0])
+      
+      # Replace negative values with their division by the most negative
+      regNet_column[regNet_column < 0] <- regNet_column[regNet_column < 0] / abs(max_negative) #here we use absolute because a negative divided by negative is positive 
+      
+      # Update the 'regNet' column in the data frame
+      regNet$regNet_score <- regNet_column
+      
+  #scaling coopNet based off of max positive and negative
+        coopNet_column <- coopNet$coopNet_score
+        # Get the maximum positive value
+        max_positive <- max(coopNet_column[coopNet_column > 0])
+        
+        # Replace positive values with their division by the maximum positive
+        coopNet_column[coopNet_column > 0] <- coopNet_column[coopNet_column > 0] / max_positive
+        
+        # Get the most negative value
+        max_negative <- min(coopNet_column[coopNet_column < 0])
+        
+        # Replace negative values with their division by the most negative
+        coopNet_column[coopNet_column < 0] <- coopNet_column[coopNet_column < 0] / abs(max_negative) #use absolute because a negative divided by negative is positive 
+        # Update the 'coopNet' column in the data frame
+        coopNet$coopNet_score <- coopNet_column
+    
+  #filtering-regNet-for-Setbp1TF
+  filtered_regNet <- regNet[regNet$TF == "Setbp1",]
+  
+  #filtering-ppi-for-geneset
+  filtered_coopNet<- coopNet[coopNet$ppi_2 %in% setbp1_genes,]
+  colnames(filtered_coopNet) <- c("gene", "ppi_1", "coopNet_score")
+  
+  #grabbing-overlap
+  combo <- merge(filtered_regNet, filtered_coopNet, by = "gene", all = FALSE)
+  colnames(combo) <- c("gene_ppi_2", "TF", "regNet_score", "ppi_1", "coopNet_score") 
+  
+  #store in list
+  scaled_combo_net_gene_ppi_2[[name]] <- combo
+  
+  #clean up env
+  rm(pandaResults)
+  rm(coopNet)
+  rm(regNet)
+  
+  print(paste0(name, " scaled, filtered, combined, and saved."))
+}
+
+# assigning sign change
+scaled_combo_net_gene_ppi_2 <- lapply(scaled_combo_net_gene_ppi_2, function(df) {
+  df %>%
+    mutate(annotation = case_when(
+      regNet_score > 0 & coopNet_score > 0 ~ "both_positive",
+      regNet_score < 0 & coopNet_score < 0 ~ "both_negative",
+      regNet_score < 0 & coopNet_score > 0 ~ "neg_pos",
+      regNet_score > 0 & coopNet_score < 0 ~ "pos_neg",
+      TRUE ~ NA_character_
+    ))
+})
+```
+
+```{r filtering-Banfi-lit-mech-scaled-data}
+Banfi <- c("Akt1", "Akt", "Anp32a", "Apex1", "Apex", "Cdk2", "Hcif1", "Hcf1", "Hmg2", "Hmgb2", "Kmt2a", "Nme1", "Ppp2r1a", "Set", "Taf1a", "Tceal1", "Trex1", "Trp53", "Tp53")
+
+filtered_gene_ppi_1 <- lapply(scaled_combo_net_gene_ppi_1, function(df) subset(df, gene_ppi_1 == Banfi))
+filtered_ppi_2 <- lapply(scaled_combo_net_gene_ppi_1, function(df) subset(df, ppi_2 == Banfi))
+filtered_gene_ppi_2 <- lapply(scaled_combo_net_gene_ppi_2, function(df) subset(df, gene_ppi_2 == Banfi))
+filtered_ppi_1 <- lapply(scaled_combo_net_gene_ppi_2, function(df) subset(df, ppi_1 == Banfi))
+
+# renaming columns since the interaction is not directional
+for(i in seq_along(filtered_gene_ppi_1)) {
+  filtered_gene_ppi_1[[i]] <- rename(filtered_gene_ppi_1[[i]], gene_ppi = gene_ppi_1)
+  filtered_gene_ppi_1[[i]] <- rename(filtered_gene_ppi_1[[i]], ppi = ppi_2)
+}
+
+for(i in seq_along(filtered_ppi_2)) {
+  filtered_ppi_2[[i]] <- rename(filtered_ppi_2[[i]], gene_ppi = gene_ppi_1)
+  filtered_ppi_2[[i]] <- rename(filtered_ppi_2[[i]], ppi = ppi_2)
+}
+
+for(i in seq_along(filtered_gene_ppi_2)) {
+  filtered_gene_ppi_2[[i]] <- rename(filtered_gene_ppi_2[[i]], gene_ppi = gene_ppi_2)
+  filtered_gene_ppi_2[[i]] <- rename(filtered_gene_ppi_2[[i]], ppi = ppi_1)
+} 
+
+for(i in seq_along(filtered_ppi_1)) {
+  filtered_ppi_1[[i]] <- rename(filtered_ppi_1[[i]], gene_ppi = gene_ppi_2)
+  filtered_ppi_1[[i]] <- rename(filtered_ppi_1[[i]], ppi = ppi_1)
+}
+
+# combining dataframes from both lists into one single dataframe 
+Banfi_combined_filtered <- mapply(function(df1, df2, df3, df4) {
+  bind_rows(df1, df2, df3, df4)
+}, filtered_ppi_1, filtered_ppi_2, filtered_ppi_1, filtered_ppi_2, SIMPLIFY = FALSE)
+
+# unlisting the object and combining based on tissue
+kidney <- Banfi_combined_filtered[grepl("kidney", names(Banfi_combined_filtered))]
+kidney_banfi <- kidney %>%
+  map_df(~ tibble::as_tibble(.x), .id = "source")
+
+# keep unique rows
+kidney_banfi_scaled <- unique(kidney_banfi)
+
+# adding cell type column
+kidney_banfi_scaled$cell_type <- sub("_heterozygouscortex", "", kidney_banfi_scaled$source)
+kidney_banfi_scaled$cell_type <- sub("_controlcortex", "", kidney_banfi_scaled$source)
+
+# saving
+write.csv(kidney_banfi_scaled, here("results/ppi_rewiring_kidney_banfi_scaled.csv"))
+
+# unlisting the object and combining based on tissue
+cortex <- Banfi_combined_filtered[grepl("cortex", names(Banfi_combined_filtered))]
+cortex_banfi <- cortex %>%
+  map_df(~ tibble::as_tibble(.x), .id = "source")
+
+# keep unique rows
+cortex_banfi_scaled <- unique(cortex_banfi)
+
+# adding cell type column
+cortex_banfi_scaled$cell_type <- sub("_heterozygouscortex", "", cortex_banfi_scaled$source)
+cortex_banfi_scaled$cell_type <- sub("_controlcortex", "", cortex_banfi_scaled$source)
+
+# saving
+write.csv(cortex_banfi_scaled, here("results/ppi_rewiring_cortex_banfi_scaled.csv"))
+```
+
+```{r splitting-by-condition}
+kidney_banfi_het <- kidney_banfi_scaled[apply(kidney_banfi_scaled, 1, function(row) any(grepl("heterozygous", row))),]
+kidney_banfi_ctrl <- kidney_banfi_scaled[apply(kidney_banfi_scaled, 1, function(row) any(grepl("control", row))),]
+cortex_banfi_het <- cortex_banfi_scaled[apply(cortex_banfi_scaled, 1, function(row) any(grepl("heterozygous", row))),]
+cortex_banfi_ctrl <- cortex_banfi_scaled[apply(cortex_banfi_scaled, 1, function(row) any(grepl("control", row))),]
+```
+
+```{r filtering-gene-ppi-for-geneset}
+#cortex_banfi_het <- cortex_banfi_het[cortex_banfi_het$gene_ppi %in% setbp1_genes,]
+```
+
+
+```{r visualizing-scalred-scores-banfi}
+# plot the scores for regNet and coop Net
+ggplot(cortex_banfi_het, aes(x = cell_type, y = gene_ppi,
+                             size = regNet_score,
+                             fill = coopNet_score)) +
+  geom_point(shape = 21) +
+  scale_size(range = c(0, 8), name = "regNet Score") + 
+  scale_fill_gradient2(low = "purple", mid = "white", high = "yellow", midpoint = 0) + 
+  labs(x = "Cell Type", y = "Protein") +
+  theme_minimal() +  
+  theme(text = element_text(family = "Helvetica")) +
+  theme(axis.text.x = element_text(angle = 45, color = "black", hjust = 1)) +
+  theme(axis.text.y = element_text(color = "black", face = "bold")) +
+  theme(axis.title.y = element_text(color = "black", face = "bold")) +
+  theme(axis.title.x = element_blank()) + 
+  theme(axis.text = element_text(face = "bold")) +
+  theme(legend.title = element_text(face = "bold")) +
+  theme(legend.text = element_text(face = "bold"))
+
+# plot the scores for regNet and coop Net
+ggplot(kidney_banfi_het, aes(x = cell_type, y = gene_ppi,
+                             size = regNet_score,
+                             fill = coopNet_score)) +
+  geom_point(shape = 21) +
+  scale_size(range = c(0, 8), name = "regNet Score") + 
+  scale_fill_gradient2(low = "purple", mid = "white", high = "yellow", midpoint = 0) + 
+  labs(x = "Cell Type", y = "Protein") +
+  theme_minimal() +  
+  theme(text = element_text(family = "Helvetica")) +
+  theme(axis.text.x = element_text(angle = 45, color = "black", hjust = 1)) +
+  theme(axis.text.y = element_text(color = "black", face = "bold")) +
+  theme(axis.title.y = element_text(color = "black", face = "bold")) +
+  theme(axis.title.x = element_blank()) + 
+  theme(axis.text = element_text(face = "bold")) +
+  theme(legend.title = element_text(face = "bold")) +
+  theme(legend.text = element_text(face = "bold"))
+```
 
