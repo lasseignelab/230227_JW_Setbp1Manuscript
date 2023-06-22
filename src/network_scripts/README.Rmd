@@ -56,3 +56,15 @@ In order to understand differences in regulation across communities at the cellu
 fs::dir_tree("community_detection")
 ```
 
+The ALPACA analysis consists of three scripts:
+1. [file_pairs.txt](https://github.com/lasseignelab/230227_JW_Setbp1Manuscript/blob/main/src/network_scripts/community_detection/file_pairs.txt): contains a list of all paired comparisons for differential community detections analysis. One comparison per line containing the exact name of the PANDA objects you are wanting to use for ALPACA. See below example of how er set up the file pairs to identify cell type-specific community differences between S858R and WT samples. 
+
+astrocytes_controlcortexexpression_PANDA.Rdata astrocytes_heterozygouscortexexpression_PANDA.Rdata 
+
+
+2. [alpaca_array_job.sh](https://github.com/lasseignelab/230227_JW_Setbp1Manuscript/blob/main/src/network_scripts/community_detection/alpaca_array_job.sh): example bash script used for submitting ALPACA to UAB Cheaha Supercomputer SLURM scheduler. This script calls on the file pairs specified in #1 and the accompanying R script and submits each as an array job with the specified partitions and memory.
+
+3. [alpaca_networks_array.R](https://github.com/lasseignelab/230227_JW_Setbp1Manuscript/blob/main/src/network_scripts/community_detection/alpaca_networks_array.R): code to run the actual analysis to identify differential communities using CONDOR and ALPACA. The .Rdata file for the ccommunities constructed for every cell type is saved in a `membership/` directory and all other output files (`_ctrl_memb.txt`, `_final_memb.txt`, `_scores.txt` and `_DWBM.txt`) can be found in `main/`.  
+
+
+

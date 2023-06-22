@@ -1,7 +1,7 @@
 README
 ================
 Jordan Whitlock
-2023-05-30
+2023-06-22
 
 # Network Construction and Analysis
 
@@ -66,9 +66,21 @@ Schinzel-Giedion Syndrome mice are within this directory.
     ## differential_targeting
     ## +-- 01_Setbp1_DiffTargetingWithin_Cortex.Rmd
     ## +-- 01_Setbp1_DiffTargetingWithin_Kidney.Rmd
-    ## +-- 02_Setbp1_DiffTargeting_Ts_Cs.Rmd
-    ## +-- 03_Setbp1_DiffTargeting_StressCycle.Rmd
-    ## \-- Rplot001.png
+    ## +-- 02_Setbp1_DiffTargeting_FEA.Rmd
+    ## +-- 03_All_DT_cor_HP.sh
+    ## +-- 03_All_DT_kid_HP.sh
+    ## +-- 03_Setbp1_DiffTargeting_All_DT_cor_HP.R
+    ## +-- 03_Setbp1_DiffTargeting_All_DT_kid_HP.R
+    ## +-- FEA_DT_20621930_4294967294.err
+    ## +-- FEA_DT_20621930_4294967294.out
+    ## +-- kFEA_DT_20631916_4294967294.err
+    ## +-- kFEA_DT_20631916_4294967294.out
+    ## +-- kFEA_DT_20632194_4294967294.err
+    ## +-- kFEA_DT_20632194_4294967294.out
+    ## +-- kFEA_DT_20632197_4294967294.err
+    ## +-- kFEA_DT_20632197_4294967294.out
+    ## +-- kFEA_DT_20633215_4294967294.err
+    ## \-- kFEA_DT_20633215_4294967294.out
 
 #### decoupleR Input Construction and TF Activity Analysis:
 
@@ -94,25 +106,11 @@ the jobs.
     ## +-- 01_MouseSetbp1_decoupleR_inputs.Rmd
     ## +-- 02_decoupleR_analysis.R
     ## +-- 02_decoupleR_array_job.sh
+    ## +-- 03_TF_activity.Rmd
     ## +-- CollecTRI_prior.Rmd
-    ## +-- cor_decoupleR_20424698_0.err
-    ## +-- cor_decoupleR_20424698_0.out
-    ## +-- cor_decoupleR_20424698_1.err
-    ## +-- cor_decoupleR_20424698_1.out
-    ## +-- cor_decoupleR_20424698_2.err
-    ## +-- cor_decoupleR_20424698_2.out
-    ## +-- cor_decoupleR_20424698_3.err
-    ## +-- cor_decoupleR_20424698_3.out
-    ## +-- cor_decoupleR_20424698_4.err
-    ## +-- cor_decoupleR_20424698_4.out
-    ## +-- cor_decoupleR_20424698_5.err
-    ## +-- cor_decoupleR_20424698_5.out
-    ## +-- kid_decoupleR_20410280_0.err
-    ## +-- kid_decoupleR_20410280_0.out
-    ## +-- kid_decoupleR_20410280_1.err
-    ## +-- kid_decoupleR_20410280_1.out
-    ## +-- kid_decoupleR_20410280_2.err
-    ## \-- kid_decoupleR_20410280_2.out
+    ## \-- omnipathr-log
+    ##     +-- omnipathr-20230530-1805.log
+    ##     \-- omnipathr-20230530-1809.log
 
 #### Community Detection:
 
@@ -124,4 +122,31 @@ found differential communities between S858R and WT mice using
 analysis are found here
 
     ## community_detection
-    ## \-- Setbp1_Communities_02.Rmd
+    ## +-- alpaca_array_job.sh
+    ## +-- alpaca_networks_array.R
+    ## \-- file_pairs.txt
+
+The ALPACA analysis consists of three scripts: 1.
+[file_pairs.txt](https://github.com/lasseignelab/230227_JW_Setbp1Manuscript/blob/main/src/network_scripts/community_detection/file_pairs.txt):
+contains a list of all paired comparisons for differential community
+detections analysis. One comparison per line containing the exact name
+of the PANDA objects you are wanting to use for ALPACA. See below
+example of how er set up the file pairs to identify cell type-specific
+community differences between S858R and WT samples.
+
+astrocytes_controlcortexexpression_PANDA.Rdata
+astrocytes_heterozygouscortexexpression_PANDA.Rdata
+
+2.  [alpaca_array_job.sh](https://github.com/lasseignelab/230227_JW_Setbp1Manuscript/blob/main/src/network_scripts/community_detection/alpaca_array_job.sh):
+    example bash script used for submitting ALPACA to UAB Cheaha
+    Supercomputer SLURM scheduler. This script calls on the file pairs
+    specified in \#1 and the accompanying R script and submits each as
+    an array job with the specified partitions and memory.
+
+3.  [alpaca_networks_array.R](https://github.com/lasseignelab/230227_JW_Setbp1Manuscript/blob/main/src/network_scripts/community_detection/alpaca_networks_array.R):
+    code to run the actual analysis to identify differential communities
+    using CONDOR and ALPACA. The .Rdata file for the ccommunities
+    constructed for every cell type is saved in a `membership/`
+    directory and all other output files (`_ctrl_memb.txt`,
+    `_final_memb.txt`, `_scores.txt` and `_DWBM.txt`) can be found in
+    `main/`.
