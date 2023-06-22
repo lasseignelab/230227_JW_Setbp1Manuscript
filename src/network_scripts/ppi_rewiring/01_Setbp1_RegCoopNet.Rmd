@@ -38,7 +38,6 @@ ptm <- proc.time()
 ```{r loading-data}
 setbp1_genes <- read.csv(here("results/seurat/setbp1_targets.csv"))
 setbp1_genes <- setbp1_genes[, -1] %>% as.vector()
-setbp1_genes <- append(setbp1_genes, "Setbp1")
 ```
 
 ```{r combined-network-dataframe}
@@ -375,8 +374,8 @@ cortex_banfi <- cortex_banfi[, -which(names(cortex_banfi) %in% columns_to_remove
 kidney_banfi <- kidney_banfi[, -which(names(kidney_banfi) %in% columns_to_remove)]
 
 # save
-# write.csv(cortex_banfi, here("results/ppi_rewiring/all_mxn_cortex_banfi.csv")) 
-# write.csv(kidney_banfi, here("results/ppi_rewiring/all_mxn_kidney_banfi.csv")) 
+write.csv(cortex_banfi, here("results/ppi_rewiring/all_mxn_cortex_banfi.csv")) 
+write.csv(kidney_banfi, here("results/ppi_rewiring/all_mxn_kidney_banfi.csv")) 
 ```
 
 ```{r splitting-by-condition}
@@ -394,7 +393,7 @@ cortex_banfi_ctrl <- cortex_banfi[apply(cortex_banfi, 1, function(row) any(grepl
 het_cortex <- cortex_banfi_het[cortex_banfi_het$gene_ppi %in% setbp1_genes,]
 het_cortex$cell_type <- sub("_heterozygouscortex", "", het_cortex$source)
 
-#write.csv(het_cortex, file = here("results/ppi_rewiring/het_cortex_mechanisms.csv"))
+write.csv(het_cortex, file = here("results/ppi_rewiring/het_cortex_mechanisms.csv"))
 
 ## grab just values from cell_type, annotation, gene_ppi, and mechanism, keep rownames and then order (below) by rowname
 het_cortex <- het_cortex[, c("annotation", "cell_type", "gene_ppi", "mechanism"), drop = FALSE]
@@ -458,7 +457,7 @@ plot <- Heatmap(mat,
 
 png(here("results/ppi_rewiring/cortex_het_sign_change_heatmap.png"),
   res = 250,
-  height = 3000,
+  height = 1000,
   width = 2000
 )
 plot
@@ -471,7 +470,7 @@ dev.off()
 ctrl_cortex <- cortex_banfi_ctrl[cortex_banfi_ctrl$gene_ppi %in% setbp1_genes,]
 ctrl_cortex$cell_type <- sub("_controlcortex", "", ctrl_cortex$source)
 
-#write.csv(ctrl_cortex, file = here("results/ppi_rewiring/ctrl_cortex_mechanisms.csv"))
+write.csv(ctrl_cortex, file = here("results/ppi_rewiring/ctrl_cortex_mechanisms.csv"))
 
 ## grab just values from cell_type, annotation, gene_ppi, and mechanism, keep rownames and then order (below) by rowname
 ctrl_cortex <- ctrl_cortex[, c("annotation", "cell_type", "gene_ppi", "mechanism"), drop = FALSE]
@@ -491,7 +490,6 @@ colnames(rowmeta) <- "mechanism"
 
 # grab meta data for plot:
 meta <- as.data.frame(colnames(ctrl_cortex_pivot))
-# meta.data <- t(as.data.frame(strsplit(sub("(_)(?=[^_]+$)", " ", meta$`colnames(ctrl_cortex_pivot)`, perl = TRUE), " ")))
 rownames(meta) <- meta$`colnames(ctrl_cortex_pivot)`
 colnames(meta) <- c("cell_type")
 
@@ -525,7 +523,6 @@ plot <- Heatmap(mat,
   show_column_dend = FALSE,
   row_names_gp = gpar(fontface = "bold", fontfamily = "Helvetica"),
   show_row_names = TRUE,
-  #row_ha = rowAnnotation(Group = rowmeta$mechanism, col = c("DNA damage" = "red", "cell cycle" = "blue")),
   show_column_names = FALSE,
   use_raster = TRUE,
   raster_device = c("png"),
@@ -537,12 +534,321 @@ plot <- Heatmap(mat,
 
 png(here("results/ppi_rewiring/cortex_ctrl_sign_change_heatmap.png"),
   res = 250,
+  height = 1000,
+  width = 2000
+)
+plot
+dev.off()
+```
+
+### het kidney
+```{r visualizing-mechanisms-sign-change-for-geneset-het}
+# curious...going to subset for Setbp1 gene set in gene_ppi column
+het_kidney <- kidney_banfi_het[kidney_banfi_het$gene_ppi %in% setbp1_genes,]
+het_kidney$cell_type <- sub("_heterozygouskidney", "", het_kidney$source)
+
+write.csv(het_kidney, file = here("results/ppi_rewiring/het_kidney_mechanisms.csv"))
+
+## grab just values from cell_type, annotation, gene_ppi, and mechanism, keep rownames and then order (below) by rowname
+het_kidney <- het_kidney[, c("annotation", "cell_type", "gene_ppi", "mechanism"), drop = FALSE]
+
+
+het_kidney_pivot <- pivot_wider(het_kidney, names_from = c("cell_type"), values_from = "annotation", names_repair = "minimal")
+het_kidney_pivot[is.na(het_kidney_pivot)] <- 0
+rownames <- het_kidney_pivot$gene_ppi # add gene names as rownames
+het_kidney_pivot <- het_kidney_pivot[, -1, drop = FALSE] # drop gene column
+
+rowmeta <- as.data.frame(het_kidney_pivot$mechanism)
+
+het_kidney_pivot <- het_kidney_pivot[, -1, drop = FALSE]
+rownames(het_kidney_pivot) <- rownames
+rownames(rowmeta) <- rownames(het_kidney_pivot)
+colnames(rowmeta) <- "mechanism"
+
+# grab meta data for plot:
+meta <- as.data.frame(colnames(het_kidney_pivot))
+rownames(meta) <- meta$`colnames(het_kidney_pivot)`
+colnames(meta) <- c("cell_type")
+
+
+# define order of annotations and colors:
+annotation_colors <- list("cell_type" = c(
+    "Bcell" = "#FFBE1D",
+    "CDIC_typeA" = "#4E3801",
+    "CDIC_typeB" = "#EEDF37",
+    "CDPC" = "#F03F00",
+    "DCT" = "#6D0404",
+    "DLH" = "#AA6320",
+    "endothelial" = "#CF9400",
+    "fibroblasts" = "#FFC8C4",
+    "LOH" = "#AA937E",
+    "macrophages" = "#C70F0F",
+    "PCTS1" = "#A85A5A",
+    "podocytes" = "#BD085E",
+    "PST" = "#948802",
+    "pericytes" = "#FFE196",
+    "PCTS2" = "#FF7600",
+    "PT" = "#F8766D",
+    "smcs" = "#FFE196")) 
+
+# set heatmap annotations:
+heat.anno <- HeatmapAnnotation(df = meta, show_annotation_name = TRUE, col = annotation_colors)
+
+# convert dataframe to matrix
+mat <- as.matrix(het_kidney_pivot)
+
+# plot heatmap
+# Heatmap
+
+plot <- Heatmap(mat,
+  col = c("both_negative" = "red", "both_positive" = "#628D56", "neg_pos" = "#E9C61D", "pos_neg" = "#E7872B"),
+  heatmap_legend_param = list(title = "regNet to CoopNet score change"),
+  cluster_rows = TRUE,
+  cluster_columns = TRUE,
+  column_order = NULL,
+  show_row_dend = TRUE,
+  show_column_dend = FALSE,
+  row_names_gp = gpar(fontface = "bold", fontfamily = "Helvetica"),
+  show_row_names = TRUE,
+  show_column_names = FALSE,
+  use_raster = TRUE,
+  raster_device = c("png"),
+  bottom_annotation = NULL,
+  row_title_gp = gpar(fontface = "bold"),
+  top_annotation = heat.anno,
+)
+
+png(here("results/ppi_rewiring/kidney_het_sign_change_heatmap.png"),
+  res = 250,
   height = 3000,
   width = 2000
 )
 plot
 dev.off()
 ```
+
+### control kidney
+```{r visualizing-mechanisms-sign-change-for-geneset-ctrl}
+# curious...going to subset for Setbp1 gene set in gene_ppi column
+ctrl_kidney <- kidney_banfi_ctrl[kidney_banfi_ctrl$gene_ppi %in% setbp1_genes,]
+ctrl_kidney$cell_type <- sub("_controlkidney", "", ctrl_kidney$source)
+
+write.csv(ctrl_kidney, file = here("results/ppi_rewiring/ctrl_kidney_mechanisms.csv"))
+
+## grab just values from cell_type, annotation, gene_ppi, and mechanism, keep rownames and then order (below) by rowname
+ctrl_kidney <- ctrl_kidney[, c("annotation", "cell_type", "gene_ppi", "mechanism"), drop = FALSE]
+
+
+ctrl_kidney_pivot <- pivot_wider(ctrl_kidney, names_from = c("cell_type"), values_from = "annotation", names_repair = "minimal")
+ctrl_kidney_pivot[is.na(ctrl_kidney_pivot)] <- 0
+rownames <- ctrl_kidney_pivot$gene_ppi # add gene names as rownames
+ctrl_kidney_pivot <- ctrl_kidney_pivot[, -1, drop = FALSE] # drop gene column
+
+rowmeta <- as.data.frame(ctrl_kidney_pivot$mechanism)
+
+ctrl_kidney_pivot <- ctrl_kidney_pivot[, -1, drop = FALSE]
+rownames(ctrl_kidney_pivot) <- rownames
+rownames(rowmeta) <- rownames(ctrl_kidney_pivot)
+colnames(rowmeta) <- "mechanism"
+
+# grab meta data for plot:
+meta <- as.data.frame(colnames(ctrl_kidney_pivot))
+rownames(meta) <- meta$`colnames(ctrl_kidney_pivot)`
+colnames(meta) <- c("cell_type")
+
+
+# define order of annotations and colors:
+annotation_colors <- list("cell_type" = c(
+    "Bcell" = "#FFBE1D",
+    "CDIC_typeA" = "#4E3801",
+    "CDIC_typeB" = "#EEDF37",
+    "CDPC" = "#F03F00",
+    "DCT" = "#6D0404",
+    "DLH" = "#AA6320",
+    "endothelial" = "#CF9400",
+    "fibroblasts" = "#FFC8C4",
+    "LOH" = "#AA937E",
+    "macrophages" = "#C70F0F",
+    "PCTS1" = "#A85A5A",
+    "podocytes" = "#BD085E",
+    "PST" = "#948802",
+    "pericytes" = "#FFE196",
+    "PCTS2" = "#FF7600",
+    "PT" = "#F8766D",
+    "smcs" = "#FFE196")) 
+
+# set heatmap annotations:
+heat.anno <- HeatmapAnnotation(df = meta, show_annotation_name = TRUE, col = annotation_colors)
+
+# convert dataframe to matrix
+mat <- as.matrix(ctrl_kidney_pivot)
+
+# plot heatmap
+# Heatmap
+
+plot <- Heatmap(mat,
+  col = c("both_negative" = "red", "both_positive" = "#628D56", "neg_pos" = "#E9C61D", "pos_neg" = "#E7872B"),
+  heatmap_legend_param = list(title = "regNet to CoopNet score change in ctrl"),
+  cluster_rows = TRUE,
+  cluster_columns = TRUE,
+  column_order = NULL,
+  show_row_dend = TRUE,
+  show_column_dend = FALSE,
+  row_names_gp = gpar(fontface = "bold", fontfamily = "Helvetica"),
+  show_row_names = TRUE,
+  #row_ha = rowAnnotation(Group = rowmeta$mechanism, col = c("DNA damage" = "red", "cell cycle" = "blue")),
+  show_column_names = FALSE,
+  use_raster = TRUE,
+  raster_device = c("png"),
+  bottom_annotation = NULL,
+  row_title_gp = gpar(fontface = "bold"),
+  top_annotation = heat.anno,
+)
+
+
+png(here("results/ppi_rewiring/kidney_ctrl_sign_change_heatmap.png"),
+  res = 250,
+  height = 3000,
+  width = 2000
+)
+plot
+dev.off()
+```
+## plot based off of magnitude of regNet and coopNet score (unscaled!!)
+
+```{r filtering-gene-ppi-for-geneset}
+cortex_banfi_het <- cortex_banfi_het[cortex_banfi_het$gene_ppi %in% setbp1_genes,]
+kidney_banfi_het <- kidney_banfi_het[kidney_banfi_het$gene_ppi %in% setbp1_genes,]
+```
+
+
+```{r visualizing-scores-banfi}
+# plot the scores for regNet and coop Net
+cortex_banfi_het$cell_type <- sub("_heterozygouscortex", "", cortex_banfi_het$source)
+
+png(here("results/ppi_rewiring/cortex_het_score_quant_dotplot.png"),
+  res = 250,
+  height = 2000,
+  width = 2000)
+
+ggplot(cortex_banfi_het, aes(x = cell_type, y = gene_ppi,
+                             fill = coopNet_score)) +
+  geom_point(aes(size = abs(regNet_score),
+                 shape = ifelse(regNet_score >= 0, "Positive", "Negative")),
+             color = "black") +
+  scale_shape_manual(values = c(Positive = 24, Negative = 25),
+                     name = "regNet Score (Shape)") +
+  scale_fill_gradientn(colors = c("darkblue", "purple", "white", "yellow", "orange"),
+                       values = rescale(c(-125, -100, 0, 100, 252)),
+                       name = "coopNet Score",
+                       breaks = c(-200, -100, 0, 100, 200)) +
+  labs(x = "Cell Type", y = "Protein/Gene") +
+  guides(size = guide_legend(override.aes = list(shape = 24),
+                             title = "regNet Score (Magnitude)")) +
+  guides(shape = guide_legend(override.aes = list(fill = NA),
+                              title = "regNet Score (Direction)")) +
+  theme_bw() +
+  theme(legend.position = "bottom",
+        legend.box = "horizontal",
+        legend.margin = margin(t = 10),
+        legend.spacing = unit(0.5, "cm")) +
+  theme_bw() +
+  theme_minimal() +  
+  theme(text = element_text(family = "Helvetica")) +
+  theme(axis.text.x = element_text(angle = 45, color = "black", hjust = 1)) +
+  theme(axis.text.y = element_text(color = "black", face = "bold")) +
+  theme(axis.title.y = element_text(color = "black", face = "bold")) +
+  theme(axis.title.x = element_blank()) + 
+  theme(axis.text = element_text(face = "bold")) +
+  theme(legend.title = element_text(face = "bold")) +
+  theme(legend.text = element_text(face = "bold"))
+
+dev.off()
+
+# plot the scores for regNet and coop Net
+kidney_banfi_het$cell_type <- sub("_heterozygouskidney", "", kidney_banfi_het$source)
+
+png(here("results/ppi_rewiring/kidney_het_score_quant_dotplot.png"),
+  res = 250,
+  height = 2000,
+  width = 2000)
+
+ggplot(kidney_banfi_het, aes(x = cell_type, y = gene_ppi,
+                             fill = coopNet_score)) +
+  geom_point(aes(size = abs(regNet_score),
+                 shape = ifelse(regNet_score >= 0, "Positive", "Negative")),
+             color = "black") +
+  scale_shape_manual(values = c(Positive = 24, Negative = 25),
+                     name = "regNet Score (Shape)") +
+  scale_fill_gradientn(colors = c("darkblue", "purple", "white", "yellow", "orange"),
+                       values = rescale(c(-90, -50, 0, 50, 103)),
+                       name = "coopNet Score",
+                       breaks = c(-100, -50, 0, 50, 100)) +
+  labs(x = "Cell Type", y = "Protein/Gene") +
+  guides(size = guide_legend(override.aes = list(shape = 24),
+                             title = "regNet Score (Magnitude)")) +
+  guides(shape = guide_legend(override.aes = list(fill = NA),
+                              title = "regNet Score (Direction)")) +
+  theme_bw() +
+  theme(legend.position = "bottom",
+        legend.box = "horizontal",
+        legend.margin = margin(t = 10),
+        legend.spacing = unit(0.5, "cm")) +
+  theme_bw() +
+  theme_minimal() +  
+  theme(text = element_text(family = "Helvetica")) +
+  theme(axis.text.x = element_text(angle = 45, color = "black", hjust = 1)) +
+  theme(axis.text.y = element_text(color = "black", face = "bold")) +
+  theme(axis.title.y = element_text(color = "black", face = "bold")) +
+  theme(axis.title.x = element_blank()) + 
+  theme(axis.text = element_text(face = "bold")) +
+  theme(legend.title = element_text(face = "bold")) +
+  theme(legend.text = element_text(face = "bold"))
+
+dev.off()
+```
+
+## plot using X-Y plot for where quadrants represent the 4 buckets
+```{r filtering-gene-ppi-for-geneset}
+cortex_banfi_het <- cortex_banfi_het[cortex_banfi_het$gene_ppi %in% setbp1_genes,]
+kidney_banfi_het <- kidney_banfi_het[kidney_banfi_het$gene_ppi %in% setbp1_genes,]
+```
+
+```{r}
+cortex_banfi_het$cell_type <- sub("_heterozygouscortex", "", cortex_banfi_het$source)
+
+# Define custom colors
+custom_colors <- c("excitatory_neurons" = "#DC71FA",
+                   "inhibitory_neurons" = "#00BBDB",
+                   "oligodendrocytes" = "#7997FF",
+                   "astrocytes" = "#6968B4",
+                   "microglia" = "#C216B7",
+                   "opcs" = "#00C1AA",
+                   "pericytes" = "#027461",
+                   "fibro_cortex" = "#0a2f6f")
+
+# Plotting the data
+png(here("results/ppi_rewiring/cortex_het_score_quant_xy_plot.png"),
+  res = 250,
+  height = 2000,
+  width = 2000)
+
+ggplot(cortex_banfi_het, aes(x = regNet_score, y = coopNet_score, color = cell_type)) +
+  geom_point(size = 3, aes(shape = ifelse(ppi == "Apex1", "Apex1", "Other")), fill = "black") +
+  geom_hline(yintercept = 0, color = "grey", linetype = "solid") +
+  geom_vline(xintercept = 0, color = "grey", linetype = "solid") +
+  geom_text(aes(label = gene_ppi), vjust = 1.5, color = "black") +
+  scale_color_manual(values = custom_colors, name = "Cell Type") +
+  scale_shape_manual(values = c(Apex1 = 2, Other = 16), name = "Shape",
+                     labels = c("Apex1" = "DNA Damage", "Other" = "Cell Cycle"),
+                     guide = guide_legend(override.aes = list(fill = "black", color = "black"))) +
+  labs(x = "regNet Score", y = "coopNet Score") +
+  theme_bw()
+
+dev.off()
+```
+
+
 
 ## looking at STRING prior scores for coopNet regNet edges returned in subset above 
 ```{r load-ppi}
@@ -621,7 +927,7 @@ for(i in files){
   filtered_regNet <- regNet[regNet$TF == "Setbp1",]
   
   #filtering-ppi-for-geneset
-  filtered_coopNet<- coopNet[coopNet$ppi_2 %in% setbp1_genes,]
+  filtered_coopNet<- coopNet[coopNet$ppi_1 %in% setbp1_genes,]
   colnames(filtered_coopNet) <- c("gene", "ppi_1", "coopNet_score")
   
   #grabbing-overlap
@@ -809,19 +1115,39 @@ cortex_banfi_ctrl <- cortex_banfi_scaled[apply(cortex_banfi_scaled, 1, function(
 ```
 
 ```{r filtering-gene-ppi-for-geneset}
-#cortex_banfi_het <- cortex_banfi_het[cortex_banfi_het$gene_ppi %in% setbp1_genes,]
+cortex_banfi_het <- cortex_banfi_het[cortex_banfi_het$gene_ppi %in% setbp1_genes,]
+kidney_banfi_het <- kidney_banfi_het[kidney_banfi_het$gene_ppi %in% setbp1_genes,]
 ```
 
 
-```{r visualizing-scalred-scores-banfi}
+```{r visualizing-scaled-scores-banfi}
 # plot the scores for regNet and coop Net
+cortex_banfi_het$cell_type <- sub("_heterozygouscortex", "", cortex_banfi_het$source)
+
+png(here("results/ppi_rewiring/cortex_het_scaled_score_quant_dotplot.png"),
+  res = 250,
+  height = 2000,
+  width = 2000)
+
 ggplot(cortex_banfi_het, aes(x = cell_type, y = gene_ppi,
-                             size = regNet_score,
                              fill = coopNet_score)) +
-  geom_point(shape = 21) +
-  scale_size(range = c(0, 8), name = "regNet Score") + 
-  scale_fill_gradient2(low = "purple", mid = "white", high = "yellow", midpoint = 0) + 
+  geom_point(aes(size = abs(regNet_score),
+                 shape = ifelse(regNet_score >= 0, "Positive", "Negative")),
+             color = "black") +
+  scale_shape_manual(values = c(Positive = 24, Negative = 25),
+                     name = "regNet Score (Shape)") +
+  scale_fill_gradient2(low = "purple", mid = "white", high = "yellow", midpoint = 0) +
   labs(x = "Cell Type", y = "Protein") +
+  guides(size = guide_legend(override.aes = list(shape = 24),
+                             title = "regNet Score (Magnitude)")) +
+  guides(shape = guide_legend(override.aes = list(fill = NA),
+                              title = "regNet Score (Direction)")) +
+  theme_bw() +
+  theme(legend.position = "bottom",
+        legend.box = "horizontal",
+        legend.margin = margin(t = 10),
+        legend.spacing = unit(0.5, "cm")) +
+  theme_bw() +
   theme_minimal() +  
   theme(text = element_text(family = "Helvetica")) +
   theme(axis.text.x = element_text(angle = 45, color = "black", hjust = 1)) +
@@ -832,14 +1158,36 @@ ggplot(cortex_banfi_het, aes(x = cell_type, y = gene_ppi,
   theme(legend.title = element_text(face = "bold")) +
   theme(legend.text = element_text(face = "bold"))
 
+
+dev.off()
+
 # plot the scores for regNet and coop Net
+kidney_banfi_het$cell_type <- sub("_heterozygouskidney", "", kidney_banfi_het$source)
+
+png(here("results/ppi_rewiring/kidney_het_scaled_score_quant_dotplot.png"),
+  res = 250,
+  height = 2000,
+  width = 2000)
+
 ggplot(kidney_banfi_het, aes(x = cell_type, y = gene_ppi,
-                             size = regNet_score,
                              fill = coopNet_score)) +
-  geom_point(shape = 21) +
-  scale_size(range = c(0, 8), name = "regNet Score") + 
-  scale_fill_gradient2(low = "purple", mid = "white", high = "yellow", midpoint = 0) + 
+  geom_point(aes(size = abs(regNet_score),
+                 shape = ifelse(regNet_score >= 0, "Positive", "Negative")),
+             color = "black") +
+  scale_shape_manual(values = c(Positive = 24, Negative = 25),
+                     name = "regNet Score (Shape)") +
+  scale_fill_gradient2(low = "purple", mid = "white", high = "yellow", midpoint = 0) +
   labs(x = "Cell Type", y = "Protein") +
+  guides(size = guide_legend(override.aes = list(shape = 24),
+                             title = "regNet Score (Magnitude)")) +
+  guides(shape = guide_legend(override.aes = list(fill = NA),
+                              title = "regNet Score (Direction)")) +
+  theme_bw() +
+  theme(legend.position = "bottom",
+        legend.box = "horizontal",
+        legend.margin = margin(t = 10),
+        legend.spacing = unit(0.5, "cm")) +
+  theme_bw() +
   theme_minimal() +  
   theme(text = element_text(family = "Helvetica")) +
   theme(axis.text.x = element_text(angle = 45, color = "black", hjust = 1)) +
@@ -849,5 +1197,8 @@ ggplot(kidney_banfi_het, aes(x = cell_type, y = gene_ppi,
   theme(axis.text = element_text(face = "bold")) +
   theme(legend.title = element_text(face = "bold")) +
   theme(legend.text = element_text(face = "bold"))
+
+
+dev.off()
 ```
 
