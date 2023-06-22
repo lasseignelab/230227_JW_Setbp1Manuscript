@@ -1,3 +1,9 @@
+#transform_avgnets, uses a transformation often referred to as the softplus function. This transformation is useful when you want to ensure that all values in your data are positive between 0 and 1, but you want to preserve more of the relative differences between values
+transform_avgnets<-function(n) {
+  n<-log(exp(1)^n + 1)
+  n
+}
+
 # function ppi construction
 ppi <- function(species_code, score_cutoff, string_version, data){
   print("creating a new STRINGdb class with specified version, species, and score threshold")
@@ -237,12 +243,12 @@ makePanda <- function(motif, ppi, expression){
 # Functions for Setbp1_AllCortex_PANDAComparison_positive_01
 
 ## function-for-functional-enrichment-pathway-analysis
-fea <- function(genes, organism, max_term = 1000, min_term = 5){
+fea <- function(genes, organism, max_term = 1000, min_term = 5, sources = NULL){
   # create gprofiler2 query ---
   fea_result <- gost(query = genes, organism = organism, ordered_query = FALSE, multi_query = FALSE, significant = 
                        TRUE, exclude_iea = FALSE, measure_underrepresentation = FALSE, evcodes = TRUE, user_threshold = 
                        0.05, correction_method = "bonferroni", domain_scope = "annotated", numeric_ns =
-                       "", sources = NULL, as_short_link = FALSE) 
+                       "", sources = sources, as_short_link = FALSE) 
   # remove arbitrary pathways --- do not want pathways too "generic"
   fea_result_filt <- fea_result$result %>% dplyr::filter(., term_size < max_term & term_size > min_term) #std for max_term is 1000 and min_term is 10
   # # select the top ___ pathways for plotting --- suggest 50, could do more, but difficult to see visually
@@ -250,13 +256,39 @@ fea <- function(genes, organism, max_term = 1000, min_term = 5){
   return(fea_result_filt)
 }
 
-fea_no_sig <- function(genes, organism, max_term = 1000, min_term = 5){
+fea_custom <- function(genes, organism, max_term = 1000, min_term = 5, sources = NULL, custom_bg = NULL){
+  # create gprofiler2 query ---
+  fea_result <- gost(query = genes, organism = organism, ordered_query = FALSE, multi_query = FALSE, significant = 
+                       TRUE, exclude_iea = FALSE, measure_underrepresentation = FALSE, evcodes = TRUE, user_threshold = 
+                       0.05, correction_method = "bonferroni", domain_scope = "annotated", numeric_ns =
+                       "", sources = sources, as_short_link = FALSE, custom_bg = NULL) 
+  # remove arbitrary pathways --- do not want pathways too "generic"
+  fea_result_filt <- fea_result$result %>% dplyr::filter(., term_size < max_term & term_size > min_term) #std for max_term is 1000 and min_term is 10
+  # # select the top ___ pathways for plotting --- suggest 50, could do more, but difficult to see visually
+  # fea_result_filt <- fea_result %>% top_n(n = pathway_number)
+  return(fea_result_filt)
+}
+
+fea_custom_no_sig <- function(genes, organism, max_term = 1000, min_term = 5, sources = NULL, custom_bg = NULL){
+  # create gprofiler2 query ---
+  fea_result <- gost(query = genes, organism = organism, ordered_query = FALSE, multi_query = FALSE, significant = 
+                       FALSE, exclude_iea = FALSE, measure_underrepresentation = FALSE, evcodes = TRUE, user_threshold = 
+                       0.05, correction_method = "bonferroni", domain_scope = "annotated", numeric_ns =
+                       "", sources = sources, as_short_link = FALSE, custom_bg = NULL) 
+  # remove arbitrary pathways --- do not want pathways too "generic"
+  fea_result_filt <- fea_result$result %>% dplyr::filter(., term_size < max_term & term_size > min_term) #std for max_term is 1000 and min_term is 10
+  # # select the top ___ pathways for plotting --- suggest 50, could do more, but difficult to see visually
+  # fea_result_filt <- fea_result %>% top_n(n = pathway_number)
+  return(fea_result_filt)
+}
+
+fea_no_sig <- function(genes, organism, max_term = 1000, min_term = 5, sources = NULL){
   # create gprofiler2 query ---
   fea_result <- gost(query = genes, organism = organism, ordered_query = FALSE, multi_query = FALSE, significant = 
                        FALSE, exclude_iea = FALSE, measure_underrepresentation = FALSE, evcodes = TRUE, user_threshold = 
                        0.05, correction_method = "bonferroni", domain_scope = "annotated", numeric_ns =
                        "", sources = NULL, as_short_link = FALSE) 
-  #fea_result_filt <- fea_result
+  fea_result_filt <- fea_result
   # remove arbitrary pathways --- do not want pathways too "generic"
   #\fea_result_filt <- fea_result$result %>% dplyr::filter(., term_size < max_term & term_size > min_term) #std for max_term is 1000 and min_term is 10
   # # select the top ___ pathways for plotting --- suggest 50, could do more, but difficult to see visually

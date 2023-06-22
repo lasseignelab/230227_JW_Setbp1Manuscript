@@ -4,6 +4,7 @@ set.seed(2178)
 library(dplyr)
 library(tidyr)
 library(netZooR)
+source("/data/user/jbarham3/230227_JW_Setbp1Manuscript/src/functions/functions.R")
 
 
 args <- commandArgs(trailingOnly = TRUE)
@@ -71,6 +72,7 @@ reg_net1 <- pandaResults@regNet
 rm(pandaResults)
 input1 <- as.data.frame(reg_net1) %>% mutate(TF = rownames(reg_net1)) %>% pivot_longer(cols = -TF, names_to = "gene", values_to = "weight1")
 
+
 panda_obj2 <- load(full_path2)
 reg_net2 <- pandaResults@regNet
 rm(pandaResults)
@@ -78,9 +80,12 @@ input2 <- as.data.frame(reg_net2) %>% mutate(TF = rownames(reg_net2)) %>% pivot_
 
 alpaca_input <- merge(input1, input2, by = c("TF", "gene"))
 
+# transforming scores to be between 0-1
+alpaca_input$weight1 <- transform_avgnets(alpaca_input$weight1)
+alpaca_input$weight2 <- transform_avgnets(alpaca_input$weight2)
+
 # Specify output path
 #output_path <- paste("/data/user/vishoza/jw_test/230227_JW_Setbp1Manuscript/results/alpaca/main", cell_type, "_acts.RData", sep="")
-
 
 alpaca_result <- alpaca(alpaca_input, file.stem = paste("/data/user/jbarham3/230227_JW_Setbp1Manuscript/results/alpaca/main/", cell_type1, "_", tissue1, ".RData", sep="")
 , verbose = TRUE)
