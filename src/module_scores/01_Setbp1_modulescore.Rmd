@@ -1,0 +1,1036 @@
+---
+title: "14_Setbp1_modulescore"
+author: "Jordan Whitlock"
+date: '2023-06-19'
+output: html_document
+---
+Note to code reviewers: Use Docker setbp1_manuscript:1.0.11 (has VISION package added and GSEABase) 
+
+
+This analysis sucedes the 13_Setbp1_PathwayAnalysisCortexKidney.Rmd and serves as a targeted investigation of cell-specific pathway involvement using the Seurat 'AddModuleScore' function. 
+
+```{r set-seed-libraries}
+set.seed(2178)
+library(Seurat)
+library(VISION)
+library(GSEABase)
+library(dplyr)
+library(here)
+library(RColorBrewer)
+library(circlize)
+library(ComplexHeatmap)
+library(tidyr)
+library(readr)
+library(ggplot2)
+library(org.Hs.eg.db)
+library(org.Mm.eg.db)
+
+ptm <- proc.time()
+```
+
+```{r load-data}
+load(here("data/kidney_integrated_celltypes_postSoup.Rdata"))
+load(here("data/setbp1_cerebralintcelltypes.Rdata"))
+```
+
+Pathways of Interest for calculating module scores:
+* DNA Repair- Hallmark DNA Repair (Mouse): https://www.gsea-msigdb.org/gsea/msigdb/mouse/geneset/HALLMARK_DNA_REPAIR.html
+* Apoptosis- Hallmark Apoptosis (Mouse): https://www.gsea-msigdb.org/gsea/msigdb/mouse/geneset/HALLMARK_APOPTOSIS.html
+* Cell Cycle- G2M Checkpoint (Mouse): https://www.gsea-msigdb.org/gsea/msigdb/mouse/geneset/HALLMARK_G2M_CHECKPOINT.html
+* OXPHOS- Oxidative Phosphorylation (Mouse): https://www.gsea-msigdb.org/gsea/msigdb/mouse/geneset/HALLMARK_OXIDATIVE_PHOSPHORYLATION.html
+* p53- p53 pathways (Mouse): https://www.gsea-msigdb.org/gsea/msigdb/mouse/geneset/HALLMARK_P53_PATHWAY.html
+* Inflammatory response (Mouse): https://www.gsea-msigdb.org/gsea/msigdb/mouse/geneset/HALLMARK_INFLAMMATORY_RESPONSE.html
+* AKI signatures- consistently up and downregulated genes in AKI: https://www.frontiersin.org/articles/10.3389/fgene.2020.00411/full
+* PKD signatures- PIONTEK PKD1 Targets (Up and Down): https://www.gsea-msigdb.org/gsea/msigdb/mouse/geneset/PIONTEK_PKD1_TARGETS_DN.html, https://www.gsea-msigdb.org/gsea/msigdb/mouse/geneset/PIONTEK_PKD1_TARGETS_UP.html
+
+## Set up signatures
+
+```{r}
+mu_dna_repair <- getGmt(here("data/unprocessed/HALLMARK_DNA_REPAIR.v2023.1.Mm.gmt"))
+mu_dna_repair <- mu_dna_repair[["HALLMARK_DNA_REPAIR"]]@geneIds
+
+mu_apop <- getGmt(here("data/unprocessed/HALLMARK_APOPTOSIS.v2023.1.Mm.gmt"))
+mu_apop <- mu_apop[["HALLMARK_APOPTOSIS"]]@geneIds
+
+mu_cellcycle <-getGmt(here("data/unprocessed/HALLMARK_G2M_CHECKPOINT.v2023.1.Mm.gmt"))
+mu_cellcycle <- mu_cellcycle[["HALLMARK_G2M_CHECKPOINT"]]@geneIds
+
+mu_oxphos <-getGmt(here("data/unprocessed/HALLMARK_OXIDATIVE_PHOSPHORYLATION.v2023.1.Mm.gmt"))
+mu_oxphos <- mu_oxphos[["HALLMARK_OXIDATIVE_PHOSPHORYLATION"]]@geneIds
+
+mu_p53 <-getGmt(here("data/unprocessed/HALLMARK_P53_PATHWAY.v2023.1.Mm.gmt"))
+mu_p53 <- mu_p53[["HALLMARK_P53_PATHWAY"]]@geneIds
+
+mu_inflamm <-getGmt(here("data/unprocessed/HALLMARK_INFLAMMATORY_RESPONSE.v2023.1.Mm.gmt"))
+mu_inflamm <- mu_inflamm[["HALLMARK_INFLAMMATORY_RESPONSE"]]@geneIds
+```
+
+```{r aki-signature}
+aki_upgenes <- c("Adam8", "Adamts1", "Adm", "Akap12", "Akr1b8", "Aldh1a2", "Aloxe3", "Anxa1", "Anxa3", "Apobec3", "Arf2", "Asns", "Atf3", "Bcl3", "Birc3", "Cd14", "Cd44", "Cd68", "Cd9", "Cd93", "Cebpd", "Chrnb1", "Clcf1", "Cldn4", "Cldn7", "Ctgf", "Ctsc", "Cyr61", "Ddx21", "Dusp10", "Dusp5", "Edn1", "Efhd2", "Elf4", "Emp1", "Entpd1", "Epha2", "F2r", "F3", "Fam57a", "Flnc", "Fndc4", "Fosl1", "Fosl2", "Fut2", "Fxyd5", "Gas7", "Gdf15", "Gprc5a", "Havcr1", "Hbegf", "Hilpda", "Hmox1", "Hpcal4", "Igf2bp2", "Il1f6", "Il34", "Irak3", "Itga5", "Klf4", "Klf6", "Klf7", "Krtp28", "Krt20", "Lamc2", "Lif", "Lrp8", "Lrrc32", "Lrrc8c", "Maff", "Map3k6", "Map4k4", "Mapk6", "Mmp3", "Mthfd1l", "Myc", "Myh9", "Nek6", "Ngf", "Nras", "Nt5c1a", "Nucb2", "Oasl1", "Pdgfb", "Pdk4", "Pdlim7", "Plat", "Plaur", "Plin2", "Plk3", "Plp2", "Ppm1j", "Ppp1r14b", "Pprc1", "Procr", "Prrg4", "Ptger4", "Ptgs2", "Ptpn12", "Pvr", "Pxdc1", "Qsox1", "Rab31", "Rad18", "Rap2b", "Rbm3", "Rell1", "Rhbdf2", "Rin1", "Rnd1", "Rnd3", "Rras2", "Rtn4", "Runx1", "Samd4", "Sbno2", "Sema7a", "Serpinb1a", "Serpine1", "Sfn", "Slc16a1", "Slc25a24", "Slc38a2", "Slc7a5", "Slc7a6", "Smad1", "Smox", "Socs3", "Sox9", "Sphk1", "Sprr1a", "Sprr2f", "Sprr2g", "Spry2", "Spsb1", "St3gal1", "Stil", "Syt12", "Taf1d", "Taf4b", "Tcerg1", "Tgfbr1", "Thbd", "Timp1", "Tinagl1", "Tmcc3", "Tmed5", "Tmem173", "Tnc", "Tnfrsf12a", "Tnfrsf1a", "Tpm3", "Trmt61a", "Tubb6", "Txnrd1", "Uchl1", "Vopp1")
+
+aki_downgenes <- c("1700040L02Rik", "Abhd14b", "Acad12", "Acmsd", "Acot11", "Acox2", "Acss2", "Ak4", "Akr1c14", "Akr1c18", "Aldh4a1", "Apeh", "Atp6v1b1", "BC067074", "Bcat1", "Bdh1", "Bhmt2", "Bphl", "Bsnd", "Casr", "Cbs", "Cdkl1", "Ceacam2", "Cmah", "Crot", "Cth", "Cubn", "Cyp2j11", "D3Ertd751e", "Dhdh", "Dnajc28", "Fam107a", "Fggy", "Fmo5", "Fras1", "G6pc", "Galm", "Gatb", "Gatm", "Glyctk", "Gm10804", "Hgd", "Hnmt", "Hsd3b2", "Hykk", "Ift122", "Inpp5j", "Kcnj1", "Keg1", "Klhl3", "Kmo", "Lrrc31", "Lyplal1", "Map2k6", "Mccc1", "Mccc2", "Mep1b", "Mgam", "Nccrp1", "Oxgr1", "Pbld1", "Pde4c", "Pfkm", "Pnkd", "Pter", "Ranbp3l", "Rhcg", "Serpina1d", "Serpina1f", "Sfrp1", "Shmt2", "Slc15a2", "Slc16a9", "Slc22a13", "Slc22ap28", "Slc22a26", "Slc23a1", "Slc25a21", "Slc8a1", "Slco4c1", "Smarca2", "Snx29", "Suox", "Tln2", "Tmem207", "Tmem25", "Tpmt", "Ugt8a")
+```
+
+
+```{r pkd-signature}
+pkd_upgenes <-getGmt(here("data/unprocessed/PIONTEK_PKD1_TARGETS_UP.v2023.1.Mm.gmt"))
+pkd_upgenes <- pkd_upgenes[["PIONTEK_PKD1_TARGETS_UP"]]@geneIds
+
+pkd_downgenes <-getGmt(here("data/unprocessed/PIONTEK_PKD1_TARGETS_DN.v2023.1.Mm.gmt"))
+pkd_downgenes <- pkd_downgenes[["PIONTEK_PKD1_TARGETS_DN"]]@geneIds
+```
+
+## AddModuleScore Cortex 
+
+Calculates the average expression levels of each program (cluster) on single nuclei level, subtracted by the aggregated expression of control feature sets. All analyzed features are binned based on averaged expression, and the control features are randomly selected from each bin.
+```{r cortex-running-AddModuleScore}
+# apoptosis scoring
+mu_apop <- as.list(mu_apop)
+
+cerebral_int_celltypes <- AddModuleScore(cerebral_int_celltypes,
+  features = list(mu_apop),
+  name = "apoptosis_score"
+)
+## Plot scores
+png(here("results/module_scores/cortex_deg_apoptosis_modulescores.png"),
+  res = 250,
+  height = 3000,
+  width = 4000
+)
+FeaturePlot(cerebral_int_celltypes,
+  features = "apoptosis_score1", label = TRUE, repel = TRUE, split.by = "type"
+) +
+  theme(legend.position = "right") &
+  scale_colour_gradientn(colours = rev(brewer.pal(n = 11, name = "RdBu")))
+dev.off()
+
+# cell cycle scoring 
+mu_cellcycle <- as.list(mu_cellcycle)
+
+cerebral_int_celltypes <- AddModuleScore(cerebral_int_celltypes,
+  features = list(mu_cellcycle),
+  name = "G2M_score"
+)
+## Plot scores
+png(here("results/module_scores/cortex_deg_cellcycle_modulescores.png"),
+  res = 250,
+  height = 3000,
+  width = 4000
+)
+FeaturePlot(cerebral_int_celltypes,
+  features = "G2M_score1", label = TRUE, repel = TRUE, split.by = "type"
+)  +
+  theme(legend.position = "right") &
+  scale_colour_gradientn(colours = rev(brewer.pal(n = 11, name = "RdBu")))
+dev.off()
+
+# DNA repair scoring 
+mu_dna_repair <- as.list(mu_dna_repair)
+
+cerebral_int_celltypes <- AddModuleScore(cerebral_int_celltypes,
+  features = list(mu_dna_repair),
+  name = "dna_repair_score"
+)
+## Plot scores
+png(here("results/module_scores/cortex_deg_dna_repair_modulescores.png"),
+  res = 250,
+  height = 3000,
+  width = 4000
+)
+FeaturePlot(cerebral_int_celltypes,
+  features = "dna_repair_score1", label = TRUE, repel = TRUE, split.by = "type"
+)  +
+  theme(legend.position = "right") &
+  scale_colour_gradientn(colours = rev(brewer.pal(n = 11, name = "RdBu")))
+dev.off()
+
+# OXPHOS scoring 
+mu_oxphos <- as.list(mu_oxphos)
+
+cerebral_int_celltypes <- AddModuleScore(cerebral_int_celltypes,
+  features = list(mu_oxphos),
+  name = "oxphos_score"
+)
+## Plot scores
+png(here("results/module_scores/cortex_deg_oxphos_modulescores.png"),
+  res = 250,
+  height = 3000,
+  width = 4000
+)
+FeaturePlot(cerebral_int_celltypes,
+  features = "oxphos_score1", label = TRUE, repel = TRUE, split.by = "type"
+)  +
+  theme(legend.position = "right") &
+  scale_colour_gradientn(colours = rev(brewer.pal(n = 11, name = "RdBu")))
+dev.off()
+
+# p53 scoring 
+mu_p53 <- as.list(mu_p53)
+
+cerebral_int_celltypes <- AddModuleScore(cerebral_int_celltypes,
+  features = list(mu_p53),
+  name = "p53_score"
+)
+## Plot scores
+png(here("results/module_scores/cortex_deg_p53_modulescores.png"),
+  res = 250,
+  height = 3000,
+  width = 4000
+)
+FeaturePlot(cerebral_int_celltypes,
+  features = "p53_score1", label = TRUE, repel = TRUE, split.by = "type"
+)  +
+  theme(legend.position = "right") &
+  scale_colour_gradientn(colours = rev(brewer.pal(n = 11, name = "RdBu")))
+dev.off()
+
+# inflammatory response scoring
+mu_inflamm <- as.list(mu_inflamm)
+
+cerebral_int_celltypes <- AddModuleScore(cerebral_int_celltypes,
+  features = list(mu_inflamm),
+  name = "inflammatory_response_score"
+)
+## Plot scores
+png(here("results/module_scores/cortex_deg_inflammation_modulescores.png"),
+  res = 250,
+  height = 3000,
+  width = 4000
+)
+FeaturePlot(cerebral_int_celltypes,
+  features = "inflammatory_response_score1", label = TRUE, repel = TRUE, split.by = "type"
+) +
+  theme(legend.position = "right") &
+  scale_colour_gradientn(colours = rev(brewer.pal(n = 11, name = "RdBu")))
+dev.off()
+```
+
+Now that module scores have been calculated, we wanted to see if any were statistically significany for any cell types between conditions. 
+```{r}
+# wrangle data to get scores respective to each condition and cell type
+split <- SplitObject(cerebral_int_celltypes, split.by = "type")
+split_het <- SplitObject(split$heterozygous, split.by = "cell_type")
+split_ctrl <- SplitObject(split$control, split.by = "cell_type")
+```
+
+## Calculate statistics using wilcoxon test for each module within each cell type
+```{r apop-score}
+## grab all apoptosis scores
+het_apop <- list()
+for (i in names(split_het)) {
+  het_apop[[i]] <- as.data.frame(split_het[[i]]@meta.data[["apoptosis_score1"]])
+  het_apop[[i]]$condition <- "heterozygous"
+  het_apop[[i]][["cell_type"]] <- i
+  colnames(het_apop[[i]]) <- c("apoptosis_score", "condition", "cell_type")
+}
+
+ctrl_apop <- list()
+for (i in names(split_ctrl)) {
+  ctrl_apop[[i]] <- as.data.frame(split_ctrl[[i]]@meta.data[["apoptosis_score1"]])
+  ctrl_apop[[i]]$condition <- "control"
+  ctrl_apop[[i]][["cell_type"]] <- i
+  colnames(ctrl_apop[[i]]) <- c("apoptosis_score", "condition", "cell_type")
+}
+
+combined <- c(het_apop, ctrl_apop)
+combined_df <- do.call(rbind, combined)
+
+
+## summarize
+summary_df <- combined_df %>%
+  group_by(cell_type, condition) %>%
+  summarise(
+    count = n(),
+    median = median(apoptosis_score, na.rm = TRUE),
+    IQR = IQR(apoptosis_score, na.rm = TRUE)
+  )
+
+print(summary_df)
+
+## visualize
+ggplot(data = combined_df, aes(x = condition, y = apoptosis_score)) +
+  geom_boxplot() +
+  facet_wrap(~cell_type) + theme_minimal()
+
+
+## calculate statistic per cell type between conditions 
+het <- subset(combined_df, condition == "heterozygous")
+ctrl <- subset(combined_df, condition == "control")
+
+cells <- unique(het$cell_type)
+
+apop_res_list <- list()
+for(i in cells){
+  het_data <- het[het$cell_type == i,]
+  ctrl_data <- ctrl[ctrl$cell_type == i,]
+  apop_res_list[[i]] <- wilcox.test(het_data$apoptosis_score, ctrl_data$apoptosis_score, exact = FALSE)
+}
+
+# Create an empty data frame to store the results
+pvalue_df <- data.frame(List_Item = character(),
+                        P_Value = numeric(),
+                        stringsAsFactors = FALSE)
+
+# Loop over the list items and extract p-values
+for (i in seq_along(apop_res_list)) {
+  list_item <- names(apop_res_list)[i]
+  p_value <- apop_res_list[[i]]$p.value
+  pvalue_df[i, "List_Item"] <- list_item
+  pvalue_df[i, "P_Value"] <- p_value
+}
+
+# Print the resulting data frame
+print(pvalue_df)
+```
+
+```{r dna-repair-score}
+het_dna_repair <- list()
+for (i in names(split_het)) {
+  het_dna_repair[[i]] <- as.data.frame(split_het[[i]]@meta.data[["dna_repair_score1"]])
+  het_dna_repair[[i]]$condition <- "heterozygous"
+  het_dna_repair[[i]][["cell_type"]] <- i
+  colnames(het_dna_repair[[i]]) <- c("dna_repair_score", "condition", "cell_type")
+}
+
+ctrl_dna_repair <- list()
+for (i in names(split_ctrl)) {
+  ctrl_dna_repair[[i]] <- as.data.frame(split_ctrl[[i]]@meta.data[["dna_repair_score1"]])
+  ctrl_dna_repair[[i]]$condition <- "control"
+  ctrl_dna_repair[[i]][["cell_type"]] <- i
+  colnames(ctrl_dna_repair[[i]]) <- c("dna_repair_score", "condition", "cell_type")
+}
+
+combined <- c(het_dna_repair, ctrl_dna_repair)
+combined_df <- do.call(rbind, combined)
+
+
+## summarize
+summary_df <- combined_df %>%
+  group_by(cell_type, condition) %>%
+  summarise(
+    count = n(),
+    median = median(dna_repair_score, na.rm = TRUE),
+    IQR = IQR(dna_repair_score, na.rm = TRUE)
+  )
+
+print(summary_df)
+
+## visualize
+ggplot(data = combined_df, aes(x = condition, y = dna_repair_score)) +
+  geom_boxplot() +
+  facet_wrap(~cell_type) + theme_minimal()
+
+
+## calculate statistic per cell type between conditions 
+het <- subset(combined_df, condition == "heterozygous")
+ctrl <- subset(combined_df, condition == "control")
+
+cells <- unique(het$cell_type)
+
+dna_repair_res_list <- list()
+for(i in cells){
+  het_data <- het[het$cell_type == i,]
+  ctrl_data <- ctrl[ctrl$cell_type == i,]
+  dna_repair_res_list[[i]] <- wilcox.test(het_data$dna_repair_score, ctrl_data$dna_repair_score, exact = FALSE)
+}
+
+# Create an empty data frame to store the results
+pvalue_df <- data.frame(List_Item = character(),
+                        P_Value = numeric(),
+                        stringsAsFactors = FALSE)
+
+# Loop over the list items and extract p-values
+for (i in seq_along(dna_repair_res_list)) {
+  list_item <- names(dna_repair_res_list)[i]
+  p_value <- dna_repair_res_list[[i]]$p.value
+  pvalue_df[i, "List_Item"] <- list_item
+  pvalue_df[i, "P_Value"] <- p_value
+}
+
+# Print the resulting data frame
+print(pvalue_df)
+```
+
+```{r inflammatory-response-score}
+het_inflamm <- list()
+for (i in names(split_het)) {
+  het_inflamm[[i]] <- as.data.frame(split_het[[i]]@meta.data[["inflammatory_response_score1"]])
+  het_inflamm[[i]]$condition <- "heterozygous"
+  het_inflamm[[i]][["cell_type"]] <- i
+  colnames(het_inflamm[[i]]) <- c("inflammatory_response_score", "condition", "cell_type")
+}
+
+ctrl_inflamm <- list()
+for (i in names(split_ctrl)) {
+  ctrl_inflamm[[i]] <- as.data.frame(split_ctrl[[i]]@meta.data[["inflammatory_response_score1"]])
+  ctrl_inflamm[[i]]$condition <- "control"
+  ctrl_inflamm[[i]][["cell_type"]] <- i
+  colnames(ctrl_inflamm[[i]]) <- c("inflammatory_response_score", "condition", "cell_type")
+}
+
+combined <- c(het_inflamm, ctrl_inflamm)
+combined_df <- do.call(rbind, combined)
+
+
+## summarize
+summary_df <- combined_df %>%
+  group_by(cell_type, condition) %>%
+  summarise(
+    count = n(),
+    median = median(inflammatory_response_score, na.rm = TRUE),
+    IQR = IQR(inflammatory_response_score, na.rm = TRUE)
+  )
+
+print(summary_df)
+
+## visualize
+ggplot(data = combined_df, aes(x = condition, y = inflammatory_response_score)) +
+  geom_boxplot() +
+  facet_wrap(~cell_type) + theme_minimal()
+
+
+## calculate statistic per cell type between conditions 
+het <- subset(combined_df, condition == "heterozygous")
+ctrl <- subset(combined_df, condition == "control")
+
+cells <- unique(het$cell_type)
+
+inflamm_res_list <- list()
+for(i in cells){
+  het_data <- het[het$cell_type == i,]
+  ctrl_data <- ctrl[ctrl$cell_type == i,]
+  inflamm_res_list[[i]] <- wilcox.test(het_data$inflammatory_response_score, ctrl_data$inflammatory_response_score, exact = FALSE)
+}
+
+# Create an empty data frame to store the results
+pvalue_df <- data.frame(List_Item = character(),
+                        P_Value = numeric(),
+                        stringsAsFactors = FALSE)
+
+# Loop over the list items and extract p-values
+for (i in seq_along(inflamm_res_list)) {
+  list_item <- names(inflamm_res_list)[i]
+  p_value <- inflamm_res_list[[i]]$p.value
+  pvalue_df[i, "List_Item"] <- list_item
+  pvalue_df[i, "P_Value"] <- p_value
+}
+
+# Print the resulting data frame
+print(pvalue_df)
+```
+
+## Vln plots of module scores 
+
+```{r cortex-running-AddModuleScore}
+# apoptosis scoring
+mu_apop <- as.list(mu_apop)
+
+cerebral_int_celltypes <- AddModuleScore(cerebral_int_celltypes,
+  features = list(mu_apop),
+  name = "apoptosis_score"
+)
+## Plot scores
+png(here("results/module_scores/cortex_vln_apoptosis_modulescores.png"),
+  res = 250,
+  height = 3000,
+  width = 4000
+)
+VlnPlot(cerebral_int_celltypes,
+  features = "apoptosis_score1", split.by = "type"
+) +
+  theme(legend.position = "right") &
+  scale_colour_gradientn(colours = rev(brewer.pal(n = 11, name = "RdBu")))
+dev.off()
+
+# cell cycle scoring 
+mu_cellcycle <- as.list(mu_cellcycle)
+
+cerebral_int_celltypes <- AddModuleScore(cerebral_int_celltypes,
+  features = list(mu_cellcycle),
+  name = "G2M_score"
+)
+## Plot scores
+png(here("results/module_scores/cortex_vln_cellcycle_modulescores.png"),
+  res = 250,
+  height = 3000,
+  width = 4000
+)
+VlnPlot(cerebral_int_celltypes,
+  features = "G2M_score1", split.by = "type"
+)  +
+  theme(legend.position = "right") &
+  scale_colour_gradientn(colours = rev(brewer.pal(n = 11, name = "RdBu")))
+dev.off()
+
+# DNA repair scoring 
+mu_dna_repair <- as.list(mu_dna_repair)
+
+cerebral_int_celltypes <- AddModuleScore(cerebral_int_celltypes,
+  features = list(mu_dna_repair),
+  name = "dna_repair_score"
+)
+## Plot scores
+png(here("results/module_scores/cortex_vln_dna_repair_modulescores.png"),
+  res = 250,
+  height = 3000,
+  width = 4000
+)
+VlnPlot(cerebral_int_celltypes,
+  features = "dna_repair_score1", split.by = "type"
+)  +
+  theme(legend.position = "right") &
+  scale_colour_gradientn(colours = rev(brewer.pal(n = 11, name = "RdBu")))
+dev.off()
+
+# OXPHOS scoring 
+mu_oxphos <- as.list(mu_oxphos)
+
+cerebral_int_celltypes <- AddModuleScore(cerebral_int_celltypes,
+  features = list(mu_oxphos),
+  name = "oxphos_score"
+)
+## Plot scores
+png(here("results/module_scores/cortex_vln_oxphos_modulescores.png"),
+  res = 250,
+  height = 3000,
+  width = 4000
+)
+VlnPlot(cerebral_int_celltypes,
+  features = "oxphos_score1", split.by = "type"
+)  +
+  theme(legend.position = "right") &
+  scale_colour_gradientn(colours = rev(brewer.pal(n = 11, name = "RdBu")))
+dev.off()
+
+# p53 scoring 
+mu_p53 <- as.list(mu_p53)
+
+cerebral_int_celltypes <- AddModuleScore(cerebral_int_celltypes,
+  features = list(mu_p53),
+  name = "p53_score"
+)
+## Plot scores
+png(here("results/module_scores/cortex_vln_p53_modulescores.png"),
+  res = 250,
+  height = 3000,
+  width = 4000
+)
+VlnPlot(cerebral_int_celltypes,
+  features = "p53_score1", split.by = "type"
+)  +
+  theme(legend.position = "right") &
+  scale_colour_gradientn(colours = rev(brewer.pal(n = 11, name = "RdBu")))
+dev.off()
+
+# inflammatory response scoring
+mu_inflamm <- as.list(mu_inflamm)
+
+cerebral_int_celltypes <- AddModuleScore(cerebral_int_celltypes,
+  features = list(mu_inflamm),
+  name = "inflammatory_response_score"
+)
+## Plot scores
+png(here("results/module_scores/cortex_vln_inflammation_modulescores.png"),
+  res = 250,
+  height = 3000,
+  width = 4000
+)
+VlnPlot(cerebral_int_celltypes,
+  features = "inflammatory_response_score1", split.by = "type"
+) +
+  theme(legend.position = "right") &
+  scale_colour_gradientn(colours = rev(brewer.pal(n = 11, name = "RdBu")))
+dev.off()
+```
+
+## Kidney Module score
+
+```{r kidney-running-AddModuleScore}
+# apoptosis scoring
+mu_apop <- as.list(mu_apop)
+
+kidney_int_celltypes <- AddModuleScore(kidney_int_celltypes,
+  features = list(mu_apop),
+  name = "apoptosis_score"
+)
+## Plot scores
+png(here("results/module_scores/kidney_deg_apoptosis_modulescores.png"),
+  res = 250,
+  height = 3000,
+  width = 4000
+)
+FeaturePlot(kidney_int_celltypes,
+  features = "apoptosis_score1", label = TRUE, repel = TRUE, split.by = "type"
+) +
+  theme(legend.position = "right") &
+  scale_colour_gradientn(colours = rev(brewer.pal(n = 11, name = "RdBu")))
+dev.off()
+
+# cell cycle scoring 
+mu_cellcycle <- as.list(mu_cellcycle)
+
+kidney_int_celltypes <- AddModuleScore(kidney_int_celltypes,
+  features = list(mu_cellcycle),
+  name = "G2M_score"
+)
+## Plot scores
+png(here("results/module_scores/kidney_deg_cellcycle_modulescores.png"),
+  res = 250,
+  height = 3000,
+  width = 4000
+)
+FeaturePlot(kidney_int_celltypes,
+  features = "G2M_score1", label = TRUE, repel = TRUE, split.by = "type"
+)  +
+  theme(legend.position = "right") &
+  scale_colour_gradientn(colours = rev(brewer.pal(n = 11, name = "RdBu")))
+dev.off()
+
+# DNA repair scoring 
+mu_dna_repair <- as.list(mu_dna_repair)
+
+kidney_int_celltypes <- AddModuleScore(kidney_int_celltypes,
+  features = list(mu_dna_repair),
+  name = "dna_repair_score"
+)
+## Plot scores
+png(here("results/module_scores/kidney_deg_dna_repair_modulescores.png"),
+  res = 250,
+  height = 3000,
+  width = 4000
+)
+FeaturePlot(kidney_int_celltypes,
+  features = "dna_repair_score1", label = TRUE, repel = TRUE, split.by = "type"
+)  +
+  theme(legend.position = "right") &
+  scale_colour_gradientn(colours = rev(brewer.pal(n = 11, name = "RdBu")))
+dev.off()
+
+# OXPHOS scoring 
+mu_oxphos <- as.list(mu_oxphos)
+
+kidney_int_celltypes <- AddModuleScore(kidney_int_celltypes,
+  features = list(mu_oxphos),
+  name = "oxphos_score"
+)
+## Plot scores
+png(here("results/module_scores/kidney_deg_oxphos_modulescores.png"),
+  res = 250,
+  height = 3000,
+  width = 4000
+)
+FeaturePlot(kidney_int_celltypes,
+  features = "oxphos_score1", label = TRUE, repel = TRUE, split.by = "type"
+)  +
+  theme(legend.position = "right") &
+  scale_colour_gradientn(colours = rev(brewer.pal(n = 11, name = "RdBu")))
+dev.off()
+
+# p53 scoring 
+mu_p53 <- as.list(mu_p53)
+
+kidney_int_celltypes <- AddModuleScore(kidney_int_celltypes,
+  features = list(mu_p53),
+  name = "p53_score"
+)
+## Plot scores
+png(here("results/module_scores/kidney_deg_p53_modulescores.png"),
+  res = 250,
+  height = 3000,
+  width = 4000
+)
+FeaturePlot(kidney_int_celltypes,
+  features = "p53_score1", label = TRUE, repel = TRUE, split.by = "type"
+)  +
+  theme(legend.position = "right") &
+  scale_colour_gradientn(colours = rev(brewer.pal(n = 11, name = "RdBu")))
+dev.off()
+
+
+# aki signature scoring 
+
+## down 
+aki_downgenes <- as.list(aki_downgenes)
+
+kidney_int_celltypes <- AddModuleScore(kidney_int_celltypes,
+  features = list(aki_downgenes),
+  name = "aki_down_score"
+)
+### Plot scores
+png(here("results/module_scores/kidney_deg_aki_down_modulescores.png"),
+  res = 250,
+  height = 3000,
+  width = 4000
+)
+FeaturePlot(kidney_int_celltypes,
+  features = "aki_down_score1", label = TRUE, repel = TRUE, split.by = "type"
+)  +
+  theme(legend.position = "right") &
+  scale_colour_gradientn(colours = rev(brewer.pal(n = 11, name = "RdBu")))
+dev.off()
+
+## up 
+aki_upgenes <- as.list(aki_upgenes)
+
+kidney_int_celltypes <- AddModuleScore(kidney_int_celltypes,
+  features = list(aki_upgenes),
+  name = "aki_up_score"
+)
+### Plot scores
+png(here("results/module_scores/kidney_deg_aki_up_modulescores.png"),
+  res = 250,
+  height = 3000,
+  width = 4000
+)
+FeaturePlot(kidney_int_celltypes,
+  features = "aki_up_score1", label = TRUE, repel = TRUE, split.by = "type"
+)  +
+  theme(legend.position = "right") &
+  scale_colour_gradientn(colours = rev(brewer.pal(n = 11, name = "RdBu")))
+dev.off()
+
+
+# pkd signature scoring 
+
+## down
+pkd_downgenes <- as.list(pkd_downgenes)
+
+kidney_int_celltypes <- AddModuleScore(kidney_int_celltypes,
+  features = list(pkd_downgenes),
+  name = "pkd_down_score"
+)
+
+### Plot scores
+png(here("results/module_scores/kidney_deg_pkd_down_modulescores.png"),
+  res = 250,
+  height = 3000,
+  width = 4000
+)
+FeaturePlot(kidney_int_celltypes,
+  features = "pkd_down_score1", label = TRUE, repel = TRUE, split.by = "type"
+)  +
+  theme(legend.position = "right") &
+  scale_colour_gradientn(colours = rev(brewer.pal(n = 11, name = "RdBu")))
+dev.off()
+
+## up
+pkd_downgenes <- as.list(pkd_upgenes)
+
+kidney_int_celltypes <- AddModuleScore(kidney_int_celltypes,
+  features = list(pkd_upgenes),
+  name = "pkd_up_score"
+)
+
+### Plot scores
+png(here("results/module_scores/kidney_deg_pkd_up_modulescores.png"),
+  res = 250,
+  height = 3000,
+  width = 4000
+)
+FeaturePlot(kidney_int_celltypes,
+  features = "pkd_up_score1", label = TRUE, repel = TRUE, split.by = "type"
+)  +
+  theme(legend.position = "right") &
+  scale_colour_gradientn(colours = rev(brewer.pal(n = 11, name = "RdBu")))
+dev.off()
+
+
+# inflammatory response scoring
+mu_inflamm <- as.list(mu_inflamm)
+
+kidney_int_celltypes <- AddModuleScore(kidney_int_celltypes,
+  features = list(mu_inflamm),
+  name = "inflammatory_response_score"
+)
+## Plot scores
+png(here("results/module_scores/kidney_deg_inflammation_modulescores.png"),
+  res = 250,
+  height = 3000,
+  width = 4000
+)
+FeaturePlot(kidney_int_celltypes,
+  features = "inflammatory_response_score1", label = TRUE, repel = TRUE, split.by = "type"
+) +
+  theme(legend.position = "right") &
+  scale_colour_gradientn(colours = rev(brewer.pal(n = 11, name = "RdBu")))
+dev.off()
+```
+
+```{r}
+
+```
+
+
+# Visualization of signatures in data with VISION
+
+All of the Hallmark gene set enrichment data was obtained from the [Mouse MSigDB Collections](https://www.gsea-msigdb.org/gsea/msigdb/mouse/collections.jsp). GMT files were downloaded for all 50 hallmark gene sets as [Gene Symbols](https://www.gsea-msigdb.org/gsea/msigdb/download_file.jsp?filePath=/msigdb/release/2023.1.Mm/mh.all.v2023.1.Mm.symbols.gmt) (accessed: 230620). The file obtained is called 'mh.all.v2023.1.Mm.symbols.gmt'. 
+
+```{r cortex-VISION}
+# set up signatures of interest
+signatures <- here("data/unprocessed/mh.all.v2023.1.Mm.symbols.gmt")
+
+# create vision object
+vision <- Vision(cerebral_int_celltypes, signatures = signatures, pool = FALSE)
+
+# subset vision object for hallmark pathways of interest
+sigs <- vision@sigData
+names <- c("HALLMARK_P53_PATHWAY", "HALLMARK_APOPTOSIS", "HALLMARK_DNA_REPAIR", "HALLMARK_G2M_CHECKPOINT", "HALLMARK_INFLAMMATORY_RESPONSE", "HALLMARK_OXIDATIVE_PHOSPHORYLATION")
+
+subset <- sigs[names(sigs) %in% names]
+
+vision@sigData <- subset
+
+# analyze signatures on vision object 
+vision <- analyze(vision) #note: this step takes the longest aside from plotting
+save(vision, file = here("results/module_scores/cortex_vision.Rdata"))
+
+# get signatures
+sigscores <- getSignatureScores(vision) %>% as.data.frame(.)
+
+# create assay object and plot
+cerebral_int_celltypes[["signatures"]] <- CreateAssayObject(counts = t(sigscores))
+DefaultAssay(cerebral_int_celltypes) <- "signatures"
+Idents(cerebral_int_celltypes) <- "cell_type"
+new.cluster.ids <- c("astrocytes", "excitatory_neurons", "fibroblasts", "inhibitory_neurons", "microglia", "oligodendrocytes", "opcs", "pericytes")
+names(new.cluster.ids) <- levels(cerebral_int_celltypes)
+cerebral_int_celltypes <- RenameIdents(cerebral_int_celltypes, new.cluster.ids)
+cerebral_int_celltypes@meta.data[["celltype2"]] <- cerebral_int_celltypes@active.ident
+#cerebral_int_celltypes <- subset(cerebral_int_celltypes, idents = c("URO1","URO2"),invert = T)
+cerebral_int_celltypes@meta.data$celltype_condition <- paste0(cerebral_int_celltypes@meta.data$celltype2, "_", cerebral_int_celltypes@meta.data$type)
+Idents(cerebral_int_celltypes) <- "celltype_condition"
+
+levels(cerebral_int_celltypes) <- c("astrocytes_heterozygous", "excitatory_neurons_heterozygous", "fibroblasts_heterozygous", "inhibitory_neurons_heterozygous", "microglia_heterozygous", "oligodendrocytes_heterozygous", "opcs_heterozygous", "pericytes_heterozygous", "astrocytes_control", "excitatory_neurons_control", "fibroblasts_control", "inhibitory_neurons_control", "microglia_control", "oligodendrocytes_control", "opcs_control", "pericytes_control")
+
+test <- AverageExpression(cerebral_int_celltypes, assays = "signatures")
+fig_cor <- pheatmap(test[["signatures"]], scale = "row",cluster_cols = TRUE)
+
+png(here("results/module_scores/cortex_heatmap_modulescores.png"),
+  res = 250,
+  height = 5000,
+  width = 3000
+)
+fig_cor
+dev.off()
+```
+
+The rest of the VISION analyses looking at ALL hallmarks for cerebral cortex, as well as all hallmarks for kidney and pkd and aki specific signatures were submitted as jobs to SLURM.
+
+* Cortex (All hallmarks n = 48): "14_Setbp1_vision_cortex.R" and "14_Setbp1_vision_cortex.sh"
+* Kidney (All hallmarks n = 48): "14_Setbp1_vision_kidney.R" and "14_Setbp1_vision_kidney.sh"
+* Kidney (AKI and PKD signatures n = 4; up and down for each): "14_Setbp1_vision_aki_pkd_kidney.R" and "14_Setbp1_vision_aki_pkd_kidney.sh"
+
+Tweaking visualization for kidney with all hallmarksv(not clustering columns):
+```{r}
+load(here("results/module_scores/kidney_vision_hallmarks.Rdata"))
+
+# get signatures
+sigscores <- getSignatureScores(vision) %>% as.data.frame(.)
+
+# create assay object and plot
+kidney_int_celltypes[["signatures"]] <- CreateAssayObject(counts = t(sigscores))
+DefaultAssay(kidney_int_celltypes) <- "signatures"
+Idents(kidney_int_celltypes) <- "cell_type"
+new.cluster.ids <- c("B_cells",
+                     "CDIC_typeA",
+                     "CDIC_typeB",
+                     "CDPC",
+                     "DCT",
+                     "DLH",
+                     "endothelial",
+                     "fibroblasts",
+                     "LOH",
+                     "macrophages",
+                     "PCTS1",
+                     "podocytes",
+                     "PST",
+                     "pericytes",
+                     "PCTS2",
+                     "proximal_tubule",
+                     "smooth_muscle_cells")
+names(new.cluster.ids) <- levels(kidney_int_celltypes)
+kidney_int_celltypes <- RenameIdents(kidney_int_celltypes, new.cluster.ids)
+kidney_int_celltypes@meta.data[["celltype2"]] <- kidney_int_celltypes@active.ident
+#kidney_int_celltypes <- subset(kidney_int_celltypes, idents = c("URO1","URO2"),invert = T)
+kidney_int_celltypes@meta.data$celltype_condition <- paste0(kidney_int_celltypes@meta.data$celltype2, "_", kidney_int_celltypes@meta.data$type)
+Idents(kidney_int_celltypes) <- "celltype_condition"
+
+levels(kidney_int_celltypes) <- c("B_cells_heterozygous",
+                                  "CDIC_typeA_heterozygous",
+                                  "CDIC_typeB_heterozygous",
+                                  "CDPC_heterozygous",
+                                  "DCT_heterozygous",
+                                  "DLH_heterozygous",
+                                  "endothelial_heterozygous",
+                                  "fibroblasts_heterozygous",
+                                  "LOH_heterozygous",
+                                  "macrophages_heterozygous",
+                                  "PCTS1_heterozygous",
+                                  "podocytes_heterozygous",
+                                  "PST_heterozygous",
+                                  "pericytes_heterozygous",
+                                  "PCTS2_heterozygous",
+                                  "proximal_tubule_heterozygous",
+                                  "smooth_muscle_cells_heterozygous",
+                                  "B_cells_control",
+                                  "CDIC_typeA_control",
+                                  "CDIC_typeB_control",
+                                  "CDPC_control",
+                                  "DCT_control",
+                                  "DLH_control",
+                                  "endothelial_control",
+                                  "fibroblasts_control",
+                                  "LOH_control",
+                                  "macrophages_control",
+                                  "PCTS1_control",
+                                  "podocytes_control",
+                                  "PST_control",
+                                  "pericytes_control",
+                                  "PCTS2_control",
+                                  "proximal_tubule_control",
+                                  "smooth_muscle_cells_control")
+
+test <- AverageExpression(kidney_int_celltypes, assays = "signatures")
+fig_kid <- pheatmap(test[["signatures"]], scale = "row",cluster_cols = FALSE)
+
+png(here("results/module_scores/kidney_heatmap_hallmarks_unclustered_modulescores.png"),
+    res = 250,
+    height = 5000,
+    width = 3000
+)
+fig_kid
+dev.off()
+```
+
+
+```{r kidney-VISION}
+# # set up signatures of interest
+# signatures <- here("data/unprocessed/mh.all.v2023.1.Mm.symbols.gmt")
+# 
+# # create vision object
+# vision <- Vision(kidney_int_celltypes, signatures = signatures, pool = FALSE)
+# 
+# # adding PKD signatures (renaming because UP and DN are loaded in as the same name)
+# test <- addSignatures(vision, signatures = here("data/unprocessed/PIONTEK_PKD1_TARGETS_UP.v2023.1.Mm.gmt"))
+# vision@sigData[["PIONTEK_PKD1_TARGETS_UP"]] <- test@sigData[["PIONTEK_PKD1_TARGETS"]]
+# 
+# test <- addSignatures(vision, signatures = here("data/unprocessed/PIONTEK_PKD1_TARGETS_DN.v2023.1.Mm.gmt"))
+# vision@sigData[["PIONTEK_PKD1_TARGETS_DN"]] <- test@sigData[["PIONTEK_PKD1_TARGETS"]]
+# 
+# # adding custom signatures for AKI
+# aki_upgenes <- createGeneSignature(
+#   name = "AKI_UP",
+#   sigData = c("Adam8" = 1, "Adamts1" = 1, "Adm" = 1, "Akap12" = 1, "Akr1b8" = 1, "Aldh1a2" = 1, "Aloxe3" = 1, "Anxa1" = 1, "Anxa3" = 1, "Apobec3" = 1, "Arf2" = 1, "Asns" = 1, "Atf3" = 1, "Bcl3" = 1, "Birc3" = 1, "Cd14" = 1, "Cd44" = 1, "Cd68" = 1, "Cd9" = 1, "Cd93" = 1, "Cebpd" = 1, "Chrnb1" = 1, "Clcf1" = 1, "Cldn4" = 1, "Cldn7" = 1, "Ctgf" = 1, "Ctsc" = 1, "Cyr61" = 1, "Ddx21" = 1, "Dusp10" = 1, "Dusp5" = 1, "Edn1" = 1, "Efhd2" = 1, "Elf4" = 1, "Emp1" = 1, "Entpd1" = 1, "Epha2" = 1, "F2r" = 1, "F3" = 1, "Fam57a" = 1, "Flnc" = 1, "Fndc4" = 1, "Fosl1" = 1, "Fosl2" = 1, "Fut2" = 1, "Fxyd5" = 1, "Gas7" = 1, "Gdf15" = 1, "Gprc5a" = 1, "Havcr1" = 1, "Hbegf" = 1, "Hilpda" = 1, "Hmox1" = 1, "Hpcal4" = 1, "Igf2bp2" = 1, "Il1f6" = 1, "Il34" = 1, "Irak3" = 1, "Itga5" = 1, "Klf4" = 1, "Klf6" = 1, "Klf7" = 1, "Krtp28" = 1, "Krt20" = 1, "Lamc2" = 1, "Lif" = 1, "Lrp8" = 1, "Lrrc32" = 1, "Lrrc8c" = 1, "Maff" = 1, "Map3k6" = 1, "Map4k4" = 1, "Mapk6" = 1, "Mmp3" = 1, "Mthfd1l" = 1, "Myc" = 1, "Myh9" = 1, "Nek6" = 1, "Ngf" = 1, "Nras" = 1, "Nt5c1a" = 1, "Nucb2" = 1, "Oasl1" = 1, "Pdgfb" = 1, "Pdk4" = 1, "Pdlim7" = 1, "Plat" = 1, "Plaur" = 1, "Plin2" = 1, "Plk3" = 1, "Plp2" = 1, "Ppm1j" = 1, "Ppp1r14b" = 1, "Pprc1" = 1, "Procr" = 1, "Prrg4" = 1, "Ptger4" = 1, "Ptgs2" = 1, "Ptpn12" = 1, "Pvr" = 1, "Pxdc1" = 1, "Qsox1" = 1, "Rab31" = 1, "Rad18" = 1, "Rap2b" = 1, "Rbm3" = 1, "Rell1" = 1, "Rhbdf2" = 1, "Rin1" = 1, "Rnd1" = 1, "Rnd3" = 1, "Rras2" = 1, "Rtn4" = 1, "Runx1" = 1, "Samd4" = 1, "Sbno2" = 1, "Sema7a" = 1, "Serpinb1a" = 1, "Serpine1" = 1, "Sfn" = 1, "Slc16a1" = 1, "Slc25a24" = 1, "Slc38a2" = 1, "Slc7a5" = 1, "Slc7a6" = 1, "Smad1" = 1, "Smox" = 1, "Socs3" = 1, "Sox9" = 1, "Sphk1" = 1, "Sprr1a" = 1, "Sprr2f" = 1, "Sprr2g" = 1, "Spry2" = 1, "Spsb1" = 1, "St3gal1" = 1, "Stil" = 1, "Syt12" = 1, "Taf1d" = 1, "Taf4b" = 1, "Tcerg1" = 1, "Tgfbr1" = 1, "Thbd" = 1, "Timp1" = 1, "Tinagl1" = 1, "Tmcc3" = 1, "Tmed5" = 1, "Tmem173" = 1, "Tnc" = 1, "Tnfrsf12a" = 1, "Tnfrsf1a" = 1, "Tpm3" = 1, "Trmt61a" = 1, "Tubb6" = 1, "Txnrd1" = 1, "Uchl1" = 1, "Vopp1" = 1)
+# )
+# 
+# aki_downgenes <- createGeneSignature(
+#   name = "AKI_DN",
+#   sigData = c("1700040L02Rik" = -1, "Abhd14b" = -1, "Acad12" = -1, "Acmsd" = -1, "Acot11" = -1, "Acox2" = -1, "Acss2" = -1, "Ak4" = -1, "Akr1c14" = -1, "Akr1c18" = -1, "Aldh4a1" = -1, "Apeh" = -1, "Atp6v1b1" = -1, "BC067074" = -1, "Bcat1" = -1, "Bdh1" = -1, "Bhmt2" = -1, "Bphl" = -1, "Bsnd" = -1, "Casr" = -1, "Cbs" = -1, "Cdkl1" = -1, "Ceacam2" = -1, "Cmah" = -1, "Crot" = -1, "Cth" = -1, "Cubn" = -1, "Cyp2j11" = -1, "D3Ertd751e" = -1, "Dhdh" = -1, "Dnajc28" = -1, "Fam107a" = -1, "Fggy" = -1, "Fmo5" = -1, "Fras1" = -1, "G6pc" = -1, "Galm" = -1, "Gatb" = -1, "Gatm" = -1, "Glyctk" = -1, "Gm10804" = -1, "Hgd" = -1, "Hnmt" = -1, "Hsd3b2" = -1, "Hykk" = -1, "Ift122" = -1, "Inpp5j" = -1, "Kcnj1" = -1, "Keg1" = -1, "Klhl3" = -1, "Kmo" = -1, "Lrrc31" = -1, "Lyplal1" = -1, "Map2k6" = -1, "Mccc1" = -1, "Mccc2" = -1, "Mep1b" = -1, "Mgam" = -1, "Nccrp1" = -1, "Oxgr1" = -1, "Pbld1" = -1, "Pde4c" = -1, "Pfkm" = -1, "Pnkd" = -1, "Pter" = -1, "Ranbp3l" = -1, "Rhcg" = -1, "Serpina1d" = -1, "Serpina1f" = -1, "Sfrp1" = -1, "Shmt2" = -1, "Slc15a2" = -1, "Slc16a9" = -1, "Slc22a13" = -1, "Slc22ap28" = -1, "Slc22a26" = -1, "Slc23a1" = -1, "Slc25a21" = -1, "Slc8a1" = -1, "Slco4c1" = -1, "Smarca2" = -1, "Snx29" = -1, "Suox" = -1, "Tln2" = -1, "Tmem207" = -1, "Tmem25" = -1, "Tpmt" = -1, "Ugt8a" = -1)
+# )
+# 
+# sigs <- c(aki_upgenes, aki_downgenes)
+# 
+# vision <- addSignatures(vision, signatures = sigs)
+# 
+# # subset vision object for pathways of interest (PKD and AKI)
+# sigs <- vision@sigData
+# names <- c("AKI_UP", "AKI_DN", "PIONTEK_PKD1_TARGETS_DN", "PIONTEK_PKD1_TARGETS_UP")
+# 
+# subset <- sigs[names(sigs) %in% names]
+# 
+# vision@sigData <- subset
+# 
+# # analyze signatures on vision object 
+# vision <- analyze(vision) #note: this step takes the longest aside from plotting
+# save(vision, file = here("results/module_scores/kidney_vision_aki_pkd.Rdata"))
+# 
+# # get signatures
+# sigscores <- getSignatureScores(vision) %>% as.data.frame(.)
+# 
+# # create assay object and plot
+# kidney_int_celltypes[["signatures"]] <- CreateAssayObject(counts = t(sigscores))
+# DefaultAssay(kidney_int_celltypes) <- "signatures"
+# Idents(kidney_int_celltypes) <- "cell_type"
+# new.cluster.ids <- c("B_cells",
+#     "CDIC_typeA",
+#     "CDIC_typeB",
+#     "CDPC",
+#     "DCT",
+#     "DLH",
+#     "endothelial",
+#     "fibroblasts",
+#     "LOH",
+#     "macrophages",
+#     "PCTS1",
+#     "podocytes",
+#     "PST",
+#     "pericytes",
+#     "PCTS2",
+#     "proximal_tubule",
+#     "smooth_muscle_cells")
+# names(new.cluster.ids) <- levels(kidney_int_celltypes)
+# kidney_int_celltypes <- RenameIdents(kidney_int_celltypes, new.cluster.ids)
+# kidney_int_celltypes@meta.data[["celltype2"]] <- kidney_int_celltypes@active.ident
+# #kidney_int_celltypes <- subset(kidney_int_celltypes, idents = c("URO1","URO2"),invert = T)
+# kidney_int_celltypes@meta.data$celltype_condition <- paste0(kidney_int_celltypes@meta.data$celltype2, "_", kidney_int_celltypes@meta.data$type)
+# Idents(kidney_int_celltypes) <- "celltype_condition"
+# 
+# levels(kidney_int_celltypes) <- c("B_cells_heterozygous",
+#     "CDIC_typeA_heterozygous",
+#     "CDIC_typeB_heterozygous",
+#     "CDPC_heterozygous",
+#     "DCT_heterozygous",
+#     "DLH_heterozygous",
+#     "endothelial_heterozygous",
+#     "fibroblasts_heterozygous",
+#     "LOH_heterozygous",
+#     "macrophages_heterozygous",
+#     "PCTS1_heterozygous",
+#     "podocytes_heterozygous",
+#     "PST_heterozygous",
+#     "pericytes_heterozygous",
+#     "PCTS2_heterozygous",
+#     "proximal_tubule_heterozygous",
+#     "smooth_muscle_cells_heterozygous",
+#     "B_cells_control",
+#     "CDIC_typeA_control",
+#     "CDIC_typeB_control",
+#     "CDPC_control",
+#     "DCT_control",
+#     "DLH_control",
+#     "endothelial_control",
+#     "fibroblasts_control",
+#     "LOH_control",
+#     "macrophages_control",
+#     "PCTS1_control",
+#     "podocytes_control",
+#     "PST_control",
+#     "pericytes_control",
+#     "PCTS2_control",
+#     "proximal_tubule_control",
+#     "smooth_muscle_cells_control")
+# 
+# test <- AverageExpression(kidney_int_celltypes, assays = "signatures")
+# fig_kid <- pheatmap(test[["signatures"]], scale = "row",cluster_cols = TRUE)
+# 
+# png(here("results/module_scores/kidney_heatmap_aki_pkd_modulescores.png"),
+#   res = 250,
+#   height = 5000,
+#   width = 3000
+# )
+# fig_kid
+# dev.off()
+```
+
+
+# Information on the session and run time
+
+```{r}
+fptm <- proc.time() - ptm
+fptm <- (fptm[3] / 60) / 60
+print(paste0("Run time: ", fptm, " hours"))
+```
+~ 2.0767316666666667 hours 
+
+```{r}
+sessionInfo()
+```
