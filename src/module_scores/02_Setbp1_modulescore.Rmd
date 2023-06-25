@@ -1,0 +1,591 @@
+---
+title: "14_Setbp1_modulescore"
+author: "Jordan Whitlock"
+date: '2023-06-19'
+output: html_document
+---
+Note to code reviewers: Use Docker setbp1_manuscript:1.0.11 (has VISION package added and GSEABase) 
+
+This analysis serves as a targeted investigation of cell-specific pathway involvement using [VISION](https://yoseflab.github.io/VISION/articles/VISION-vignette.html) and the Seurat 'AddModuleScore' function. 
+
+```{r set-seed-libraries}
+set.seed(2178)
+library(Seurat)
+library(VISION)
+library(GSEABase)
+library(dplyr)
+library(styler)
+library(lintr)
+library(here)
+library(RColorBrewer)
+library(circlize)
+library(ComplexHeatmap)
+library(tidyr)
+library(readr)
+library(ggplot2)
+library(org.Hs.eg.db)
+library(org.Mm.eg.db)
+
+ptm <- proc.time()
+```
+
+```{r load-data}
+load(here("data/kidney_integrated_celltypes_postSoup.Rdata"))
+load(here("data/setbp1_cerebralintcelltypes.Rdata"))
+```
+
+Pathways of Interest for Enrichment Investigation in SGS Cortex and Kidney:
+* All Hallmarks (Mouse): https://www.gsea-msigdb.org/gsea/msigdb/download_file.jsp?filePath=/msigdb/release/2023.1.Mm/mh.all.v2023.1.Mm.symbols.gmt
+* DNA Repair- Hallmark DNA Repair (Mouse): https://www.gsea-msigdb.org/gsea/msigdb/mouse/geneset/HALLMARK_DNA_REPAIR.html
+* Apoptosis- Hallmark Apoptosis (Mouse): https://www.gsea-msigdb.org/gsea/msigdb/mouse/geneset/HALLMARK_APOPTOSIS.html
+* Cell Cycle- G2M Checkpoint (Mouse): https://www.gsea-msigdb.org/gsea/msigdb/mouse/geneset/HALLMARK_G2M_CHECKPOINT.html
+* OXPHOS- Oxidative Phosphorylation (Mouse): https://www.gsea-msigdb.org/gsea/msigdb/mouse/geneset/HALLMARK_OXIDATIVE_PHOSPHORYLATION.html
+* p53- p53 pathways (Mouse): https://www.gsea-msigdb.org/gsea/msigdb/mouse/geneset/HALLMARK_P53_PATHWAY.html
+* Inflammatory response (Mouse): https://www.gsea-msigdb.org/gsea/msigdb/mouse/geneset/HALLMARK_INFLAMMATORY_RESPONSE.html
+* AKI signatures- consistently up and downregulated genes in AKI: https://www.frontiersin.org/articles/10.3389/fgene.2020.00411/full
+* PKD signatures- PIONTEK PKD1 Targets (Up and Down): https://www.gsea-msigdb.org/gsea/msigdb/mouse/geneset/PIONTEK_PKD1_TARGETS_DN.html, https://www.gsea-msigdb.org/gsea/msigdb/mouse/geneset/PIONTEK_PKD1_TARGETS_UP.html
+
+# Visualization of signatures in data with VISION
+
+All of the Hallmark gene set enrichment data was obtained from the [Mouse MSigDB Collections](https://www.gsea-msigdb.org/gsea/msigdb/mouse/collections.jsp). GMT files were downloaded for all 50 hallmark gene sets as [Gene Symbols](https://www.gsea-msigdb.org/gsea/msigdb/download_file.jsp?filePath=/msigdb/release/2023.1.Mm/mh.all.v2023.1.Mm.symbols.gmt) (accessed: 230620). The file obtained is called 'mh.all.v2023.1.Mm.symbols.gmt'. 
+
+Since these analysis can take an hour or more to run, we submitted them to the UAB Cheahah Supercomputer as SLURM jobs: 
+* 01_Setbp1_vision_kidney_hallmarks: The `.R` and `.sh` scripts contain all code for the analysis of all mouse hallmark signatures
+* 01_Setbp1_vision_cortex: The `.R` and `.sh` scripts contain all code for the analysis of all mouse hallmark signatures
+* 01_Setbp1_vision_subset_cortex: The `.R` and `.sh` scripts contain all code for the analysis of mouse hallmark signatures realted to what has been published about SGS in brain.
+
+Outputs from these were saved and imported below for visualization.
+
+```{r cortex-VISION}
+# load data
+load(here("data/setbp1_cerebralintcelltypes.Rdata"))
+load(here("results/module_scores/cortex_vision.Rdata"))
+
+# get signatures
+sigscores <- getSignatureScores(vision) %>% as.data.frame(.)
+
+# create assay object and plot
+cerebral_int_celltypes[["signatures"]] <- CreateAssayObject(counts = t(sigscores))
+DefaultAssay(cerebral_int_celltypes) <- "signatures"
+Idents(cerebral_int_celltypes) <- "cell_type"
+new.cluster.ids <- c("astrocytes", "excitatory_neurons", "fibroblasts", "inhibitory_neurons", "microglia", "oligodendrocytes", "opcs", "pericytes")
+names(new.cluster.ids) <- levels(cerebral_int_celltypes)
+cerebral_int_celltypes <- RenameIdents(cerebral_int_celltypes, new.cluster.ids)
+cerebral_int_celltypes@meta.data[["celltype2"]] <- cerebral_int_celltypes@active.ident
+cerebral_int_celltypes@meta.data$celltype_condition <- paste0(cerebral_int_celltypes@meta.data$celltype2, "_", cerebral_int_celltypes@meta.data$type)
+Idents(cerebral_int_celltypes) <- "celltype_condition"
+
+levels(cerebral_int_celltypes) <- c("astrocytes_heterozygous", "excitatory_neurons_heterozygous", "fibroblasts_heterozygous", "inhibitory_neurons_heterozygous", "microglia_heterozygous", "oligodendrocytes_heterozygous", "opcs_heterozygous", "pericytes_heterozygous", "astrocytes_control", "excitatory_neurons_control", "fibroblasts_control", "inhibitory_neurons_control", "microglia_control", "oligodendrocytes_control", "opcs_control", "pericytes_control")
+
+test <- AverageExpression(cerebral_int_celltypes, assays = "signatures")
+
+meta <- as.data.frame(colnames(test$signatures))
+meta.data <- t(as.data.frame(strsplit(sub("(_)(?=[^_]+$)", " ", meta$`colnames(test$signatures)`, perl = TRUE), " ")))
+rownames(meta.data) <- colnames(test$signatures)
+colnames(meta.data) <- c("cell_type", "condition")
+
+
+annotation_colors <- list("condition" = c("control" = "#644DD4", "heterozygous" = "#5F9EFD"), "cell_type" = c("excitatory_neurons" = "#DC71FA", "inhibitory_neurons" = "#00BBDB", "oligodendrocytes" = "#7997FF", "astrocytes" = "#6968B4", "microglia" = "#C216B7", "opcs" = "#00C1AA", "pericytes" = "#027461", "fibroblasts" = "#0a2f6f"))
+
+# set heatmap annotations:
+heat.anno <- HeatmapAnnotation(df = as.data.frame(meta.data), show_annotation_name = TRUE, col = annotation_colors)
+
+# convert dataframe to matrix
+mat <- as.matrix(test$signatures)
+
+# plot heatmap
+# Heatmap
+col_fun <- colorRamp2(seq(min(mat), max(mat), length = 3), colors = c("black", "yellow", "orange"))
+
+png(
+  filename = here("results/module_scores/cortex_SGS_hallmarks_heatmap.png"),
+  res = 250,
+  height = 3000,
+  width = 3000
+)
+Heatmap(mat,
+  col = col_fun,
+  heatmap_legend_param = list(title = "Enrichment Score"),
+  cluster_rows = TRUE,
+  cluster_columns = TRUE,
+  column_order = NULL,
+  show_row_dend = TRUE,
+  show_column_dend = TRUE,
+  show_row_names = TRUE,
+  show_column_names = FALSE,
+  use_raster = TRUE,
+  raster_device = c("png"),
+  bottom_annotation = NULL,
+  top_annotation = heat.anno,
+  row_title = "Hallmark Pathways", row_title_side = "right",
+  row_title_gp = gpar(fontface = "bold"),
+  row_names_gp = gpar(fontface = "bold", fontfamily = "Helvetica")
+)
+dev.off()
+```
+
+```{r kidney-hallmarks}
+load(here("results/module_scores/kidney_vision_hallmarks.Rdata"))
+load(here("data/kidney_integrated_celltypes_postSoup.Rdata"))
+
+# get signatures
+sigscores <- getSignatureScores(vision) %>% as.data.frame(.)
+
+# create assay object and plot
+kidney_int_celltypes[["signatures"]] <- CreateAssayObject(counts = t(sigscores))
+DefaultAssay(kidney_int_celltypes) <- "signatures"
+Idents(kidney_int_celltypes) <- "cell_type"
+new.cluster.ids <- c(
+  "B_cells",
+  "CDIC_typeA",
+  "CDIC_typeB",
+  "CDPC",
+  "DCT",
+  "DLH",
+  "endothelial",
+  "fibroblasts",
+  "LOH",
+  "macrophages",
+  "PCTS1",
+  "podocytes",
+  "PST",
+  "pericytes",
+  "PCTS2",
+  "proximal_tubule",
+  "smooth_muscle_cells"
+)
+names(new.cluster.ids) <- levels(kidney_int_celltypes)
+kidney_int_celltypes <- RenameIdents(kidney_int_celltypes, new.cluster.ids)
+kidney_int_celltypes@meta.data[["celltype2"]] <- kidney_int_celltypes@active.ident
+kidney_int_celltypes@meta.data$celltype_condition <- paste0(kidney_int_celltypes@meta.data$celltype2, "_", kidney_int_celltypes@meta.data$type)
+Idents(kidney_int_celltypes) <- "celltype_condition"
+
+levels(kidney_int_celltypes) <- c(
+  "B_cells_heterozygous",
+  "CDIC_typeA_heterozygous",
+  "CDIC_typeB_heterozygous",
+  "CDPC_heterozygous",
+  "DCT_heterozygous",
+  "DLH_heterozygous",
+  "endothelial_heterozygous",
+  "fibroblasts_heterozygous",
+  "LOH_heterozygous",
+  "macrophages_heterozygous",
+  "PCTS1_heterozygous",
+  "podocytes_heterozygous",
+  "PST_heterozygous",
+  "pericytes_heterozygous",
+  "PCTS2_heterozygous",
+  "proximal_tubule_heterozygous",
+  "smooth_muscle_cells_heterozygous",
+  "B_cells_control",
+  "CDIC_typeA_control",
+  "CDIC_typeB_control",
+  "CDPC_control",
+  "DCT_control",
+  "DLH_control",
+  "endothelial_control",
+  "fibroblasts_control",
+  "LOH_control",
+  "macrophages_control",
+  "PCTS1_control",
+  "podocytes_control",
+  "PST_control",
+  "pericytes_control",
+  "PCTS2_control",
+  "proximal_tubule_control",
+  "smooth_muscle_cells_control"
+)
+
+test <- AverageExpression(kidney_int_celltypes, assays = "signatures")
+
+meta <- as.data.frame(colnames(test$signatures))
+meta.data <- t(as.data.frame(strsplit(sub("(_)(?=[^_]+$)", " ", meta$`colnames(test$signatures)`, perl = TRUE), " ")))
+rownames(meta.data) <- colnames(test$signatures)
+colnames(meta.data) <- c("cell_type", "condition")
+
+
+annotation_colors <- list(
+  "condition" = c(
+    "control" = "#FE6100",
+    "heterozygous" = "#FFB000"
+  ),
+  "cell_type" = c(
+    "B_cells" = "#FFBE1D",
+    "CDIC_typeA" = "#4E3801",
+    "CDIC_typeB" = "#EEDF37",
+    "CDPC" = "#F03F00",
+    "DCT" = "#6D0404",
+    "DLH" = "#AA6320",
+    "endothelial" = "#CF9400",
+    "fibroblasts" = "#FFC8C4",
+    "LOH" = "#AA937E",
+    "macrophages" = "#C70F0F",
+    "PCTS1" = "#A85A5A",
+    "podocytes" = "#BD085E",
+    "PST" = "#948802",
+    "pericytes" = "#FFE196",
+    "PCTS2" = "#FF7600",
+    "proximal_tubule" = "#F8766D",
+    "smooth_muscle_cells" = "#FFE196"
+  )
+)
+
+
+# set heatmap annotations:
+heat.anno <- HeatmapAnnotation(df = as.data.frame(meta.data), show_annotation_name = TRUE, col = annotation_colors)
+
+# convert dataframe to matrix
+mat <- as.matrix(test$signatures)
+
+# plot heatmap
+# Heatmap
+col_fun <- colorRamp2(seq(min(mat), max(mat), length = 4), colors = c("black", "yellow", "orange", "red"))
+
+png(
+  filename = here("results/module_scores/kidney_all_hallmarks_heatmap.png"),
+  res = 250,
+  height = 3000,
+  width = 3000
+)
+Heatmap(mat,
+  col = col_fun,
+  heatmap_legend_param = list(title = "Enrichment Score"),
+  cluster_rows = TRUE,
+  cluster_columns = TRUE,
+  column_order = NULL,
+  show_row_dend = TRUE,
+  show_column_dend = TRUE,
+  show_row_names = TRUE,
+  show_column_names = FALSE,
+  use_raster = TRUE,
+  raster_device = c("png"),
+  bottom_annotation = NULL,
+  top_annotation = heat.anno,
+  row_title = "Hallmark Pathways", row_title_side = "left",
+  row_title_gp = gpar(fontface = "bold"),
+  row_names_gp = gpar(fontface = "bold", fontfamily = "Helvetica")
+)
+dev.off()
+```
+
+```{r cortex-hallmarks-supp}
+load(here("results/module_scores/cortex_vision_hallmarks.Rdata"))
+load(here("data/setbp1_cerebralintcelltypes.Rdata"))
+
+# get signatures
+sigscores <- getSignatureScores(vision) %>% as.data.frame(.)
+
+# create assay object and plot
+cerebral_int_celltypes[["signatures"]] <- CreateAssayObject(counts = t(sigscores))
+DefaultAssay(cerebral_int_celltypes) <- "signatures"
+Idents(cerebral_int_celltypes) <- "cell_type"
+new.cluster.ids <- c("astrocytes", "excitatory_neurons", "fibroblasts", "inhibitory_neurons", "microglia", "oligodendrocytes", "opcs", "pericytes")
+names(new.cluster.ids) <- levels(cerebral_int_celltypes)
+cerebral_int_celltypes <- RenameIdents(cerebral_int_celltypes, new.cluster.ids)
+cerebral_int_celltypes@meta.data[["celltype2"]] <- cerebral_int_celltypes@active.ident
+cerebral_int_celltypes@meta.data$celltype_condition <- paste0(cerebral_int_celltypes@meta.data$celltype2, "_", cerebral_int_celltypes@meta.data$type)
+Idents(cerebral_int_celltypes) <- "celltype_condition"
+
+levels(cerebral_int_celltypes) <- c("astrocytes_heterozygous", "excitatory_neurons_heterozygous", "fibroblasts_heterozygous", "inhibitory_neurons_heterozygous", "microglia_heterozygous", "oligodendrocytes_heterozygous", "opcs_heterozygous", "pericytes_heterozygous", "astrocytes_control", "excitatory_neurons_control", "fibroblasts_control", "inhibitory_neurons_control", "microglia_control", "oligodendrocytes_control", "opcs_control", "pericytes_control")
+
+test <- AverageExpression(cerebral_int_celltypes, assays = "signatures")
+
+meta <- as.data.frame(colnames(test$signatures))
+meta.data <- t(as.data.frame(strsplit(sub("(_)(?=[^_]+$)", " ", meta$`colnames(test$signatures)`, perl = TRUE), " ")))
+rownames(meta.data) <- colnames(test$signatures)
+colnames(meta.data) <- c("cell_type", "condition")
+
+
+annotation_colors <- list("condition" = c("control" = "#644DD4", "heterozygous" = "#5F9EFD"), "cell_type" = c("excitatory_neurons" = "#DC71FA", "inhibitory_neurons" = "#00BBDB", "oligodendrocytes" = "#7997FF", "astrocytes" = "#6968B4", "microglia" = "#C216B7", "opcs" = "#00C1AA", "pericytes" = "#027461", "fibroblasts" = "#0a2f6f"))
+
+# set heatmap annotations:
+heat.anno <- HeatmapAnnotation(df = meta.data, show_annotation_name = TRUE, col = annotation_colors)
+
+# convert dataframe to matrix
+mat <- as.matrix(test$signatures)
+
+# plot heatmap
+# Heatmap
+col_fun <- colorRamp2(seq(min(mat), max(mat), length = 4), colors = c("purple", "black", "yellow", "orange"))
+png(
+  filename = here("results/module_scores/cortex_all_hallmarks_heatmap.png"),
+  res = 250,
+  height = 5000,
+  width = 4000
+)
+Heatmap(mat,
+  col = col_fun,
+  heatmap_legend_param = list(title = "Enrichment Score"),
+  cluster_rows = TRUE,
+  cluster_columns = TRUE,
+  column_order = NULL,
+  show_row_dend = TRUE,
+  show_column_dend = TRUE,
+  show_row_names = TRUE,
+  show_column_names = FALSE,
+  use_raster = TRUE,
+  raster_device = c("png"),
+  bottom_annotation = NULL,
+  top_annotation = heat.anno,
+  row_title = "Hallmark Pathways", row_title_side = "left",
+  row_title_gp = gpar(fontface = "bold"),
+  row_names_gp = gpar(fontface = "bold", fontfamily = "Helvetica")
+)
+dev.off()
+```
+
+## AddModuleScore Kidney 
+Calculates the average expression levels of each program (cluster) on single nuclei level, subtracted by the aggregated expression of control feature sets. All analyzed features are binned based on averaged expression, and the control features are randomly selected from each bin.
+
+We were curious if an AKI or PKD signature was present in the SGS kidneys. It appears after performing Module Score analysis that there is no notable difference between kidney signatures across conditions
+
+### Set up signatures
+
+```{r aki-signature}
+aki_upgenes <- c("Adam8", "Adamts1", "Adm", "Akap12", "Akr1b8", "Aldh1a2", "Aloxe3", "Anxa1", "Anxa3", "Apobec3", "Arf2", "Asns", "Atf3", "Bcl3", "Birc3", "Cd14", "Cd44", "Cd68", "Cd9", "Cd93", "Cebpd", "Chrnb1", "Clcf1", "Cldn4", "Cldn7", "Ctgf", "Ctsc", "Cyr61", "Ddx21", "Dusp10", "Dusp5", "Edn1", "Efhd2", "Elf4", "Emp1", "Entpd1", "Epha2", "F2r", "F3", "Fam57a", "Flnc", "Fndc4", "Fosl1", "Fosl2", "Fut2", "Fxyd5", "Gas7", "Gdf15", "Gprc5a", "Havcr1", "Hbegf", "Hilpda", "Hmox1", "Hpcal4", "Igf2bp2", "Il1f6", "Il34", "Irak3", "Itga5", "Klf4", "Klf6", "Klf7", "Krtp28", "Krt20", "Lamc2", "Lif", "Lrp8", "Lrrc32", "Lrrc8c", "Maff", "Map3k6", "Map4k4", "Mapk6", "Mmp3", "Mthfd1l", "Myc", "Myh9", "Nek6", "Ngf", "Nras", "Nt5c1a", "Nucb2", "Oasl1", "Pdgfb", "Pdk4", "Pdlim7", "Plat", "Plaur", "Plin2", "Plk3", "Plp2", "Ppm1j", "Ppp1r14b", "Pprc1", "Procr", "Prrg4", "Ptger4", "Ptgs2", "Ptpn12", "Pvr", "Pxdc1", "Qsox1", "Rab31", "Rad18", "Rap2b", "Rbm3", "Rell1", "Rhbdf2", "Rin1", "Rnd1", "Rnd3", "Rras2", "Rtn4", "Runx1", "Samd4", "Sbno2", "Sema7a", "Serpinb1a", "Serpine1", "Sfn", "Slc16a1", "Slc25a24", "Slc38a2", "Slc7a5", "Slc7a6", "Smad1", "Smox", "Socs3", "Sox9", "Sphk1", "Sprr1a", "Sprr2f", "Sprr2g", "Spry2", "Spsb1", "St3gal1", "Stil", "Syt12", "Taf1d", "Taf4b", "Tcerg1", "Tgfbr1", "Thbd", "Timp1", "Tinagl1", "Tmcc3", "Tmed5", "Tmem173", "Tnc", "Tnfrsf12a", "Tnfrsf1a", "Tpm3", "Trmt61a", "Tubb6", "Txnrd1", "Uchl1", "Vopp1")
+
+aki_downgenes <- c("1700040L02Rik", "Abhd14b", "Acad12", "Acmsd", "Acot11", "Acox2", "Acss2", "Ak4", "Akr1c14", "Akr1c18", "Aldh4a1", "Apeh", "Atp6v1b1", "BC067074", "Bcat1", "Bdh1", "Bhmt2", "Bphl", "Bsnd", "Casr", "Cbs", "Cdkl1", "Ceacam2", "Cmah", "Crot", "Cth", "Cubn", "Cyp2j11", "D3Ertd751e", "Dhdh", "Dnajc28", "Fam107a", "Fggy", "Fmo5", "Fras1", "G6pc", "Galm", "Gatb", "Gatm", "Glyctk", "Gm10804", "Hgd", "Hnmt", "Hsd3b2", "Hykk", "Ift122", "Inpp5j", "Kcnj1", "Keg1", "Klhl3", "Kmo", "Lrrc31", "Lyplal1", "Map2k6", "Mccc1", "Mccc2", "Mep1b", "Mgam", "Nccrp1", "Oxgr1", "Pbld1", "Pde4c", "Pfkm", "Pnkd", "Pter", "Ranbp3l", "Rhcg", "Serpina1d", "Serpina1f", "Sfrp1", "Shmt2", "Slc15a2", "Slc16a9", "Slc22a13", "Slc22ap28", "Slc22a26", "Slc23a1", "Slc25a21", "Slc8a1", "Slco4c1", "Smarca2", "Snx29", "Suox", "Tln2", "Tmem207", "Tmem25", "Tpmt", "Ugt8a")
+```
+
+
+```{r pkd-signature}
+pkd_upgenes <- getGmt(here("data/unprocessed/PIONTEK_PKD1_TARGETS_UP.v2023.1.Mm.gmt"))
+pkd_upgenes <- pkd_upgenes[["PIONTEK_PKD1_TARGETS_UP"]]@geneIds
+
+pkd_downgenes <- getGmt(here("data/unprocessed/PIONTEK_PKD1_TARGETS_DN.v2023.1.Mm.gmt"))
+pkd_downgenes <- pkd_downgenes[["PIONTEK_PKD1_TARGETS_DN"]]@geneIds
+```
+
+### Calculate Module Scores: 
+
+```{r}
+load(here("data/kidney_integrated_celltypes_postSoup.Rdata"))
+```
+
+
+```{r kidney-running-AddModuleScore}
+# aki down scoring
+aki_downgenes <- as.list(aki_downgenes)
+
+kidney_int_celltypes <- AddModuleScore(kidney_int_celltypes,
+  features = list(aki_downgenes),
+  name = "aki_down_score"
+)
+## Plot scores
+png(here("results/module_scores/kidney_aki_down_modulescores.png"),
+  res = 250,
+  height = 3000,
+  width = 4000
+)
+VlnPlot(kidney_int_celltypes,
+  features = "aki_down_score1", split.by = "type", pt.size = 0
+) +
+  theme(legend.position = "right") &
+  scale_colour_gradientn(colours = rev(brewer.pal(n = 11, name = "RdBu")))
+dev.off()
+
+# aki up scoring
+aki_upgenes <- as.list(aki_upgenes)
+
+kidney_int_celltypes <- AddModuleScore(kidney_int_celltypes,
+  features = list(aki_upgenes),
+  name = "aki_up_score"
+)
+## Plot scores
+png(here("results/module_scores/kidney_aki_up_modulescores.png"),
+  res = 250,
+  height = 3000,
+  width = 4000
+)
+VlnPlot(kidney_int_celltypes,
+  features = "aki_up_score1", split.by = "type", pt.size = 0
+) +
+  theme(legend.position = "right") &
+  scale_colour_gradientn(colours = rev(brewer.pal(n = 11, name = "RdBu")))
+dev.off()
+
+# pkd signature scoring
+
+## down
+pkd_downgenes <- as.list(pkd_downgenes)
+
+kidney_int_celltypes <- AddModuleScore(kidney_int_celltypes,
+  features = list(pkd_downgenes),
+  name = "pkd_down_score"
+)
+
+### Plot scores
+png(here("results/module_scores/kidney_pkd_down_modulescores.png"),
+  res = 250,
+  height = 3000,
+  width = 4000
+)
+VlnPlot(kidney_int_celltypes,
+  features = "pkd_down_score1", split.by = "type", pt.size = 0
+) +
+  theme(legend.position = "right") &
+  scale_colour_gradientn(colours = rev(brewer.pal(n = 11, name = "RdBu")))
+dev.off()
+
+## up
+pkd_upgenes <- as.list(pkd_upgenes)
+
+kidney_int_celltypes <- AddModuleScore(kidney_int_celltypes,
+  features = list(pkd_upgenes),
+  name = "pkd_up_score"
+)
+
+### Plot scores
+png(here("results/module_scores/kidney_pkd_up_modulescores.png"),
+  res = 250,
+  height = 3000,
+  width = 4000
+)
+VlnPlot(kidney_int_celltypes,
+  features = "pkd_up_score1", split.by = "type", pt.size = 0
+) +
+  theme(legend.position = "right") &
+  scale_colour_gradientn(colours = rev(brewer.pal(n = 11, name = "RdBu")))
+dev.off()
+```
+
+### Calculate statistics using wilcoxon test for each module within each cell type
+Now that module scores have been calculated, we wanted to see if any were statistically significant for any cell types between conditions. 
+# ```{r}
+# # wrangle data to get scores respective to each condition and cell type
+# split <- SplitObject(kidney_int_celltypes, split.by = "type")
+# split_het <- SplitObject(split$heterozygous, split.by = "cell_type")
+# split_ctrl <- SplitObject(split$control, split.by = "cell_type")
+# ```
+# 
+# ```{r apop-score}
+# ## grab all apoptosis scores
+# het_apop <- list()
+# for (i in names(split_het)) {
+#   het_apop[[i]] <- as.data.frame(split_het[[i]]@meta.data[["aki_up_score1"]])
+#   het_apop[[i]]$condition <- "heterozygous"
+#   het_apop[[i]][["cell_type"]] <- i
+#   colnames(het_apop[[i]]) <- c("aki_up_score", "condition", "cell_type")
+# }
+# 
+# ctrl_apop <- list()
+# for (i in names(split_ctrl)) {
+#   ctrl_apop[[i]] <- as.data.frame(split_ctrl[[i]]@meta.data[["aki_up_score1"]])
+#   ctrl_apop[[i]]$condition <- "control"
+#   ctrl_apop[[i]][["cell_type"]] <- i
+#   colnames(ctrl_apop[[i]]) <- c("aki_up_score", "condition", "cell_type")
+# }
+# 
+# combined <- c(het_apop, ctrl_apop)
+# combined_df <- do.call(rbind, combined)
+# 
+# 
+# ## summarize
+# summary_df <- combined_df %>%
+#   group_by(cell_type, condition) %>%
+#   summarise(
+#     count = n(),
+#     median = median(aki_up_score, na.rm = TRUE),
+#     IQR = IQR(aki_up_score, na.rm = TRUE)
+#   )
+# 
+# print(summary_df)
+# 
+# ## visualize
+# ggplot(data = combined_df, aes(x = condition, y = aki_up_score)) +
+#   geom_boxplot() +
+#   facet_wrap(~cell_type) + theme_minimal()
+# 
+# 
+# ## calculate statistic per cell type between conditions 
+# het <- subset(combined_df, condition == "heterozygous")
+# ctrl <- subset(combined_df, condition == "control")
+# 
+# cells <- unique(het$cell_type)
+# 
+# apop_res_list <- list()
+# for(i in cells){
+#   het_data <- het[het$cell_type == i,]
+#   ctrl_data <- ctrl[ctrl$cell_type == i,]
+#   apop_res_list[[i]] <- wilcox.test(het_data$aki_up_score, ctrl_data$aki_up_score, exact = FALSE)
+# }
+# 
+# # Create an empty data frame to store the results
+# pvalue_df <- data.frame(List_Item = character(),
+#                         P_Value = numeric(),
+#                         stringsAsFactors = FALSE)
+# 
+# # Loop over the list items and extract p-values
+# for (i in seq_along(apop_res_list)) {
+#   list_item <- names(apop_res_list)[i]
+#   p_value <- apop_res_list[[i]]$p.value
+#   pvalue_df[i, "List_Item"] <- list_item
+#   pvalue_df[i, "P_Value"] <- p_value
+# }
+# 
+# # Print the resulting data frame
+# print(pvalue_df)
+# ```
+
+# Information on the session and run time
+```{r}
+fptm <- proc.time() - ptm
+fptm <- (fptm[3] / 60) / 60
+print(paste0("Run time: ", fptm, " hours"))
+```
+"Run time: 0.340276666666667 hours"
+
+```{r}
+style_file(here("src/module_scores/02_Setbp1_modulescore.Rmd")) # Note: lintr was run as well
+```
+
+
+```{r}
+sessionInfo()
+```
+R version 4.1.3 (2022-03-10)
+Platform: x86_64-pc-linux-gnu (64-bit)
+Running under: Ubuntu 20.04.6 LTS
+
+Matrix products: default
+BLAS/LAPACK: /usr/lib/x86_64-linux-gnu/openblas-pthread/libopenblasp-r0.3.8.so
+
+locale:
+[1] C
+
+attached base packages:
+[1] grid      stats4    stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+ [1] org.Mm.eg.db_3.14.0   org.Hs.eg.db_3.14.0   ggplot2_3.4.1         readr_2.1.4           tidyr_1.3.0           ComplexHeatmap_2.10.0
+ [7] circlize_0.4.15       RColorBrewer_1.1-3    here_1.0.1            dplyr_1.1.2           GSEABase_1.56.0       graph_1.72.0         
+[13] annotate_1.72.0       XML_3.99-0.13         AnnotationDbi_1.56.2  IRanges_2.28.0        S4Vectors_0.32.4      Biobase_2.54.0       
+[19] BiocGenerics_0.40.0   VISION_3.0.1          SeuratObject_4.1.3    Seurat_4.3.0         
+
+loaded via a namespace (and not attached):
+  [1] utf8_1.2.3             spatstat.explore_3.0-6 reticulate_1.28        tidyselect_1.2.0       RSQLite_2.3.0          htmlwidgets_1.6.1     
+  [7] Rtsne_0.16             munsell_0.5.0          codetools_0.2-18       ica_1.0-3              future_1.31.0          miniUI_0.1.1.1        
+ [13] withr_2.5.0            spatstat.random_3.1-3  colorspace_2.1-0       fastICA_1.2-3          progressr_0.13.0       knitr_1.42            
+ [19] rstudioapi_0.14        ROCR_1.0-11            plumber_1.2.1          tensor_1.5             pbmcapply_1.5.1        listenv_0.9.0         
+ [25] labeling_0.4.2         GenomeInfoDbData_1.2.7 polyclip_1.10-4        bit64_4.0.5            farver_2.1.1           rprojroot_2.0.3       
+ [31] parallelly_1.34.0      vctrs_0.6.2            generics_0.1.3         xfun_0.37              R6_2.5.1               doParallel_1.0.17     
+ [37] GenomeInfoDb_1.30.1    clue_0.3-64            rsvd_1.0.5             bitops_1.0-7           spatstat.utils_3.0-1   cachem_1.0.7          
+ [43] webutils_1.1           promises_1.2.0.1       scales_1.2.1           gtable_0.3.1           globals_0.16.2         goftest_1.2-3         
+ [49] phangorn_2.11.1        rlang_1.1.1            GlobalOptions_0.1.2    splines_4.1.3          lazyeval_0.2.2         spatstat.geom_3.0-6   
+ [55] reshape2_1.4.4         abind_1.4-5            httpuv_1.6.11          tools_4.1.3            logging_0.10-108       ellipsis_0.3.2        
+ [61] wordspace_0.2-8        ggridges_0.5.4         Rcpp_1.0.10            plyr_1.8.8             zlibbioc_1.40.0        purrr_1.0.1           
+ [67] RCurl_1.98-1.10        deldir_1.0-6           pbapply_1.7-0          GetoptLong_1.0.5       cowplot_1.1.1          zoo_1.8-11            
+ [73] swagger_3.33.1         ggrepel_0.9.3          cluster_2.1.2          magrittr_2.0.3         data.table_1.14.8      scattermore_0.8       
+ [79] lmtest_0.9-40          RANN_2.6.1             fitdistrplus_1.1-8     matrixStats_0.63.0     hms_1.1.2              patchwork_1.1.2       
+ [85] mime_0.12              xtable_1.8-4           mclust_6.0.0           sparsesvd_0.2-2        gridExtra_2.3          shape_1.4.6           
+ [91] compiler_4.1.3         tibble_3.2.1           KernSmooth_2.23-20     crayon_1.5.2           htmltools_0.5.4        mgcv_1.8-39           
+ [97] later_1.3.1            tzdb_0.3.0             DBI_1.1.3              MASS_7.3-55            Matrix_1.5-3           permute_0.9-7         
+[103] cli_3.6.1              quadprog_1.5-8         parallel_4.1.3         igraph_1.4.3           pkgconfig_2.0.3        sp_1.6-0              
+[109] plotly_4.10.1          spatstat.sparse_3.0-0  foreach_1.5.2          iotools_0.3-2          XVector_0.34.0         stringr_1.5.0         
+[115] digest_0.6.31          sctransform_0.3.5      RcppAnnoy_0.0.20       vegan_2.6-4            spatstat.data_3.0-0    Biostrings_2.62.0     
+[121] leiden_0.4.3           fastmatch_1.1-3        uwot_0.1.14            loe_1.1                shiny_1.7.4            rjson_0.2.21          
+[127] lifecycle_1.0.3        nlme_3.1-155           jsonlite_1.8.4         viridisLite_0.4.1      fansi_1.0.4            pillar_1.9.0          
+[133] lattice_0.20-45        KEGGREST_1.34.0        fastmap_1.1.1          httr_1.4.5             survival_3.3-1         glue_1.6.2            
+[139] png_0.1-8              iterators_1.0.14       bit_4.0.5              stringi_1.7.12         blob_1.2.3             memoise_2.0.1         
+[145] irlba_2.3.5.1          future.apply_1.10.0    ape_5.7-1
