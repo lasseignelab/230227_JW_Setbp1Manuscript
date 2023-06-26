@@ -44,6 +44,7 @@ Pathways of Interest for Enrichment Investigation in SGS Cortex and Kidney:
 * Inflammatory response (Mouse): https://www.gsea-msigdb.org/gsea/msigdb/mouse/geneset/HALLMARK_INFLAMMATORY_RESPONSE.html
 * AKI signatures- consistently up and downregulated genes in AKI: https://www.frontiersin.org/articles/10.3389/fgene.2020.00411/full
 * PKD signatures- PIONTEK PKD1 Targets (Up and Down): https://www.gsea-msigdb.org/gsea/msigdb/mouse/geneset/PIONTEK_PKD1_TARGETS_DN.html, https://www.gsea-msigdb.org/gsea/msigdb/mouse/geneset/PIONTEK_PKD1_TARGETS_UP.html
+* PP2A phosphatase - (Mouse): https://www.gsea-msigdb.org/gsea/msigdb/mouse/geneset/GOMF_PROTEIN_PHOSPHATASE_2A_BINDING.html?keywords=phosphatase
 
 # Visualization of signatures in data with VISION
 
@@ -335,10 +336,12 @@ Heatmap(mat,
 dev.off()
 ```
 
-## AddModuleScore Kidney 
+## AddModuleScore Analysis 
 Calculates the average expression levels of each program (cluster) on single nuclei level, subtracted by the aggregated expression of control feature sets. All analyzed features are binned based on averaged expression, and the control features are randomly selected from each bin.
 
-We were curious if an AKI or PKD signature was present in the SGS kidneys. It appears after performing Module Score analysis that there is no notable difference between kidney signatures across conditions
+We were curious if an AKI or PKD signature was present in the SGS kidneys. It appears after performing Module Score analysis that there is no notable difference between kidney signatures across conditions. 
+
+In addition to AKI and PKD signatures, SET is a known inhibitor of PP2A and plays a role in altered H3K9 Acetylation [info here](https://www.nature.com/articles/s41467-023-39043-x)m therefore we also assessed module scores and expression for PP2A activity and ortholog of PP2A, Ppp2ca, in both tissues.  
 
 ### Set up signatures
 
@@ -357,10 +360,17 @@ pkd_downgenes <- getGmt(here("data/unprocessed/PIONTEK_PKD1_TARGETS_DN.v2023.1.M
 pkd_downgenes <- pkd_downgenes[["PIONTEK_PKD1_TARGETS_DN"]]@geneIds
 ```
 
+```{r pp2a-signature}
+pp2a_sig <- getGmt(here("data/unprocessed/GOMF_PROTEIN_PHOSPHATASE_2A_BINDING.v2023.1.Mm.gmt"))
+pp2a_sig <- pp2a_sig[["GOMF_PROTEIN_PHOSPHATASE_2A_BINDING"]]@geneIds
+```
+
+
 ### Calculate Module Scores: 
 
 ```{r}
 load(here("data/kidney_integrated_celltypes_postSoup.Rdata"))
+load(here("data/setbp1_cerebralintcelltypes.Rdata"))
 ```
 
 
@@ -448,85 +458,90 @@ VlnPlot(kidney_int_celltypes,
   theme(legend.position = "right") &
   scale_colour_gradientn(colours = rev(brewer.pal(n = 11, name = "RdBu")))
 dev.off()
+
+# Pp2a signature
+## kidney
+pp2a_sig <- as.list(pp2a_sig)
+
+kidney_int_celltypes <- AddModuleScore(kidney_int_celltypes,
+  features = list(pp2a_sig),
+  name = "pp2a_sig_score"
+)
+
+### Plot scores
+png(here("results/module_scores/kidney_pp2a_modulescores.png"),
+  res = 250,
+  height = 3000,
+  width = 4000
+)
+VlnPlot(kidney_int_celltypes,
+  features = "pp2a_sig_score1", split.by = "type", pt.size = 0
+) +
+  theme(legend.position = "right") &
+  scale_colour_gradientn(colours = rev(brewer.pal(n = 11, name = "RdBu")))
+dev.off()
+
+##cortex
+pp2a_sig <- as.list(pp2a_sig)
+
+cerebral_int_celltypes <- AddModuleScore(cerebral_int_celltypes,
+  features = list(pp2a_sig),
+  name = "pp2a_sig_score"
+)
+
+### Plot scores
+png(here("results/module_scores/cortex_pp2a_modulescores.png"),
+  res = 250,
+  height = 3000,
+  width = 4000
+)
+VlnPlot(cerebral_int_celltypes,
+  features = "pp2a_sig_score1", split.by = "type", pt.size = 0
+) +
+  theme(legend.position = "right") &
+  scale_colour_gradientn(colours = rev(brewer.pal(n = 11, name = "RdBu")))
+dev.off()
 ```
 
-### Calculate statistics using wilcoxon test for each module within each cell type
-Now that module scores have been calculated, we wanted to see if any were statistically significant for any cell types between conditions. 
-# ```{r}
-# # wrangle data to get scores respective to each condition and cell type
-# split <- SplitObject(kidney_int_celltypes, split.by = "type")
-# split_het <- SplitObject(split$heterozygous, split.by = "cell_type")
-# split_ctrl <- SplitObject(split$control, split.by = "cell_type")
-# ```
-# 
-# ```{r apop-score}
-# ## grab all apoptosis scores
-# het_apop <- list()
-# for (i in names(split_het)) {
-#   het_apop[[i]] <- as.data.frame(split_het[[i]]@meta.data[["aki_up_score1"]])
-#   het_apop[[i]]$condition <- "heterozygous"
-#   het_apop[[i]][["cell_type"]] <- i
-#   colnames(het_apop[[i]]) <- c("aki_up_score", "condition", "cell_type")
-# }
-# 
-# ctrl_apop <- list()
-# for (i in names(split_ctrl)) {
-#   ctrl_apop[[i]] <- as.data.frame(split_ctrl[[i]]@meta.data[["aki_up_score1"]])
-#   ctrl_apop[[i]]$condition <- "control"
-#   ctrl_apop[[i]][["cell_type"]] <- i
-#   colnames(ctrl_apop[[i]]) <- c("aki_up_score", "condition", "cell_type")
-# }
-# 
-# combined <- c(het_apop, ctrl_apop)
-# combined_df <- do.call(rbind, combined)
-# 
-# 
-# ## summarize
-# summary_df <- combined_df %>%
-#   group_by(cell_type, condition) %>%
-#   summarise(
-#     count = n(),
-#     median = median(aki_up_score, na.rm = TRUE),
-#     IQR = IQR(aki_up_score, na.rm = TRUE)
-#   )
-# 
-# print(summary_df)
-# 
-# ## visualize
-# ggplot(data = combined_df, aes(x = condition, y = aki_up_score)) +
-#   geom_boxplot() +
-#   facet_wrap(~cell_type) + theme_minimal()
-# 
-# 
-# ## calculate statistic per cell type between conditions 
-# het <- subset(combined_df, condition == "heterozygous")
-# ctrl <- subset(combined_df, condition == "control")
-# 
-# cells <- unique(het$cell_type)
-# 
-# apop_res_list <- list()
-# for(i in cells){
-#   het_data <- het[het$cell_type == i,]
-#   ctrl_data <- ctrl[ctrl$cell_type == i,]
-#   apop_res_list[[i]] <- wilcox.test(het_data$aki_up_score, ctrl_data$aki_up_score, exact = FALSE)
-# }
-# 
-# # Create an empty data frame to store the results
-# pvalue_df <- data.frame(List_Item = character(),
-#                         P_Value = numeric(),
-#                         stringsAsFactors = FALSE)
-# 
-# # Loop over the list items and extract p-values
-# for (i in seq_along(apop_res_list)) {
-#   list_item <- names(apop_res_list)[i]
-#   p_value <- apop_res_list[[i]]$p.value
-#   pvalue_df[i, "List_Item"] <- list_item
-#   pvalue_df[i, "P_Value"] <- p_value
-# }
-# 
-# # Print the resulting data frame
-# print(pvalue_df)
-# ```
+```{r Ppp2ca-expression}
+cor <- VlnPlot(cerebral_int_celltypes, features = "Ppp2ca", split.by = "type", pt.size = 0) + scale_fill_manual(values = c("#644DD4", "#5F9EFD"))  +
+  theme(text = element_text(family = "Helvetica")) +
+  theme(axis.text.x = element_text(color = "black")) + 
+  theme(axis.title.x = element_blank()) + 
+  theme(axis.text = element_text(face = "bold")) +
+  theme(legend.title = element_text(face = "bold")) +
+  theme(legend.text = element_text(face = "bold")) +
+  labs(y = "Expression") +
+  theme(axis.title.y = element_text(face = "bold"))
+
+png(here("results/module_scores/cortex_ppp2ca_vln.png"),
+  res = 250,
+  height = 1000,
+  width = 2000
+)
+cor
+dev.off()
+
+kid <- VlnPlot(kidney_int_celltypes, features = "Ppp2ca", split.by = "type", pt.size = 0) + scale_fill_manual(values = c("#FE6100", "#FFB000")) +
+  theme(text = element_text(family = "Helvetica")) +
+  theme(axis.text.x = element_text(color = "black")) + 
+  theme(axis.title.x = element_blank()) + 
+  theme(axis.text = element_text(face = "bold")) +
+  theme(legend.title = element_text(face = "bold")) +
+  theme(legend.text = element_text(face = "bold")) +
+  labs(y = "Expression") +
+  theme(axis.title.y = element_text(face = "bold"))
+
+png(here("results/module_scores/kidney_ppp2ca_vln.png"),
+  res = 250,
+  height = 1000,
+  width = 2000
+)
+kid
+dev.off()
+```
+
+
 
 # Information on the session and run time
 ```{r}
