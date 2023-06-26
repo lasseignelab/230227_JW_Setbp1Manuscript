@@ -812,31 +812,6 @@ plot_title <- "Differential Gene Targeting of known targets of Setbp1 in S858R e
 targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title, show_names = TRUE, height = 2200)
 ```
 
-```{r GO-difftargeting-genes-Setbp1Target-het-enriched}
-## pathway analysis and plotting
-exclude_column <- "gene" # note: this needs to be changed for gene respectively, indicates which columns to pivot longer below,
-data <- het_enriched[het_enriched$gene %in% setbp1_genes, ] %>%
-  pivot_longer(., cols = which(colnames(.) != exclude_column), names_to = "cell_type", values_to = "targeting_score") %>%
-  .[!.$targeting_score == 0, ]
-
-for (i in cell_names) {
-  # grab genes from cell type i ----------
-  top <- data[data$cell_type == i, ]
-  genes <- as.character(top$gene)
-  # submit genes to pathway analysis function ----------
-  fea_result_filt <- fea(genes = genes, organism = "mmusculus", max_term = 1000, min_term = 1)
-  png(paste0(here("results/diff_targeting/"), "DiffTargeting_", i, "genes_ Setbp1targets_het_enriched.png"), width = 1000, height = 1000)
-  # plot dotplot and add title based on input variable ----------
-  plot <- bubbleplot(fea_result_filt) +
-    ggtitle(paste0("Pathways Associated with Differentially Targeted genes (Setbp1 or known targets) in Setbp1 S858R ", i)) +
-    theme(plot.title = element_text(hjust = 0.5, size = 12)) +
-    theme_minimal()
-  print(plot)
-  dev.off()
-  print(paste0("pathways investigated and plotted in ", i))
-}
-``` 
-
 ```{r visualizing-all-diff-gene-ctrl-enriched}
 ## formatting input data
 data <- ctrl_enriched
@@ -974,61 +949,6 @@ plot_title <- "Differential Targeting of Top 20 Genes within Cell-types in Setbp
 targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title, show_names = TRUE, height = 5000)
 ```
 
-```{r GO-difftargeting-top20genes-het-enriched}
-## pathway analysis and plotting
-data <- kidney_het_enriched_top_genes
-
-for (i in cell_names) {
-  # grab genes from cell type i ----------
-  if (i == "Bcell" || i == "CDPC") {
-    top <- data[data$cell_type == i, ]
-    genes <- as.character(top$gene)
-    # submit genes to pathway analysis function ----------
-    fea_result_filt <- fea_no_sig(genes = genes, organism = "mmusculus", max_term = 1000, min_term = 1)
-    png(paste0(here("results/diff_targeting/"), "DiffTargeting_", i, "_top20_genes_het_enriched.png"), width = 1000, height = 1000)
-    # plot dotplot and add title based on input variable ----------
-    plot <- bubbleplot(fea_result_filt) +
-      ggtitle(paste0("Non-sig Pathways Associated with Top 20 Differentially Targeted Genes in Setbp1 S858R ", i)) +
-      theme(plot.title = element_text(hjust = 0.5, size = 12)) +
-      theme_minimal()
-    print(plot)
-    dev.off()
-    print(paste0("nonsig pathways investigated and plotted in ", i))
-  } else {
-    top <- data[data$cell_type == i, ]
-    genes <- as.character(top$gene)
-    # submit genes to pathway analysis function ----------
-    fea_result_filt <- fea(genes = genes, organism = "mmusculus", max_term = 1000, min_term = 1)
-    png(paste0(here("results/diff_targeting/"), "DiffTargeting_", i, "_top20_genes_het_enriched.png"), width = 1000, height = 1000)
-    # plot dotplot and add title based on input variable ----------
-    plot <- bubbleplot(fea_result_filt) +
-      ggtitle(paste0("Pathways Associated with Top 20 Differentially Targeted Genes in Setbp1 S858R ", i)) +
-      theme(plot.title = element_text(hjust = 0.5, size = 12)) +
-      theme_minimal()
-    print(plot)
-    dev.off()
-    print(paste0("pathways investigated and plotted in ", i))
-  }
-}
-```
-[1] "nonsig pathways investigated and plotted in Bcell"
-[1] "pathways investigated and plotted in CDIC_typeA"
-[1] "pathways investigated and plotted in CDIC_typeB"
-[1] "nonsig pathways investigated and plotted in CDPC"
-[1] "pathways investigated and plotted in DCT"
-[1] "pathways investigated and plotted in DLH"
-[1] "pathways investigated and plotted in LOH"
-[1] "pathways investigated and plotted in PCTS1"
-[1] "pathways investigated and plotted in PCTS2"
-[1] "pathways investigated and plotted in PST"
-[1] "pathways investigated and plotted in PT"
-[1] "pathways investigated and plotted in endothelial"
-[1] "pathways investigated and plotted in fibroblasts"
-[1] "pathways investigated and plotted in macrophages"
-[1] "pathways investigated and plotted in pericytes"
-[1] "pathways investigated and plotted in podocytes"
-[1] "pathways investigated and plotted in smcs"
-
 ```{r find-top-diff-targeted-genes-ctrl-celltypes}
 cell_names <- colnames(ctrl_enriched) %>% .[which(. != "gene")] # note: need to change for gene, grabbing cell type names
 cell_names
@@ -1082,45 +1002,6 @@ plot_title <- "Differential Targeting of Top 20 Genes within Cell-types in Setbp
 
 targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title, show_names = TRUE, height = 5000)
 ```
-
-```{r GO-difftargeting-top20genes-ctrl-enriched}
-## pathway analysis and plotting
-data <- kidney_ctrl_enriched_top_genes
-
-for (i in cell_names) {
-  # grab genes from cell type i ----------
-  top <- data[data$cell_type == i, ]
-  genes <- as.character(top$gene)
-  # submit genes to pathway analysis function ----------
-  fea_result_filt <- fea(genes = genes, organism = "mmusculus", max_term = 1000, min_term = 1)
-  png(paste0(here("results/diff_targeting/"), "DiffTargeting_", i, "_top20_genes_ctrl_enriched.png"), width = 1000, height = 1000)
-  # plot dotplot and add title based on input variable ----------
-  plot <- bubbleplot(fea_result_filt) +
-    ggtitle(paste0("Pathways Associated with Top 20 Differentially Targeted genes in Setbp1 S858R ", i)) +
-    theme(plot.title = element_text(hjust = 0.5, size = 12)) +
-    theme_minimal()
-  print(plot)
-  dev.off()
-  print(paste0("pathways investigated and plotted in ", i))
-}
-```
-[1] "pathways investigated and plotted in Bcell"
-[1] "pathways investigated and plotted in CDIC_typeA"
-[1] "pathways investigated and plotted in CDIC_typeB"
-[1] "pathways investigated and plotted in CDPC"
-[1] "pathways investigated and plotted in DCT"
-[1] "pathways investigated and plotted in DLH"
-[1] "pathways investigated and plotted in LOH"
-[1] "pathways investigated and plotted in PCTS1"
-[1] "pathways investigated and plotted in PCTS2"
-[1] "pathways investigated and plotted in PST"
-[1] "pathways investigated and plotted in PT"
-[1] "pathways investigated and plotted in endothelial"
-[1] "pathways investigated and plotted in fibroblasts"
-[1] "pathways investigated and plotted in macrophages"
-[1] "pathways investigated and plotted in pericytes"
-[1] "pathways investigated and plotted in podocytes"
-[1] "pathways investigated and plotted in smcs"
 
 ```{r}
 fptm <- proc.time() - ptm

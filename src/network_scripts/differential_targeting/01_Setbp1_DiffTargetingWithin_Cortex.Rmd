@@ -335,9 +335,7 @@ ggplot(combined) +
 dev.off()
 ```
 
-
 ## Investigate targeting rank within each Het cell type
-
 ```{r find-top-targeted-genes-within-het-celltypes}
 cell_names <- colnames(gene_targeting_all_het) %>% .[which(. != "gene")] # note: need to change for gene, grabbing cell type names
 cell_names
@@ -371,7 +369,6 @@ for (i in cell_names) {
 
 het_all_gene_targeting_within <- do.call(bind_rows, gene_rank_het) # collapsing list into single df using row binding
 ```
-
 
 ```{r visualizing-het-gene-rank-with-heatmap}
 ## formatting input data
@@ -435,7 +432,6 @@ plot_title <- "Targeting of Setbp1 and known target genes within Cell-types in S
 
 targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title, show_names = TRUE)
 ```
-
 
 ## Investigate targeting rank within each Ctrl cell type
 ```{r find-top-targeted-genes-within-ctrl-celltypes}
@@ -557,6 +553,7 @@ print(gene_targeting_all_ctrl) # Print the updated dataframe
 # binding data together
 combined_gene_targeting <- merge(gene_targeting_all_het, gene_targeting_all_ctrl, by = "gene")
 ```
+
 Keeping all values from differential (both positive and negative) in order to see what is enriched but also what is missing. 
 ```{r calculate-het-enriched-diff-targeting}
 # creating empty data frame
@@ -727,12 +724,12 @@ ggplot(data_plot, aes(x = norm, y = reorder(cell_type, norm))) +
   xlim(c(-350, 399))
 dev.off()
 ```
+
 Saving het_enriched without negatives for rest of plotting: 
 ```{r}
 het_enriched <- replace(diff_gene_targeting, diff_gene_targeting[, ] < 0, 0) # creating dataframe where the differential is enriched in the het condition
 save(het_enriched, file = here("results/diff_targeting/cortex_het_enriched_gene.Rdata"))
 ```
-
 
 ```{r calculate-ctrl-enriched-diff-targeting}
 # creating empty data frame
@@ -795,39 +792,6 @@ plot_title <- "Differential Gene Targeting of known targets of Setbp1 in S858R e
 targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title, show_names = TRUE, height = 2200)
 ```
 
-```{r GO-difftargeting-genes-Setbp1Target-het-enriched}
-## pathway analysis and plotting
-exclude_column <- "gene" # note: this needs to be changed for gene, indicates which columns to pivot longer below,
-data <- het_enriched[het_enriched$gene %in% setbp1_genes, ] %>%
-  pivot_longer(., cols = which(colnames(.) != exclude_column), names_to = "cell_type", values_to = "targeting_score") %>%
-  .[!.$targeting_score == 0, ]
-
-for (i in cell_names) {
-  # grab genes from cell type i ----------
-  top <- data[data$cell_type == i, ]
-  genes <- as.character(top$gene)
-  # submit genes to pathway analysis function ----------
-  fea_result_filt <- fea(genes = genes, organism = "mmusculus", max_term = 1000, min_term = 1)
-  png(paste0(here("results/diff_targeting/"), "DiffTargeting_", i, "genes_ Setbp1targets_het_enriched.png"), width = 1000, height = 1000)
-  # plot dotplot and add title based on input variable ----------
-  plot <- bubbleplot(fea_result_filt) +
-    ggtitle(paste0("Pathways Associated with Differentially Targeted genes (Setbp1 or known targets) in Setbp1 S858R ", i)) +
-    theme(plot.title = element_text(hjust = 0.5, size = 12)) +
-    theme_minimal()
-  print(plot)
-  dev.off()
-  print(paste0("pathways investigated and plotted in ", i))
-}
-``` 
-[1] "pathways investigated and plotted in astrocytes"
-[1] "pathways investigated and plotted in excitatory_neurons"
-[1] "pathways investigated and plotted in fibro_cortex"
-[1] "pathways investigated and plotted in inhibitory_neurons"
-[1] "pathways investigated and plotted in microglia"
-[1] "pathways investigated and plotted in pericytes"
-[1] "pathways investigated and plotted in oligodendrocytes"
-[1] "pathways investigated and plotted in opcs"
-
 ```{r visualizing-all-diff-gene-ctrl-enriched}
 ## formatting input data
 data <- ctrl_enriched
@@ -864,7 +828,6 @@ ggplot(data = pivoted, aes(x = targeting_score, group = cell_type, color = cell_
                                 "#00C1AA"))
 summary(het_enriched)
 ```
-
 
 ```{r het-diff-gene-targeting-distribution-nonzero}
 # het gene distribution nonzero
@@ -940,7 +903,6 @@ nonzero_long <- abs(nonzero_long[, which(colnames(nonzero_long) != exclude_colum
 summary(nonzero_long)
 ```
 
-
 ```{r find-top-diff-targeted-genes-het-celltypes}
 cell_names <- colnames(het_enriched) %>% .[which(. != "gene")] # note: need to change for gene, grabbing cell type names
 cell_names
@@ -994,35 +956,6 @@ plot_title <- "Differential Targeting of Top 20 Genes within Cell-types in Setbp
 
 targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title, show_names = TRUE, height = 2000)
 ```
-
-```{r GO-difftargeting-top20genes-het-enriched}
-## pathway analysis and plotting
-data <- cortex_het_enriched_top_genes
-
-for (i in cell_names) {
-  top <- data[data$cell_type == i, ]
-  genes <- as.character(top$gene)
-  # submit genes to pathway analysis function ----------
-  fea_result_filt <- fea(genes = genes, organism = "mmusculus", max_term = 1000, min_term = 1)
-  png(paste0(here("results/diff_targeting/"), "DiffTargeting_", i, "_top20_genes_het_enriched.png"), width = 1000, height = 1000)
-  # plot dotplot and add title based on input variable ----------
-  plot <- bubbleplot(fea_result_filt) +
-    ggtitle(paste0("Pathways Associated with Top 20 Differentially Targeted Genes in Setbp1 S858R ", i)) +
-    theme(plot.title = element_text(hjust = 0.5, size = 12)) +
-    theme_minimal()
-  print(plot)
-  dev.off()
-  print(paste0("pathways investigated and plotted in ", i))
-}
-```
-[1] "pathways investigated and plotted in astrocytes"
-[1] "pathways investigated and plotted in excitatory_neurons"
-[1] "pathways investigated and plotted in fibro_cortex"
-[1] "pathways investigated and plotted in inhibitory_neurons"
-[1] "pathways investigated and plotted in microglia"
-[1] "pathways investigated and plotted in pericytes"
-[1] "pathways investigated and plotted in oligodendrocytes"
-[1] "pathways investigated and plotted in opcs"
 
 ```{r find-top-diff-targeted-genes-ctrl-celltypes}
 cell_names <- colnames(ctrl_enriched) %>% .[which(. != "gene")] # note: need to change for gene, grabbing cell type names
@@ -1078,43 +1011,13 @@ plot_title <- "Differential Targeting of Top 20 Genes within Cell-types in Setbp
 targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title, show_names = TRUE, height = 2000)
 ```
 
-```{r GO-difftargeting-top20genes-ctrl-enriched}
-## pathway analysis and plotting
-data <- cortex_ctrl_enriched_top_genes
-
-for (i in cell_names) {
-  # grab genes from cell type i ----------
-  top <- data[data$cell_type == i, ]
-  genes <- as.character(top$gene)
-  # submit genes to pathway analysis function ----------
-  fea_result_filt <- fea(genes = genes, organism = "mmusculus", max_term = 1000, min_term = 1)
-  png(paste0(here("results/diff_targeting/"), "DiffTargeting_", i, "_top20_genes_ctrl_enriched.png"), width = 1000, height = 1000)
-  # plot dotplot and add title based on input variable ----------
-  plot <- bubbleplot(fea_result_filt) +
-    ggtitle(paste0("Pathways Associated with Top 20 Differentially Targeted genes in Setbp1 S858R ", i)) +
-    theme(plot.title = element_text(hjust = 0.5, size = 12)) +
-    theme_minimal()
-  print(plot)
-  dev.off()
-  print(paste0("pathways investigated and plotted in ", i))
-}
-```
-[1] "pathways investigated and plotted in astrocytes"
-[1] "pathways investigated and plotted in excitatory_neurons"
-[1] "pathways investigated and plotted in fibro_cortex"
-[1] "pathways investigated and plotted in inhibitory_neurons"
-[1] "pathways investigated and plotted in microglia"
-[1] "pathways investigated and plotted in pericytes"
-[1] "pathways investigated and plotted in oligodendrocytes"
-[1] "pathways investigated and plotted in opcs"
-
 ```{r}
 fptm <- proc.time() - ptm
 fptm[3]/60
 ```
-elapsed 
-35.63102 
- 
+  elapsed 
+27.44132 
+
 ```{r}
 # run style
 #style_file(here("src/network_scripts/differential_targeting/Setbp1_DiffTargetingCortex_01.Rmd")) #commented out after being run once

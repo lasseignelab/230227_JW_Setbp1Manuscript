@@ -8,7 +8,7 @@ using docker 1.0.6
 
 Goal: Perform Functional Enrichment Analysis (FEA) on heterozygous enriched, differentially targeted genes from the Setbp1 gene set using Gene Ontology and Human Phenotype from gprofiler. 
 
-```{r}
+```{r libraries-processingtime-seed}
 set.seed(2178)
 library(ComplexHeatmap)
 library(gprofiler2)
@@ -23,13 +23,15 @@ source(here("src/functions/functions.R"))
 ptm <- proc.time()
 ```
 
-Identifying differentially targeted genes from the Setbp1 gene set
-```{r}
+```{r loading-geneset}
 # loading gene set
 setbp1_genes <- read.csv(here("results/seurat/setbp1_targets.csv"))
 setbp1_genes <- setbp1_genes[, -1] %>% as.vector()
 setbp1_genes <- append(setbp1_genes, "Setbp1")
+```
 
+Identifying differentially targeted genes from the Setbp1 gene set
+```{r loading-DT-genes}
 # loading het enriched DT genes and filtering for gene set
 load(here("results/diff_targeting/cortex_het_enriched_gene.Rdata"))
 cortex_DT <- het_enriched
@@ -47,7 +49,7 @@ rm(het_enriched)
 ```
 
 Investigating whether there are any DT genes from the gene set that are brain-specific, kidney-specific, or DT in both tissues:
-```{r}
+```{r tissue-specific-DT-genes}
 both <- intersect(kid_genes, cortex_genes)
 both # 194 genes
 
@@ -59,7 +61,7 @@ cortex_specific # Trex1
 ```
 
 Investigating whether there are any DT genes from the gene set that are cerebral cortex cell-type specific 
-```{r}
+```{r cortex-cell-specific-DT-geneset}
 data <- cortex_DT[cortex_DT$gene %in% setbp1_genes, ]
 
 # formatting data
@@ -85,7 +87,7 @@ write.csv(DT_cerebral_cts,
 ```
 
 Investigating whether there are any DT genes from the gene set that are cerebral kidney cell-type specific 
-```{r}
+```{r kidney-cell-specific-DT-geneset}
 data <- kidney_DT[kidney_DT$gene %in% setbp1_genes, ]
 
 # formatting data
@@ -106,47 +108,44 @@ unique_values <- names(value_counts[value_counts == 1])
 DT_kidney_cts <- data[data$gene %in% unique_values, ] # None
 ```
 
-FEA on het enriched DT genes:
-```{r}
-data <- cortex_DT[cortex_DT$gene %in% setbp1_genes, ]
+Using a custom background for gost (custom_bg), of the Setbp1 Target gene set. 
+* Rationale: (from LW) The background (others call the 'universe') for a FEA is just saying all possible genes that could have been used as input (i.e. if input genes were filtered only for protein-coding genes, there's no chance a non-protein-coding gene would show up, so the stats need to be adjusted for what's possible.) 
+* custom_bg: vector of gene names to use as a statistical background. If given, the domain_scope is by default set to "custom", if domain_scope is set to "custom_annotated", then this is used instead
 
+```{r fea-GO-HP-cortex-setbp1-geneset}
+data <- cortex_DT[cortex_DT$gene %in% setbp1_genes, ]
 # formatting data
 data <- pivot_longer(data,
   cols = c(2:9),
   values_to = "DT Score",
   names_to = "Cell Type"
 )
-data <- subset(data, `DT Score` != 0)
 
-# all cortex cell types
-genes <- as.character(data$gene)
-fea_result_filt_all <- fea(
-  genes = genes,
-  organism = "mmusculus",
-  sources = c("GO:BP")
-)
+data <- subset(data, `DT Score` != 0)
 
 # indivudal cell types
 cell_types <- unique(data$`Cell Type`)
 
 fea_celltypes <- list()
+fea_celltypes_nonsig <- list()
 
 for (i in cell_types) {
   temp <- data[data$`Cell Type` == i, ]
   genes <- as.character(temp$gene)
-  if (i == "pericytes") {
-    fea_result_filt <- fea_no_sig(
+  if (i == "pericytes") { #
+    fea_result_filt <- fea_custom_no_sig(
       genes = genes,
       organism = "mmusculus",
-      sources = c("GO:BP", "HP")
+      sources = c("GO", "HP")
     )
-    fea_celltypes[[i]] <- fea_result_filt
+    fea_celltypes_nonsig[[i]] <- fea_result_filt
     print(paste0("nonsig fea analysis complete on ", i))
   } else {
-    fea_result_filt <- fea(
+    fea_result_filt <- fea_custom(
       genes = genes,
       organism = "mmusculus",
-      sources = c("GO:BP", "HP")
+      sources = c("GO", "HP"),
+      custom_bg = setbp1_genes
     )
     fea_celltypes[[i]] <- fea_result_filt
     print(paste0("fea analysis complete on ", i))
@@ -157,16 +156,16 @@ for (i in cell_types) {
 cortex_fea <- fea_celltypes %>%
   map_df(~ tibble::as_tibble(.x), .id = "source")
 
-data <- cortex_fea[, c("term_name", "source", "intersection_size")]
+data <- cortex_fea[, c("term_name", "source", "recall")]
 
 # saving fea results
-cortex_fea <- cortex_fea[, -which(names(cortex_fea) == "parents")] # removing column of list items in order to save
-write.csv(cortex_fea, here("results/diff_targeting/cortex_fea_DT_genes.csv"))
+# cortex_fea <- cortex_fea[, -which(names(cortex_fea) == "parents")] # removing column of list items in order to save
+# write.csv(cortex_fea, here("results/diff_targeting/cortex_fea_DT_genes.csv"))
 
 # wrangle for plotting
 data <- pivot_wider(data,
   names_from = source,
-  values_from = intersection_size
+  values_from = recall
 ) %>%
   mutate_all(~ replace_na(., 0))
 
@@ -183,12 +182,13 @@ colnames(meta) <- "Cell Type"
 annotation_colors <- list(`Cell Type` = c(
   "astrocytes" = "#6968B4",
   "opcs" = "#00C1AA",
-  "pericytes" = "#027461",
+  # "pericytes" = "#027461",
   "fibro_cortex" = "#0a2f6f",
   "excitatory_neurons" = "#DC71FA",
   "inhibitory_neurons" = "#00BBDB",
-  "microglia" = "#C216B7"
-)) # "oligodendrocytes" = "#7997FF" (none for pathways)
+  "microglia" = "#C216B7",
+  "oligodendrocytes" = "#7997FF"
+))
 
 heat.anno <- HeatmapAnnotation(
   df = meta,
@@ -201,8 +201,8 @@ mat <- as.matrix(data)
 
 ## plot heatmap
 cor_heatmap <- Heatmap(mat,
-  col = colorRampPalette(c("black", "yellow"))(4),
-  heatmap_legend_param = list(title = "Intersection Size"),
+  col = colorRampPalette(c("black", "yellow", "orange", "red"))(4),
+  heatmap_legend_param = list(title = "Recall"),
   cluster_rows = TRUE,
   cluster_columns = TRUE,
   column_order = NULL,
@@ -214,7 +214,7 @@ cor_heatmap <- Heatmap(mat,
   raster_device = c("png"),
   bottom_annotation = NULL,
   top_annotation = heat.anno,
-  column_title = "Cell Type", row_title = "Pathways", row_title_side = "right",
+  row_title = "Pathways", row_title_side = "left",
   row_title_gp = gpar(fontface = "bold"),
   row_names_gp = gpar(fontface = "bold", fontfamily = "Helvetica")
 )
@@ -224,17 +224,16 @@ plot <- plot_grid(grid.grabExpr(draw(cor_heatmap,
   annotation_legend_side = "right",
   legend_grouping = "original"
 )))
-png(here("results/diff_targeting/cortex_het_enriched_DT_pathways.png"),
+png(here("results/diff_targeting/cortex_het_enriched_DT_from_geneset_GO_HP_pathways_recall.png"),
   res = 250,
   height = 5000,
-  width = 4000
+  width = 3000
 )
 plot
 dev.off()
 ```
 
-FEA of het enriched DT genes in kidney
-```{r}
+```{r fea-GO-HP-kidney-setbp1-geneset}
 data <- kidney_DT[kidney_DT$gene %in% setbp1_genes, ]
 
 # formatting data
@@ -245,14 +244,6 @@ data <- pivot_longer(data,
 )
 data <- subset(data, `DT Score` != 0)
 
-# all kidney cell types
-genes <- as.character(data$gene)
-fea_result_filt_all <- fea(
-  genes = genes,
-  organism = "mmusculus",
-  sources = c("GO:BP")
-)
-
 # indivudal cell types
 cell_types <- unique(data$`Cell Type`)
 
@@ -261,35 +252,25 @@ fea_celltypes <- list()
 for (i in cell_types) {
   temp <- data[data$`Cell Type` == i, ]
   genes <- as.character(temp$gene)
-  if (i == "Bcell" | i == "CDIC_typeB" | i == "PCTS1" | i == "PST" | i == "smcs") {
-    fea_result_filt <- fea_no_sig(
-      genes = genes,
-      organism = "mmusculus",
-      sources = c("GO:BP", "HP")
-    )
-    fea_celltypes[[i]] <- fea_result_filt
-    print(paste0("nonsig fea analysis complete on ", i))
-  } else {
-    fea_result_filt <- fea(genes = genes, organism = "mmusculus", sources = c("GO:BP", "HP"))
-    fea_celltypes[[i]] <- fea_result_filt
-    print(paste0("fea analysis complete on ", i))
-  }
+  fea_result_filt <- fea_custom(genes = genes, organism = "mmusculus", sources = c("GO", "HP"), custom_bg = setbp1_genes)
+  fea_celltypes[[i]] <- fea_result_filt
+  print(paste0("fea analysis complete on ", i))
 }
 
 # Unlist and annotate source
 kidney_fea <- fea_celltypes %>%
   map_df(~ tibble::as_tibble(.x), .id = "source")
 
-data <- kidney_fea[, c("term_name", "source", "intersection_size")]
+data <- kidney_fea[, c("term_name", "source", "recall")]
 
 # saving fea results
-kidney_fea <- kidney_fea[, -which(names(kidney_fea) == "parents")] # removing column of list items in order to save
-write.csv(kidney_fea, here("results/diff_targeting/kidney_fea_DT_genes.csv"))
+# kidney_fea <- kidney_fea[, -which(names(kidney_fea) == "parents")] # removing column of list items in order to save
+# write.csv(kidney_fea, here("results/diff_targeting/kidney_fea_DT_genes.csv"))
 
 # wrangle for plotting
 data <- pivot_wider(data,
   names_from = source,
-  values_from = intersection_size
+  values_from = recall
 ) %>%
   mutate_all(~ replace_na(., 0))
 
@@ -301,34 +282,39 @@ rownames(data) <- names
 
 meta <- as.data.frame(cell_type)
 colnames(meta) <- "Cell Type"
-
-## set heatmap annotations
-annotation_colors <- list(`Cell Type` = c(
-  "CDIC_typeA" = "#4E3801",
-  "CDIC_typeB" = "#EEDF37",
-  "LOH" = "#CF9400",
-  "PCTS1" = "#FFC8C4",
-  "PCTS2" = "#AA937E",
-  "PST" = "#C70F0F",
-  "PT" = "#A85A5A",
-  "fibroblasts" = "#948802",
-  "pericytes" = "#FF7600",
-  "DCT" = "#6D0404",
-  "DLH" = "#AA6320",
-  "endothelial" = "#BD085E",
-  "podocytes" = "#F8766D",
-  "macrophages" = "#FFE196"
-))
-
-heat.anno <- HeatmapAnnotation(df = meta, show_annotation_name = TRUE, col = annotation_colors)
-
+rownames(meta) <- colnames(mat)
 ## convert data to matrix
 mat <- as.matrix(data)
 
+## set heatmap annotations
+annotation_colors <- list(`Cell Type` = c(
+    "Bcell" = "#FFBE1D",
+    "CDIC_typeA" = "#4E3801",
+    "CDIC_typeB" = "#EEDF37",
+    "CDPC" = "#F03F00",
+    "DCT" = "#6D0404",
+    "DLH" = "#AA6320",
+    "endothelial" = "#CF9400",
+    "fibroblasts" = "#FFC8C4",
+    "LOH" = "#AA937E",
+    "macrophages" = "#C70F0F",
+    "PCTS1" = "#A85A5A",
+    "podocytes" = "#BD085E",
+    "PST" = "#948802",
+    "pericytes" = "#FFE196",
+    "PCTS2" = "#FF7600",
+    "PT" = "#F8766D",
+    "smcs" = "#FFE196"
+))
+
+
+heat.anno <- HeatmapAnnotation(df = meta, show_annotation_name = TRUE, col = annotation_colors)
+
+
 ## plot heatmap
 kid_heatmap <- Heatmap(mat,
-  col = colorRampPalette(c("black", "yellow"))(4),
-  heatmap_legend_param = list(title = "Intersection Size"),
+  col = colorRampPalette(c("black", "yellow", "orange", "red"))(4),
+  heatmap_legend_param = list(title = "Recall"),
   cluster_rows = TRUE,
   cluster_columns = TRUE,
   column_order = NULL,
@@ -340,7 +326,7 @@ kid_heatmap <- Heatmap(mat,
   raster_device = c("png"),
   bottom_annotation = NULL,
   top_annotation = heat.anno,
-  column_title = "Cell Type", row_title = "Pathways", row_title_side = "right",
+  row_title = "Pathways", row_title_side = "left",
   row_title_gp = gpar(fontface = "bold"),
   row_names_gp = gpar(fontface = "bold", fontfamily = "Helvetica")
 )
@@ -350,7 +336,7 @@ plot <- plot_grid(grid.grabExpr(draw(kid_heatmap,
   annotation_legend_side = "right",
   legend_grouping = "original"
 )))
-png(here("results/diff_targeting/kidney_het_enriched_DT_pathways.png"),
+png(here("results/diff_targeting/kidney_het_enriched_DT_geneset_GO_HP_pathways_recall.png"),
   res = 250,
   height = 5000,
   width = 3000
@@ -359,20 +345,20 @@ plot
 dev.off()
 ```
 
-```{r}
+```{r processing-time}
 fptm <- proc.time() - ptm
 fptm[3] / 60
 ```
- elapsed 
-1.069383
+  elapsed 
+0.4909333
 
-```{r}
+```{r style-file}
 # run style
 style_file(here("src/network_scripts/differential_targeting/02_Setbp1_DiffTargeting_FEA.Rmd")) # commented out after being run once
 # lintr was run as well
 ```
 
-```{r}
+```{r session-info}
 sessionInfo()
 ```
 R version 4.1.3 (2022-03-10)
