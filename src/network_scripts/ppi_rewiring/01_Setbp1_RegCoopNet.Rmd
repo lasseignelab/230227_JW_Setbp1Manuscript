@@ -23,6 +23,7 @@ library(reshape2)
 library(scales)
 library(stringr)
 library(dplyr)
+library(cowplot)
 library(ggplot2)
 library(here)
 library(data.table)
@@ -32,6 +33,7 @@ library(ggridges)
 library(purrr)
 library(ggplot2)
 library(plotly)
+source(here("src/functions/functions.R"))
 ptm <- proc.time()
 ```
 
@@ -238,8 +240,7 @@ TFs_to <- seed_coopNet_combo[seed_coopNet_combo$to %in% TF_list,]
 3. Filtering for the Banfi et al proteins
 4. Wrangling back into a single dataframe
 5. Assigning mechanims from Setbp1 literature
-5. Filtering for protein from coopNet that is in setbp1 gene set 
-
+6. Filtering for protein from coopNet that is in setbp1 gene set 
 ```{r sign-change-assignment}
 combo_net_gene_ppi_1 <- lapply(combo_net_gene_ppi_1, function(df) {
   df %>%
@@ -629,8 +630,6 @@ plot
 dev.off()
 ```
 
-
-
 ### control kidney
 ```{r visualizing-mechanisms-sign-change-for-geneset-ctrl}
 # curious...going to subset for Setbp1 gene set in gene_ppi column
@@ -718,15 +717,17 @@ png(here("results/ppi_rewiring/kidney_ctrl_sign_change_heatmap.png"),
 plot
 dev.off()
 ```
-## plot based off of magnitude of regNet and coopNet score (unscaled!!)
 
+## plot based off of magnitude of regNet and coopNet score
 ```{r filtering-gene-ppi-for-geneset}
 cortex_banfi_het <- cortex_banfi_het[cortex_banfi_het$gene_ppi %in% setbp1_genes,]
 kidney_banfi_het <- kidney_banfi_het[kidney_banfi_het$gene_ppi %in% setbp1_genes,]
+
+cortex_banfi_ctrl <- cortex_banfi_ctrl[cortex_banfi_ctrl$gene_ppi %in% setbp1_genes,]
+kidney_banfi_ctrl <- kidney_banfi_ctrl[kidney_banfi_ctrl$gene_ppi %in% setbp1_genes,]
 ```
 
-
-```{r visualizing-scores-banfi}
+```{r visualizing-all-scores-banfi}
 # plot the scores for regNet and coop Net
 cortex_banfi_het$cell_type <- sub("_heterozygouscortex", "", cortex_banfi_het$source)
 
@@ -812,65 +813,725 @@ ggplot(kidney_banfi_het, aes(x = cell_type, y = gene_ppi,
 dev.off()
 ```
 
-## plot using X-Y plot for where quadrants represent the 4 buckets
-```{r filtering-gene-ppi-for-geneset}
-cortex_banfi_het <- cortex_banfi_het[cortex_banfi_het$gene_ppi %in% setbp1_genes,]
-kidney_banfi_het <- kidney_banfi_het[kidney_banfi_het$gene_ppi %in% setbp1_genes,]
-```
+```{r visualizing-by-mechanism-scores-banfi-cortex-het}
+# plot the scores for regNet and coop Net
+cortex_banfi_het$cell_type <- sub("_heterozygouscortex", "", cortex_banfi_het$source) #renaming cell type
+cortex_banfi_het <- cortex_banfi_het[cortex_banfi_het$gene_ppi != "Setbp1",] #removing setbp1 as gene/protein because it does not self-bind
 
-```{r}
-cortex_banfi_het$cell_type <- sub("_heterozygouscortex", "", cortex_banfi_het$source)
+## subsetting for each mechanism
+cortex_banfi_apex1 <- cortex_banfi_het[cortex_banfi_het$mechanism == "DNA damage",]
+cortex_banfi_trp53 <- cortex_banfi_het[cortex_banfi_het$mechanism == "cell cycle",]
 
-# Define custom colors
-custom_colors <- c("excitatory_neurons" = "#DC71FA",
-                   "inhibitory_neurons" = "#00BBDB",
-                   "oligodendrocytes" = "#7997FF",
-                   "astrocytes" = "#6968B4",
-                   "microglia" = "#C216B7",
-                   "opcs" = "#00C1AA",
-                   "pericytes" = "#027461",
-                   "fibro_cortex" = "#0a2f6f")
-
-# Plotting the data
-png(here("results/ppi_rewiring/cortex_het_score_quant_xy_plot.png"),
+png(here("results/ppi_rewiring/cortex_het_dna_damage_dotplot.png"),
   res = 250,
   height = 2000,
   width = 2000)
 
-ggplot(cortex_banfi_het, aes(x = regNet_score, y = coopNet_score, color = cell_type)) +
-  geom_point(size = 3, aes(shape = ifelse(ppi == "Apex1", "Apex1", "Other")), fill = "black") +
-  geom_hline(yintercept = 0, color = "grey", linetype = "solid") +
-  geom_vline(xintercept = 0, color = "grey", linetype = "solid") +
-  geom_text(aes(label = gene_ppi), vjust = 1.5, color = "black") +
-  scale_color_manual(values = custom_colors, name = "Cell Type") +
-  scale_shape_manual(values = c(Apex1 = 2, Other = 16), name = "Shape",
-                     labels = c("Apex1" = "DNA Damage", "Other" = "Cell Cycle"),
-                     guide = guide_legend(override.aes = list(fill = "black", color = "black"))) +
-  labs(x = "regNet Score", y = "coopNet Score") +
-  theme_bw()
+cor_dna <- ggplot(cortex_banfi_apex1, aes(x = cell_type, y = gene_ppi,
+                             fill = coopNet_score)) +
+  geom_point(aes(size = abs(regNet_score),
+                 shape = ifelse(regNet_score >= 0, "Positive", "Negative")),
+             color = "black") +
+  scale_shape_manual(values = c(Positive = 24, Negative = 25),
+                     name = "regNet Score (Shape)") +
+  scale_fill_gradientn(colors = c("darkblue", "purple", "white", "yellow", "orange"),
+                       values = rescale(c(-125, -100, 0, 100, 252)),
+                       name = "coopNet Score",
+                       breaks = c(-200, -100, 0, 100, 200)) +
+  labs(x = "Cell Type", y = "Protein/Gene") +
+  guides(size = guide_legend(override.aes = list(shape = 24),
+                             title = "regNet Score (Magnitude)")) +
+  guides(shape = guide_legend(override.aes = list(fill = NA),
+                              title = "regNet Score (Direction)")) +
+  theme_bw() +
+  theme(legend.position = "bottom",
+        legend.box = "horizontal",
+        legend.margin = margin(t = 10),
+        legend.spacing = unit(0.5, "cm")) +
+  theme_bw() +
+  theme_minimal() +  
+  theme(text = element_text(family = "Helvetica")) +
+  theme(axis.text.x = element_text(angle = 45, color = "black", hjust = 1)) +
+  theme(axis.text.y = element_text(color = "black", face = "bold")) +
+  theme(axis.title.y = element_text(color = "black", face = "bold")) +
+  theme(axis.title.x = element_blank()) + 
+  theme(axis.text = element_text(face = "bold")) +
+  theme(legend.title = element_text(face = "bold")) +
+  theme(legend.text = element_text(face = "bold"))
+
+cor_dna
+
+dev.off()
+
+png(here("results/ppi_rewiring/cortex_het_cellcycle_dotplot.png"),
+  res = 250,
+  height = 2000,
+  width = 2000)
+
+cor_cell <- ggplot(cortex_banfi_trp53, aes(x = cell_type, y = gene_ppi,
+                             fill = coopNet_score)) +
+  geom_point(aes(size = abs(regNet_score),
+                 shape = ifelse(regNet_score >= 0, "Positive", "Negative")),
+             color = "black") +
+  scale_shape_manual(values = c(Positive = 24, Negative = 25),
+                     name = "regNet Score (Shape)") +
+  scale_fill_gradientn(colors = c("purple", "white", "yellow"),
+                       values = rescale(c(-100, 0, 150)),
+                       name = "coopNet Score",
+                       breaks = c(-100, 0, 150)) +
+  labs(x = "Cell Type", y = "Protein/Gene") +
+  guides(size = guide_legend(override.aes = list(shape = 24),
+                             title = "regNet Score (Magnitude)")) +
+  guides(shape = guide_legend(override.aes = list(fill = NA),
+                              title = "regNet Score (Direction)")) +
+  theme_bw() +
+  theme(legend.position = "none") +
+  theme_bw() +
+  theme_minimal() +  
+  theme(text = element_text(family = "Helvetica")) +
+  theme(axis.text.x = element_blank()) +
+  theme(axis.text.y = element_text(color = "black", face = "bold")) +
+  theme(axis.title.y = element_blank()) +
+  theme(axis.title.x = element_blank()) + 
+  theme(axis.text = element_text(face = "bold"))
+
+cor_cell
 
 dev.off()
 ```
 
+```{r visualizing-by-mechanism-scores-banfi-kidney-het}
+
+# plot the scores for regNet and coop Net
+kidney_banfi_het$cell_type <- sub("_heterozygouskidney", "", kidney_banfi_het$source) # renaming cell type 
+kidney_banfi_het <- kidney_banfi_het[kidney_banfi_het$gene_ppi != "Setbp1",] #removing setbp1 as gene/protein because it does not self-bind
+
+## subsetting by mechanism
+kidney_banfi_apex1 <- kidney_banfi_het[kidney_banfi_het$mechanism == "DNA damage",]
+kidney_banfi_trp53 <- kidney_banfi_het[kidney_banfi_het$mechanism == "cell cycle",]
+
+png(here("results/ppi_rewiring/kidney_het_dna_damage_dotplot.png"),
+  res = 250,
+  height = 2000,
+  width = 2000)
+
+kid_dna <- ggplot(kidney_banfi_apex1, aes(x = cell_type, y = gene_ppi,
+                             fill = coopNet_score)) +
+  geom_point(aes(size = abs(regNet_score),
+                 shape = ifelse(regNet_score >= 0, "Positive", "Negative")),
+             color = "black") +
+  scale_shape_manual(values = c(Positive = 24, Negative = 25),
+                     name = "regNet Score (Shape)") +
+  scale_fill_gradientn(colors = c("darkblue", "purple", "white", "yellow", "orange"),
+                       values = rescale(c(-90, -50, 0, 50, 103)),
+                       name = "coopNet Score",
+                       breaks = c(-100, -50, 0, 50, 100)) +
+  labs(x = "Cell Type", y = "Protein/Gene") +
+  guides(size = guide_legend(override.aes = list(shape = 24),
+                             title = "regNet Score (Magnitude)")) +
+  guides(shape = guide_legend(override.aes = list(fill = NA),
+                              title = "regNet Score (Direction)")) +
+  theme_bw() +
+  theme(legend.position = "bottom",
+        legend.box = "horizontal",
+        legend.margin = margin(t = 10),
+        legend.spacing = unit(0.5, "cm")) +
+  theme_bw() +
+  theme_minimal() +  
+  theme(text = element_text(family = "Helvetica")) +
+  theme(axis.text.x = element_text(angle = 45, color = "black", hjust = 1)) +
+  theme(axis.text.y = element_text(color = "black", face = "bold")) +
+  theme(axis.title.y = element_text(color = "black", face = "bold")) +
+  theme(axis.title.x = element_blank()) + 
+  theme(axis.text = element_text(face = "bold")) +
+  theme(legend.title = element_text(face = "bold")) +
+  theme(legend.text = element_text(face = "bold"))
+
+kid_dna
+
+dev.off()
+
+png(here("results/ppi_rewiring/kidney_het_cellcycle_dotplot.png"),
+  res = 250,
+  height = 2000,
+  width = 2000)
+
+kid_cell <- ggplot(kidney_banfi_trp53, aes(x = cell_type, y = gene_ppi,
+                             fill = coopNet_score)) +
+  geom_point(aes(size = abs(regNet_score),
+                 shape = ifelse(regNet_score >= 0, "Positive", "Negative")),
+             color = "black") +
+  scale_shape_manual(values = c(Positive = 24, Negative = 25),
+                     name = "regNet Score (Shape)") +
+  scale_fill_gradientn(colors = c("darkblue", "purple", "white", "yellow", "orange"),
+                       values = rescale(c(-90, -50, 0, 50, 103)),
+                       name = "coopNet Score",
+                       breaks = c(-100, -50, 0, 50, 100)) +
+  labs(x = "Cell Type", y = "Protein/Gene") +
+  guides(size = guide_legend(override.aes = list(shape = 24),
+                             title = "regNet Score (Magnitude)")) +
+  guides(shape = guide_legend(override.aes = list(fill = NA),
+                              title = "regNet Score (Direction)")) +
+  theme_bw() +
+  theme(legend.position = "none",
+        legend.box = "horizontal",
+        legend.margin = margin(t = 10),
+        legend.spacing = unit(0.5, "cm")) +
+  theme_bw() +
+  theme_minimal() +  
+  theme(text = element_text(family = "Helvetica")) +
+  theme(axis.text.x = element_blank()) +
+  theme(axis.text.y = element_text(color = "black", face = "bold"))
+  # theme(axis.title.y = element_text(color = "black", face = "bold")) +
+  # theme(axis.title.x = element_blank()) +
+  # theme(axis.text = element_text(face = "bold"))
+  # theme(legend.title = element_text(face = "bold")) +
+  # theme(legend.text = element_text(face = "bold"))
+
+kid_cell
+
+dev.off()
+```
+
+```{r visualizing-by-mechanism-scores-banfi-cortex-ctrl}
+# plot the scores for regNet and coop Net
+cortex_banfi_ctrl$cell_type <- sub("_controlcortex", "", cortex_banfi_ctrl$source) #renaming cell type
+cortex_banfi_ctrl <- cortex_banfi_ctrl[cortex_banfi_ctrl$gene_ppi != "Setbp1",] #removing setbp1 as gene/protein because it does not self-bind
+
+## subsetting for each mechanism
+cortex_banfi_apex1 <- cortex_banfi_ctrl[cortex_banfi_ctrl$mechanism == "DNA damage",]
+cortex_banfi_trp53 <- cortex_banfi_ctrl[cortex_banfi_ctrl$mechanism == "cell cycle",]
+
+png(here("results/ppi_rewiring/cortex_ctrl_dna_damage_dotplot.png"),
+  res = 250,
+  height = 2000,
+  width = 2000)
+
+cor_dna_ctrl <- ggplot(cortex_banfi_apex1, aes(x = cell_type, y = gene_ppi,
+                             fill = coopNet_score)) +
+  geom_point(aes(size = abs(regNet_score),
+                 shape = ifelse(regNet_score >= 0, "Positive", "Negative")),
+             color = "black") +
+  scale_shape_manual(values = c(Positive = 24, Negative = 25),
+                     name = "regNet Score (Shape)") +
+  scale_fill_gradientn(colors = c("darkblue", "purple", "white", "yellow", "orange"),
+                       values = rescale(c(-125, -100, 0, 100, 252)),
+                       name = "coopNet Score",
+                       breaks = c(-200, -100, 0, 100, 200)) +
+  labs(x = "Cell Type", y = "Protein/Gene") +
+  guides(size = guide_legend(override.aes = list(shape = 24),
+                             title = "regNet Score (Magnitude)")) +
+  guides(shape = guide_legend(override.aes = list(fill = NA),
+                              title = "regNet Score (Direction)")) +
+  theme_bw() +
+  theme(legend.position = "bottom",
+        legend.box = "horizontal",
+        legend.margin = margin(t = 10),
+        legend.spacing = unit(0.5, "cm")) +
+  theme_bw() +
+  theme_minimal() +  
+  theme(text = element_text(family = "Helvetica")) +
+  theme(axis.text.x = element_text(angle = 45, color = "black", hjust = 1)) +
+  theme(axis.text.y = element_text(color = "black", face = "bold")) +
+  theme(axis.title.y = element_text(color = "black", face = "bold")) +
+  theme(axis.title.x = element_blank()) + 
+  theme(axis.text = element_text(face = "bold")) +
+  theme(legend.title = element_text(face = "bold")) +
+  theme(legend.text = element_text(face = "bold"))
+
+cor_dna_ctrl
+
+dev.off()
+
+png(here("results/ppi_rewiring/cortex_ctrl_cellcycle_dotplot.png"),
+  res = 250,
+  height = 2000,
+  width = 2000)
+
+cor_cell_ctrl <- ggplot(cortex_banfi_trp53, aes(x = cell_type, y = gene_ppi,
+                             fill = coopNet_score)) +
+  geom_point(aes(size = abs(regNet_score),
+                 shape = ifelse(regNet_score >= 0, "Positive", "Negative")),
+             color = "black") +
+  scale_shape_manual(values = c(Positive = 24, Negative = 25),
+                     name = "regNet Score (Shape)") +
+  scale_fill_gradientn(colors = c("purple", "white", "yellow"),
+                       values = rescale(c(-100, 0, 150)),
+                       name = "coopNet Score",
+                       breaks = c(-100, 0, 150)) +
+  labs(x = "Cell Type", y = "Protein/Gene") +
+  guides(size = guide_legend(override.aes = list(shape = 24),
+                             title = "regNet Score (Magnitude)")) +
+  guides(shape = guide_legend(override.aes = list(fill = NA),
+                              title = "regNet Score (Direction)")) +
+  theme_bw() +
+  theme(legend.position = "none") +
+  theme_bw() +
+  theme_minimal() +  
+  theme(text = element_text(family = "Helvetica")) +
+  theme(axis.text.x = element_blank()) +
+  theme(axis.text.y = element_text(color = "black", face = "bold")) +
+  theme(axis.title.y = element_blank()) +
+  theme(axis.title.x = element_blank()) + 
+  theme(axis.text = element_text(face = "bold"))
+
+cor_cell_ctrl
+
+dev.off()
+```
+
+```{r visualizing-by-mechanism-scores-banfi-kidney-ctrl}
+
+# plot the scores for regNet and coop Net
+kidney_banfi_ctrl$cell_type <- sub("_controlkidney", "", kidney_banfi_ctrl$source) # renaming cell type 
+kidney_banfi_ctrl <- kidney_banfi_ctrl[kidney_banfi_ctrl$gene_ppi != "Setbp1",] #removing setbp1 as gene/protein because it does not self-bind
+
+## subsetting by mechanism
+kidney_banfi_apex1 <- kidney_banfi_ctrl[kidney_banfi_ctrl$mechanism == "DNA damage",]
+kidney_banfi_trp53 <- kidney_banfi_ctrl[kidney_banfi_ctrl$mechanism == "cell cycle",]
+
+png(here("results/ppi_rewiring/kidney_ctrl_dna_damage_dotplot.png"),
+  res = 250,
+  height = 2000,
+  width = 2000)
+
+kid_dna_ctrl <- ggplot(kidney_banfi_apex1, aes(x = cell_type, y = gene_ppi,
+                             fill = coopNet_score)) +
+  geom_point(aes(size = abs(regNet_score),
+                 shape = ifelse(regNet_score >= 0, "Positive", "Negative")),
+             color = "black") +
+  scale_shape_manual(values = c(Positive = 24, Negative = 25),
+                     name = "regNet Score (Shape)") +
+  scale_fill_gradientn(colors = c("darkblue", "purple", "white", "yellow", "orange"),
+                       values = rescale(c(-90, -50, 0, 50, 103)),
+                       name = "coopNet Score",
+                       breaks = c(-100, -50, 0, 50, 100)) +
+  labs(x = "Cell Type", y = "Protein/Gene") +
+  guides(size = guide_legend(override.aes = list(shape = 24),
+                             title = "regNet Score (Magnitude)")) +
+  guides(shape = guide_legend(override.aes = list(fill = NA),
+                              title = "regNet Score (Direction)")) +
+  theme_bw() +
+  theme(legend.position = "bottom",
+        legend.box = "horizontal",
+        legend.margin = margin(t = 10),
+        legend.spacing = unit(0.5, "cm")) +
+  theme_bw() +
+  theme_minimal() +  
+  theme(text = element_text(family = "Helvetica")) +
+  theme(axis.text.x = element_text(angle = 45, color = "black", hjust = 1)) +
+  theme(axis.text.y = element_text(color = "black", face = "bold")) +
+  theme(axis.title.y = element_text(color = "black", face = "bold")) +
+  theme(axis.title.x = element_blank()) + 
+  theme(axis.text = element_text(face = "bold")) +
+  theme(legend.title = element_text(face = "bold")) +
+  theme(legend.text = element_text(face = "bold"))
+
+kid_dna_ctrl
+
+dev.off()
+
+png(here("results/ppi_rewiring/kidney_ctrl_cellcycle_dotplot.png"),
+  res = 250,
+  height = 2000,
+  width = 2000)
+
+kid_cell_ctrl <- ggplot(kidney_banfi_trp53, aes(x = cell_type, y = gene_ppi,
+                             fill = coopNet_score)) +
+  geom_point(aes(size = abs(regNet_score),
+                 shape = ifelse(regNet_score >= 0, "Positive", "Negative")),
+             color = "black") +
+  scale_shape_manual(values = c(Positive = 24, Negative = 25),
+                     name = "regNet Score (Shape)") +
+  scale_fill_gradientn(colors = c("darkblue", "purple", "white", "yellow", "orange"),
+                       values = rescale(c(-90, -50, 0, 50, 103)),
+                       name = "coopNet Score",
+                       breaks = c(-100, -50, 0, 50, 100)) +
+  labs(x = "Cell Type", y = "Protein/Gene") +
+  guides(size = guide_legend(override.aes = list(shape = 24),
+                             title = "regNet Score (Magnitude)")) +
+  guides(shape = guide_legend(override.aes = list(fill = NA),
+                              title = "regNet Score (Direction)")) +
+  theme_bw() +
+  theme(legend.position = "none",
+        legend.box = "horizontal",
+        legend.margin = margin(t = 10),
+        legend.spacing = unit(0.5, "cm")) +
+  theme_bw() +
+  theme_minimal() +  
+  theme(text = element_text(family = "Helvetica")) +
+  theme(axis.text.x = element_blank()) +
+  theme(axis.text.y = element_text(color = "black", face = "bold"))
+  # theme(axis.title.y = element_text(color = "black", face = "bold")) +
+  # theme(axis.title.x = element_blank()) +
+  # theme(axis.text = element_text(face = "bold"))
+  # theme(legend.title = element_text(face = "bold")) +
+  # theme(legend.text = element_text(face = "bold"))
+
+kid_cell_ctrl
+
+dev.off()
+```
+
+### Arranging all plots together now by tissue for each mechanism
+```{r stacking-cortex}
+#HET
+# Arrange the plots and share a legend
+plot_combined <- plot_grid(cor_cell, cor_dna, align = "v", ncol = 1, rel_heights = c(1, 3))
+
+legend_combined <- get_legend(cor_dna)  # Extract the legend from plot1
+
+# Add the legend to the combined plot
+plot_combined_with_legend <- plot_grid(plot_combined, legend_combined, ncol = 2, rel_widths = c(4, 1))
+
+png(here("results/ppi_rewiring/cortex_het_grouped_dotplot.png"),
+  res = 250,
+  height = 2000,
+  width = 3000)
+plot_combined_with_legend
+dev.off()
+
+#CONTROL
+# Arrange the plots and share a legend
+plot_combined <- plot_grid(cor_cell_ctrl, cor_dna_ctrl, align = "v", ncol = 1, rel_heights = c(1, 3))
+
+legend_combined <- get_legend(cor_dna_ctrl)  # Extract the legend from plot1
+
+# Add the legend to the combined plot
+plot_combined_with_legend <- plot_grid(plot_combined, legend_combined, ncol = 2, rel_widths = c(4, 1))
+
+png(here("results/ppi_rewiring/cortex_ctrl_grouped_dotplot.png"),
+  res = 250,
+  height = 2000,
+  width = 3000)
+plot_combined_with_legend
+dev.off()
+```
+
+```{r stacking-kidney}
+#HET
+# Arrange the plots and share a legend
+plot_combined <- plot_grid(kid_cell, kid_dna, align = "v", ncol = 1)
+
+legend_combined <- get_legend(kid_dna)  # Extract the legend from plot1
+
+# Add the legend to the combined plot
+plot_combined_with_legend <- plot_grid(plot_combined, legend_combined, ncol = 2, rel_widths = c(4, 1))
+
+png(here("results/ppi_rewiring/kidney_het_grouped_dotplot.png"),
+  res = 250,
+  height = 2000,
+  width = 3000)
+plot_combined_with_legend
+dev.off()
+
+#CONTROL
+# Arrange the plots and share a legend
+plot_combined <- plot_grid(kid_cell_ctrl, kid_dna_ctrl, align = "v", ncol = 1)
+
+legend_combined <- get_legend(kid_dna_ctrl)  # Extract the legend from plot1
+
+# Add the legend to the combined plot
+plot_combined_with_legend <- plot_grid(plot_combined, legend_combined, ncol = 2, rel_widths = c(4, 1))
+
+png(here("results/ppi_rewiring/kidney_ctrl_grouped_dotplot.png"),
+  res = 250,
+  height = 2000,
+  width = 3000)
+plot_combined_with_legend
+dev.off()
+```
+
 ## looking at STRING prior scores for coopNet regNet edges returned in subset above 
+Investigation of initial STRING prior scores allows us to make inferences about whether the proteins may be binding. From the cooperativity network (coopNet) output that we get using PANDA, we can only infer interaction, and cannot draw any conclusions about actual protein-protein binding.  
 ```{r load-ppi}
 mm10_ppi <- read.table(here("data/processed/ppi_inputs/mm10_ppi.txt"))
 ```
 
 In order to confirm if the proteins that are "both positive" above, we wanted to see what the initial interactions were in string
 ```{r subset-ppi-for-het-interactions}
-moi <- c("Apex1", "Tp53", "Trp53") # proteins for mechanisms of interest
-poi <- c("Hmga1", "Parp1", "E4f1", "Mef2c", "Mzf1", "Pbrm1") #proteins of interest
+moi <- c("Apex1", "Tp53", "Trp53") # proteins for mechanisms of interest (and their aliases)
+poi <- c("Hmga1", "Parp1", "E4f1", "Mef2c", "Mzf1", "Pbrm1", "Med1") #proteins of interest
 
+#subsetting for interactions where Apex1/Tp53/Trp53 interact with moi or vice versa
 from_to <- mm10_ppi[mm10_ppi$from %in% poi,] %>% .[.$to %in% moi,]
 to_from <- mm10_ppi[mm10_ppi$to %in% poi,]  %>% .[.$from %in% moi,]
 
 prior_evidence <- rbind(from_to, to_from)
+
+write.csv(prior_evidence, file = here("results/ppi_rewiring/prior_evidence.csv"), row.names = FALSE)
 prior_evidence
 ```
 
 ## looking at initial prior
+In order to understand the context of altered regulation/cooperation, we investigated the S858R regNet associated with the genes regulated by Setbp1 (TF) that are also proteins in the coopNet interacting with a protein (Apex1 or Trp53) associated with a hypothesized mechanism of SGS. Specifically for those proteins that are cooperating with Apex1 or Trp53 that do not have a STRING score associated with them, or a high confidence STRING score, we wanted to see what nodes they were potentially cooperating together to interact with or regulate. 
+
+```{r}
+files <- list.files(here("results/PANDA"), full.names = TRUE)
+files
+
+# run for loop
+regNet_list <- list()
+
+for (i in files) {
+  # load in the expression data files needed and rename:
+  PANDA <- loadRData(i)
+  # extract regNet and melt into `source`, `target` and `mor`, required format for decoupleR.
+  # These equate to `TF`, `gene` and `score` respectively.
+  regNet <- PANDA@regNet
+  regNet <- melt(regNet)
+  colnames(regNet) <- c("TF", "gene", "score")
+  # #save melted output
+  name <- sub("_PANDA.Rdata", "", basename(i))
+  regNet_list[[name]] <- regNet
+  rm(PANDA)
+  rm(regNet)
+  print(paste0(name, " network melted and stored in list."))
+}
+
+# Apply the function to each dataframe in the list
+test <- lapply(regNet_list, subset_positive_score)
+```
+
+```{r filter-regNet}
+# Filter the list of dataframes against mechanism proteins and gene/protein of interest
+apex1_list <- lapply(test, function(df) {
+  subset(df, TF == "Apex1" | gene == "Apex1")
+})
+
+trp53_list <- lapply(test, function(df) {
+  subset(df, TF == "Trp53" | gene == "Trp53")
+})
+
+pbrm1_list <- lapply(test, function(df) {
+  subset(df, TF == "Pbrm1" | gene == "Pbrm1")
+})
+
+mzf1_list <- lapply(test, function(df) {
+  subset(df, TF == "Mzf1" | gene == "Mzf1")
+})
+
+e4f1_list <- lapply(test, function(df) {
+  subset(df, TF == "E4f1" | gene == "E4f1")
+})
+
+parp1_list <- lapply(test, function(df) {
+  subset(df, TF == "Parp1" | gene == "Parp1")
+})
+
+mef2c_list <- lapply(test, function(df) {
+  subset(df, TF == "Mef2c" | gene == "Mef2c")
+})
+```
+
+```{r find-overlap}
+# find the overlapping nodes between the two for each of the following pairs: 
+
+# Apply the function to each data frame in the list
+apex1_coop_list <- lapply(apex1_list, extract_cooperator, target_value = "Apex1")
+trp53_coop_list <- lapply(trp53_list, extract_cooperator, target_value = "Trp53")
+mef2c_coop_list <- lapply(mef2c_list, extract_cooperator, target_value = "Mef2c")
+parp1_coop_list <- lapply(parp1_list, extract_cooperator, target_value = "Parp1")
+e4f1_coop_list <- lapply(e4f1_list, extract_cooperator, target_value = "E4f1")
+mzf1_coop_list <- lapply(mzf1_list, extract_cooperator, target_value = "Mzf1")
+pbrm1_coop_list <- lapply(pbrm1_list, extract_cooperator, target_value = "Pbrm1")
+
+## Mef2c-Apex1 
+# Create an empty list to store the results
+mef2c_apex1_list <- list()
+
+# Iterate over the names of the data frames in list1
+for (name in names(mef2c_coop_list)) {
+  # Get the corresponding data frames from list1 and list2
+  df1 <- mef2c_coop_list[[name]]
+  df2 <- apex1_coop_list[[name]]
+  
+  # Check if "cooperator" column exists in both data frames
+  if ("cooperator" %in% names(df1) && "cooperator" %in% names(df2)) {
+    # Find the overlap in the "cooperator" column
+    overlap <- intersect(df1$cooperator, df2$cooperator)
+    
+    # Create a new data frame with the overlap stored in the "overlap" column
+    result_df <- data.frame(overlap = overlap, stringsAsFactors = FALSE)
+    
+    # Store the result data frame in the result list with the same name
+    mef2c_apex1_list[[name]] <- result_df
+  }
+}
+
+## Parp1-Apex1
+parp1_apex1_list <- list()
+
+for (name in names(parp1_coop_list)) {
+  df1 <- parp1_coop_list[[name]]
+  df2 <- apex1_coop_list[[name]]
+
+  if ("cooperator" %in% names(df1) && "cooperator" %in% names(df2)) {
+    overlap <- intersect(df1$cooperator, df2$cooperator)
+    
+    result_df <- data.frame(overlap = overlap, stringsAsFactors = FALSE)
+    
+    parp1_apex1_list[[name]] <- result_df
+  }
+}
+
+## E4f1-Apex1
+e4f1_apex1_list <- list()
+
+for (name in names(e4f1_coop_list)) {
+  df1 <- e4f1_coop_list[[name]]
+  df2 <- apex1_coop_list[[name]]
+
+  if ("cooperator" %in% names(df1) && "cooperator" %in% names(df2)) {
+    overlap <- intersect(df1$cooperator, df2$cooperator)
+    
+    result_df <- data.frame(overlap = overlap, stringsAsFactors = FALSE)
+    
+    e4f1_apex1_list[[name]] <- result_df
+  }
+}
+
+## Mzf1-Trp53
+mzf1_trp53_list <- list()
+
+for (name in names(mzf1_coop_list)) {
+  df1 <- mzf1_coop_list[[name]]
+  df2 <- trp53_coop_list[[name]]
+
+  if ("cooperator" %in% names(df1) && "cooperator" %in% names(df2)) {
+    overlap <- intersect(df1$cooperator, df2$cooperator)
+    
+    result_df <- data.frame(overlap = overlap, stringsAsFactors = FALSE)
+    
+    mzf1_trp53_list[[name]] <- result_df
+  }
+}
+
+## Pbrm1-Tp53
+pbrm1_trp53_list <- list()
+
+for (name in names(pbrm1_coop_list)) {
+  df1 <- pbrm1_coop_list[[name]]
+  df2 <- trp53_coop_list[[name]]
+
+  if ("cooperator" %in% names(df1) && "cooperator" %in% names(df2)) {
+    overlap <- intersect(df1$cooperator, df2$cooperator)
+    
+    result_df <- data.frame(overlap = overlap, stringsAsFactors = FALSE)
+    
+    pbrm1_trp53_list[[name]] <- result_df
+  }
+}
+```
+
+```{r save-overlap-lists}
+save(pbrm1_trp53_list, file = here("results/ppi_rewiring/pbrm1_trp53_list.Rdata"))
+save(mzf1_trp53_list, file = here("results/ppi_rewiring/mzf1_trp53_list.Rdata"))
+save(e4f1_apex1_list, file = here("results/ppi_rewiring/e4f1_apex1_list.Rdata"))
+save(parp1_apex1_list, file = here("results/ppi_rewiring/parp1_apex1_list.Rdata"))
+save(mef2c_apex1_list, file = here("results/ppi_rewiring/mef2c_apex1_list.Rdata"))
+```
 
 
+```{r subset-het-overlaps-celltypes-interest}
+pbrm1_trp53_kid <- pbrm1_trp53_list[grep("_heterozygouskidney", names(pbrm1_trp53_list))]
+mzf1_trp53_kid <- mzf1_trp53_list[grep("_heterozygouskidney", names(mzf1_trp53_list))]
+e4f1_apex1_kid <- e4f1_apex1_list[grep("_heterozygouskidney", names(e4f1_apex1_list))]
+parp1_apex1_kid <- parp1_apex1_list[grep("_heterozygouskidney", names(parp1_apex1_list))]
+mef2c_apex1_kid <- mef2c_apex1_list[grep("_heterozygouskidney", names(mef2c_apex1_list))]
 
+pbrm1_trp53_cor <- pbrm1_trp53_list[grep("_heterozygouscortex", names(pbrm1_trp53_list))]
+mzf1_trp53_cor <- mzf1_trp53_list[grep("_heterozygouscortex", names(mzf1_trp53_list))]
+e4f1_apex1_cor <- e4f1_apex1_list[grep("_heterozygouscortex", names(e4f1_apex1_list))]
+parp1_apex1_cor <- parp1_apex1_list[grep("_heterozygouscortex", names(parp1_apex1_list))]
+mef2c_apex1_cor <- mef2c_apex1_list[grep("_heterozygouscortex", names(mef2c_apex1_list))]
+```
+
+```{r find-cts-nodes-overlapping-between-pairs}
+# annotate cell type on list of lists
+list_o_list <- list(pbrm1_trp53_cor, mzf1_trp53_kid, e4f1_apex1_kid, parp1_apex1_kid, mef2c_apex1_kid, mef2c_apex1_cor, parp1_apex1_cor, e4f1_apex1_cor, mzf1_trp53_cor, pbrm1_trp53_kid)
+
+names(list_o_list) <- c("pbrm1_trp53_cor", "mzf1_trp53_kid", "e4f1_apex1_kid", "parp1_apex1_kid", "mef2c_apex1_kid", "mef2c_apex1_cor", "parp1_apex1_cor", "e4f1_apex1_cor", "mzf1_trp53_cor", "pbrm1_trp53_kid")
+
+# Iterate over each list in the list of lists
+for (i in seq_along(list_o_list)) {
+  # Get the current list
+  current_list <- list_o_list[[i]]
+  
+  # Iterate over each dataframe in the current list
+  for (j in seq_along(current_list)) {
+    # Get the dataframe name
+    df_name <- names(current_list)[j]
+    
+    # Perform substitution and extract source based on dataframe name
+    if (grepl("_heterozygouskidneyexpression", df_name)) {
+      source <- sub("_heterozygouskidneyexpression", "", df_name)
+    } else if (grepl("_heterozygouscortexexpression", df_name)) {
+      source <- sub("_heterozygouscortexexpression", "", df_name)
+    } else {
+      source <- df_name
+    }
+    
+    # Add source column to the dataframe
+    current_list[[j]]$source <- source
+  }
+  
+  # Update the modified list in the list of lists
+  list_o_list[[i]] <- current_list
+}
+
+
+# bind together all cell types for each pairing:
+# Iterate over each list in the list of lists
+for (list_name in names(list_o_list)) {
+  # Get the current list
+  current_list <- list_o_list[[list_name]]
+  
+  # Combine all dataframes within the current list
+  combined_df <- do.call(rbind, current_list)
+  
+  # Replace the original list with the combined dataframe
+  list_o_list[[list_name]] <- combined_df
+}
+
+# subset for cell type specific genes
+nondup_list <- lapply(list_o_list, function(df) {
+  gene_counts <- table(df$overlap)
+  single_celltype_genes <- names(gene_counts[gene_counts == 1])
+  filtered_df <- df[df$overlap %in% single_celltype_genes, ]
+  return(filtered_df)
+})
+```
+The nondup_list contains a dataframe for each pairing of cell-type specific nodes that shared a positive edge in the regNet with each of the genes in the name of the slot in the list. 
+
+```{r filtering-cts-for-setbp1-geneset}
+# Create a new list to store the filtered dataframes with the same names
+filtered_nondup_list <- setNames(vector("list", length(nondup_list)), names(nondup_list))
+
+# Subset the 'nondup_list' for desired gene names in the 'overlap' column and store in the new list
+for (i in seq_along(nondup_list)) {
+  filtered_df <- nondup_list[[i]][nondup_list[[i]]$overlap %in% setbp1_genes, ]
+  filtered_nondup_list[[i]] <- filtered_df
+}
+
+filtered_nondup_list <- lapply(names(filtered_nondup_list), function(name) {
+  df <- filtered_nondup_list[[name]]
+  df$pairing <- name
+  return(df)
+})
+
+combined_df <- do.call(rbind, filtered_nondup_list)
+rownames(combined_df) <- NULL
+```
+
+The filtered nondup_list contains a dataframe for each pairing of interest, where the cell-specific nodes were filtered against the setbp1 gene set. 
+```{r}
+write.csv(combined_df, file = here("results/ppi_rewiring/cts_setbp1_geneset_overlap_by_mech.csv"), row.names = FALSE)
+save(filtered_nondup_list, file = here("results/ppi_rewiring/cts_setbp1_geneset_overlap_by_mech.Rdata"))
+```
+
+
+```{r}
+sessionInfo()
+```
 
