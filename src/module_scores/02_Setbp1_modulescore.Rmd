@@ -541,8 +541,6 @@ kid
 dev.off()
 ```
 
-
-
 # Information on the session and run time
 ```{r}
 fptm <- proc.time() - ptm
