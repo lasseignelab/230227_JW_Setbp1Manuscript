@@ -1,0 +1,202 @@
+---
+title: "03_TF_activity_kidney"
+author: "Jordan Whitlock"
+date: '2023-06-07'
+output: html_document
+---
+# Setup
+```{r load-libraries-functions}
+library(ComplexHeatmap)
+library(circlize)
+library(here)
+library(readr)
+library(purrr)
+library(styler)
+library(dplyr)
+library(gprofiler2)
+library(Seurat)
+library(tidyr)
+library(tibble)
+library(patchwork)
+library(cowplot)
+source(here("src/functions/functions.R"))
+ptm <- proc.time()
+```
+
+```{r load-geneset}
+# load in gene set for Setbp1
+setbp1_genes <- read.csv(here("results/seurat/setbp1_targets.csv"))
+setbp1_genes <- setbp1_genes[, -1] %>% as.vector()
+setbp1_genes <- append(setbp1_genes, "Setbp1")
+```
+
+```{r}
+load(here("data/kidney_integrated_celltypes_postSoup.Rdata"))
+```
+
+# kidney: 
+```{r}
+files <- list.files(here("results/decoupleR/kidney"), full.names = TRUE)
+
+name_acts_list <- list()
+
+# calculating the average TF activity score per gene within eac cell type across all cells
+for (i in files) {
+  load(i) # object name: acts
+  name <- basename(i)
+  name <- gsub("_acts.RData", "", name) # grab only portion of name before '_acts.RData'
+  name_acts <- acts
+  name_acts_list[[name]] <- name_acts
+  print(paste0("loaded acts for ", name))
+}
+
+# combining and fixing cell type barcode convention issue
+kidney_acts <- bind_rows(name_acts_list)
+kidney_acts$condition <- gsub("\\.1$", "-1", kidney_acts$condition)
+kidney_acts[1:6, 1:6]
+```
+
+```{r}
+# Extract mlm and store it in tfmlm in kidney_int_celltypes
+kidney_int_celltypes[["tfmlm"]] <- kidney_acts %>%
+  pivot_wider(
+    id_cols = "source", names_from = "condition",
+    values_from = "score"
+  ) %>%
+  column_to_rownames("source") %>%
+  Seurat::CreateAssayObject(.)
+```
+
+```{r}
+# Change assay
+DefaultAssay(object = kidney_int_celltypes) <- "tfmlm"
+
+# Scale the data
+kidney_int_celltypes <- ScaleData(kidney_int_celltypes)
+kidney_int_celltypes@assays$tfmlm@data <- kidney_int_celltypes@assays$tfmlm@scale.data
+```
+
+```{r split-object}
+split <- SplitObject(kidney_int_celltypes, split.by = "type")
+```
+
+```{r}
+het_df <- t(as.matrix(split$heterozygous@assays$tfmlm@data)) %>%
+  as.data.frame() %>%
+  mutate(cluster = Idents(split$heterozygous)) %>%
+  pivot_longer(cols = -cluster, names_to = "source", values_to = "score") %>%
+  group_by(cluster, source) %>%
+  summarise(mean = mean(score))
+
+hist(het_df$mean)
+
+ctrl_df <- t(as.matrix(split$control@assays$tfmlm@data)) %>%
+  as.data.frame() %>%
+  mutate(cluster = Idents(split$control)) %>%
+  pivot_longer(cols = -cluster, names_to = "source", values_to = "score") %>%
+  group_by(cluster, source) %>%
+  summarise(mean = mean(score))
+
+hist(ctrl_df$mean)
+```
+Since data is on the same scale, in order to compare between conditions we wanted to calculate the percentage change of the Setbp1 and its gene set between condtions (and for all TFs)
+
+Calculating the absolute percentage change in order to see which TFs exhibit the largest difference in activities are most different between conditions. THe more positive percent change indicates that the magnitude of the change in TF activity between conditions was higher in the S858R than WT. All percent changes were then quartile filtered to only include TFs that had a percent chagne > Q3. Original TF Activity values were then plotted for these TFs across cell types in each respective tissue, filtering the TFs to only focus on those that are in the Setbp1 gene set or Setbp1.
+```{r}
+# merge control and het dataframes
+merged_df <- merge(ctrl_df, het_df, by = c("cluster", "source"))
+colnames(merged_df) <- c("cluster", "source", "ctrl_mean", "het_mean")
+
+# calculate percent change between mean TF activity between condition; large positive percent change indicates the magnitude of average TF acitvity for that TF was larger in the S858R
+merged_df$percent_change <- ((abs(merged_df$het_mean) - abs(merged_df$ctrl_mean)) / abs(merged_df$ctrl_mean)) * 100
+
+# next want to filter the data at a specific threshold; using upper quartile
+summary(merged_df$percent_change) # Q3 is at 35.1
+merged_df <- merged_df[merged_df$percent_change > 35.1, ]
+
+geneset_acts_mat <- merged_df %>%
+  filter(source %in% setbp1_genes) %>%
+  pivot_wider(
+    id_cols = "cluster", names_from = "source",
+    values_from = "het_mean"
+  ) %>%
+  column_to_rownames("cluster") %>%
+  mutate_all(~ replace(., is.na(.), 0)) %>%
+  as.matrix()
+
+# Choose color palette
+palette_length <- 100
+my_color <- colorRampPalette(c("Darkblue", "white", "red"))(palette_length)
+
+my_breaks <- c(
+  seq(-3, 0, length.out = ceiling(palette_length / 2) + 1),
+  seq(0.05, 3, length.out = floor(palette_length / 2))
+)
+
+png(
+  filename = here("results/TF_activity/kidney_setbp1_geneset.png"),
+  width = 1100,
+  height = 1100,
+  res = 250
+)
+# Plot
+pheatmap(t(geneset_acts_mat), border_color = NA, color = my_color, breaks = my_breaks)
+dev.off()
+
+```
+
+```{r processing-time}
+fptm <- proc.time() - ptm
+fptm[3] / 60
+```
+ elapsed 
+2.731617 
+
+```{r style-file}
+# run style
+style_file(here("src/network_scripts/decoupleR/03_TF_activity_kidney.Rmd")) # commented out after being run once
+# lintr was run as well
+```
+
+```{r session-info}
+sessionInfo()
+```
+R version 4.1.3 (2022-03-10)
+Platform: x86_64-pc-linux-gnu (64-bit)
+Running under: Ubuntu 20.04.6 LTS
+
+Matrix products: default
+BLAS/LAPACK: /usr/lib/x86_64-linux-gnu/openblas-pthread/libopenblasp-r0.3.8.so
+
+locale:
+[1] C
+
+attached base packages:
+[1] grid      stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+ [1] ggplot2_3.4.1         cowplot_1.1.1         patchwork_1.1.2       tibble_3.1.8          tidyr_1.3.0           SeuratObject_4.1.3    Seurat_4.3.0         
+ [8] gprofiler2_0.2.1      dplyr_1.1.0           styler_1.9.0          purrr_1.0.1           readr_2.1.4           here_1.0.1            circlize_0.4.15      
+[15] ComplexHeatmap_2.10.0
+
+loaded via a namespace (and not attached):
+  [1] Rtsne_0.16             colorspace_2.1-0       deldir_1.0-6           rjson_0.2.21           ellipsis_0.3.2         ggridges_0.5.4        
+  [7] rprojroot_2.0.3        GlobalOptions_0.1.2    spatstat.data_3.0-0    clue_0.3-64            rstudioapi_0.14        leiden_0.4.3          
+ [13] listenv_0.9.0          ggrepel_0.9.3          fansi_1.0.4            codetools_0.2-18       splines_4.1.3          R.methodsS3_1.8.2     
+ [19] doParallel_1.0.17      knitr_1.42             polyclip_1.10-4        jsonlite_1.8.4         ica_1.0-3              cluster_2.1.2         
+ [25] png_0.1-8              R.oo_1.25.0            uwot_0.1.14            spatstat.sparse_3.0-0  shiny_1.7.4            sctransform_0.3.5     
+ [31] compiler_4.1.3         httr_1.4.5             Matrix_1.5-3           fastmap_1.1.1          lazyeval_0.2.2         cli_3.6.0             
+ [37] later_1.3.0            htmltools_0.5.4        tools_4.1.3            igraph_1.4.1           gtable_0.3.1           glue_1.6.2            
+ [43] RANN_2.6.1             reshape2_1.4.4         Rcpp_1.0.10            scattermore_0.8        vctrs_0.5.2            nlme_3.1-155          
+ [49] spatstat.explore_3.0-6 progressr_0.13.0       iterators_1.0.14       lmtest_0.9-40          spatstat.random_3.1-3  stringr_1.5.0         
+ [55] xfun_0.37              globals_0.16.2         mime_0.12              miniUI_0.1.1.1         lifecycle_1.0.3        irlba_2.3.5.1         
+ [61] goftest_1.2-3          future_1.31.0          MASS_7.3-55            zoo_1.8-11             scales_1.2.1           spatstat.utils_3.0-1  
+ [67] hms_1.1.2              promises_1.2.0.1       parallel_4.1.3         RColorBrewer_1.1-3     gridExtra_2.3          reticulate_1.28       
+ [73] pbapply_1.7-0          stringi_1.7.12         S4Vectors_0.32.4       foreach_1.5.2          BiocGenerics_0.40.0    shape_1.4.6           
+ [79] rlang_1.0.6            pkgconfig_2.0.3        matrixStats_0.63.0     lattice_0.20-45        tensor_1.5             ROCR_1.0-11           
+ [85] htmlwidgets_1.6.1      tidyselect_1.2.0       parallelly_1.34.0      RcppAnnoy_0.0.20       plyr_1.8.8             magrittr_2.0.3        
+ [91] R6_2.5.1               IRanges_2.28.0         generics_0.1.3         withr_2.5.0            pillar_1.8.1           fitdistrplus_1.1-8    
+ [97] abind_1.4-5            survival_3.3-1         sp_1.6-0               future.apply_1.10.0    crayon_1.5.2           KernSmooth_2.23-20    
+[103] utf8_1.2.3             spatstat.geom_3.0-6    plotly_4.10.1          tzdb_0.3.0             GetoptLong_1.0.5       data.table_1.14.8     
+[109] digest_0.6.31          xtable_1.8-4           R.cache_0.16.0         httpuv_1.6.9           R.utils_2.12.2         stats4_4.1.3          
+[115] munsell_0.5.0          viridisLite_0.4.1     

@@ -1,0 +1,207 @@
+---
+title: "03_TF_activity_cortex"
+author: "Jordan Whitlock"
+date: '2023-06-07'
+output: html_document
+---
+# Setup
+```{r load-libraries-functions}
+library(ComplexHeatmap)
+library(circlize)
+library(here)
+library(readr)
+library(purrr)
+library(styler)
+library(dplyr)
+library(gprofiler2)
+library(Seurat)
+library(tidyr)
+library(tibble)
+library(patchwork)
+library(cowplot)
+source(here("src/functions/functions.R"))
+ptm <- proc.time()
+```
+
+```{r load-geneset}
+# load in gene set for Setbp1
+setbp1_genes <- read.csv(here("results/seurat/setbp1_targets.csv"))
+setbp1_genes <- setbp1_genes[, -1] %>% as.vector()
+setbp1_genes <- append(setbp1_genes, "Setbp1")
+```
+
+```{r load-CollecTRI-prior-mouse}
+collectri <- read_csv(here("data/processed/decoupleR_prior_CollecTRI/mouse_prior_tri.csv"))
+```
+```{r}
+load(here("data/setbp1_cerebralintcelltypes.Rdata"))
+load(here("data/kidney_integrated_celltypes_postSoup.Rdata"))
+```
+
+# Cortex: 
+```{r}
+files <- list.files(here("results/decoupleR/cortex"), full.names = TRUE)
+
+name_acts_list <- list()
+
+# calculating the average TF activity score per gene within eac cell type across all cells
+for (i in files) {
+  load(i) # object name: acts
+  name <- basename(i)
+  name <- gsub("_acts.RData", "", name) # grab only portion of name before '_acts.RData'
+  name_acts <- acts
+  name_acts_list[[name]] <- name_acts
+  print(paste0("loaded acts for ", name))
+}
+
+# combining and fixing cell type barcode convention issue
+cortex_acts <- bind_rows(name_acts_list)
+cortex_acts$condition <- gsub("\\.1$", "-1", cortex_acts$condition)
+cortex_acts[1:6, 1:6]
+```
+
+```{r}
+# Extract mlm and store it in tfmlm in cerebral_int_celltypes
+cerebral_int_celltypes[["tfmlm"]] <- cortex_acts %>%
+  pivot_wider(
+    id_cols = "source", names_from = "condition",
+    values_from = "score"
+  ) %>%
+  column_to_rownames("source") %>%
+  Seurat::CreateAssayObject(.)
+```
+
+```{r}
+# Change assay
+DefaultAssay(object = cerebral_int_celltypes) <- "tfmlm"
+
+# Scale the data
+cerebral_int_celltypes <- ScaleData(cerebral_int_celltypes)
+cerebral_int_celltypes@assays$tfmlm@data <- cerebral_int_celltypes@assays$tfmlm@scale.data
+```
+
+```{r split-object}
+split <- SplitObject(cerebral_int_celltypes, split.by = "type")
+```
+
+```{r}
+het_df <- t(as.matrix(split$heterozygous@assays$tfmlm@data)) %>%
+  as.data.frame() %>%
+  mutate(cluster = Idents(split$heterozygous)) %>%
+  pivot_longer(cols = -cluster, names_to = "source", values_to = "score") %>%
+  group_by(cluster, source) %>%
+  summarise(mean = mean(score))
+
+hist(het_df$mean)
+
+ctrl_df <- t(as.matrix(split$control@assays$tfmlm@data)) %>%
+  as.data.frame() %>%
+  mutate(cluster = Idents(split$control)) %>%
+  pivot_longer(cols = -cluster, names_to = "source", values_to = "score") %>%
+  group_by(cluster, source) %>%
+  summarise(mean = mean(score))
+
+hist(ctrl_df$mean)
+```
+Since data is on the same scale, in order to compare between conditions we wanted to calculate the percentage change of the Setbp1 and its gene set between condtions (and for all TFs)
+
+Calculating the absolute percentage change in order to see which TFs exhibit the largest difference in activities are most different between conditions. THe more positive percent change indicates that the magnitude of the change in TF activity between conditions was higher in the S858R than WT. All percent changes were then quartile filtered to only include TFs that had a percent chagne > Q3. Original TF Activity values were then plotted for these TFs across cell types in each respective tissue, filtering the TFs to only focus on those that are in the Setbp1 gene set or Setbp1.
+```{r}
+# merge control and het dataframes
+merged_df <- merge(ctrl_df, het_df, by = c("cluster", "source"))
+colnames(merged_df) <- c("cluster", "source", "ctrl_mean", "het_mean")
+
+# calculate percent change between mean TF activity between condition; large positive percent change indicates the magnitude of average TF acitvity for that TF was larger in the S858R
+merged_df$percent_change <- ((abs(merged_df$het_mean) - abs(merged_df$ctrl_mean)) / abs(merged_df$ctrl_mean)) * 100
+
+# next want to filter the data at a specific threshold; using upper quartile
+summary(merged_df$percent_change) # Q3 is at 22.91
+merged_df <- merged_df[merged_df$percent_change > 22.91, ]
+
+geneset_acts_mat <- merged_df %>%
+  filter(source %in% setbp1_genes) %>%
+  pivot_wider(
+    id_cols = "cluster", names_from = "source",
+    values_from = "het_mean"
+  ) %>%
+  column_to_rownames("cluster") %>%
+  mutate_all(~ replace(., is.na(.), 0)) %>%
+  as.matrix()
+
+# Choose color palette
+palette_length <- 100
+my_color <- colorRampPalette(c("Darkblue", "white", "red"))(palette_length)
+
+my_breaks <- c(
+  seq(-3, 0, length.out = ceiling(palette_length / 2) + 1),
+  seq(0.05, 3, length.out = floor(palette_length / 2))
+)
+
+png(
+  filename = here("results/TF_activity/cortex_setbp1_geneset.png"),
+  width = 900,
+  height = 1000,
+  res = 250
+)
+# Plot
+pheatmap(t(geneset_acts_mat), border_color = NA, color = my_color, breaks = my_breaks)
+dev.off()
+
+```
+
+```{r processing-time}
+fptm <- proc.time() - ptm
+fptm[3] / 60
+```
+ elapsed 
+1.882367 
+
+```{r style-file}
+# run style
+style_file(here("src/network_scripts/decoupleR/03_TF_activity_cortex.Rmd")) # commented out after being run once
+# lintr was run as well
+```
+
+```{r session-info}
+sessionInfo()
+```
+R version 4.1.3 (2022-03-10)
+Platform: x86_64-pc-linux-gnu (64-bit)
+Running under: Ubuntu 20.04.6 LTS
+
+Matrix products: default
+BLAS/LAPACK: /usr/lib/x86_64-linux-gnu/openblas-pthread/libopenblasp-r0.3.8.so
+
+locale:
+[1] C
+
+attached base packages:
+[1] grid      stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+ [1] styler_1.9.0          ggplot2_3.4.1         cowplot_1.1.1         patchwork_1.1.2       tibble_3.1.8          tidyr_1.3.0           SeuratObject_4.1.3   
+ [8] Seurat_4.3.0          gprofiler2_0.2.1      dplyr_1.1.0           purrr_1.0.1           readr_2.1.4           here_1.0.1            circlize_0.4.15      
+[15] ComplexHeatmap_2.10.0
+
+loaded via a namespace (and not attached):
+  [1] plyr_1.8.8             igraph_1.4.1           lazyeval_0.2.2         sp_1.6-0               splines_4.1.3          listenv_0.9.0         
+  [7] scattermore_0.8        digest_0.6.31          foreach_1.5.2          htmltools_0.5.4        fansi_1.0.4            magrittr_2.0.3        
+ [13] tensor_1.5             cluster_2.1.2          doParallel_1.0.17      ROCR_1.0-11            tzdb_0.3.0             globals_0.16.2        
+ [19] matrixStats_0.63.0     R.utils_2.12.2         vroom_1.6.1            spatstat.sparse_3.0-0  colorspace_2.1-0       ggrepel_0.9.3         
+ [25] xfun_0.37              crayon_1.5.2           jsonlite_1.8.4         progressr_0.13.0       spatstat.data_3.0-0    survival_3.3-1        
+ [31] zoo_1.8-11             iterators_1.0.14       glue_1.6.2             polyclip_1.10-4        gtable_0.3.1           leiden_0.4.3          
+ [37] GetoptLong_1.0.5       R.cache_0.16.0         future.apply_1.10.0    shape_1.4.6            BiocGenerics_0.40.0    abind_1.4-5           
+ [43] scales_1.2.1           spatstat.random_3.1-3  miniUI_0.1.1.1         Rcpp_1.0.10            viridisLite_0.4.1      xtable_1.8-4          
+ [49] clue_0.3-64            reticulate_1.28        bit_4.0.5              stats4_4.1.3           htmlwidgets_1.6.1      httr_1.4.5            
+ [55] RColorBrewer_1.1-3     ellipsis_0.3.2         ica_1.0-3              R.methodsS3_1.8.2      pkgconfig_2.0.3        uwot_0.1.14           
+ [61] deldir_1.0-6           utf8_1.2.3             tidyselect_1.2.0       rlang_1.0.6            reshape2_1.4.4         later_1.3.0           
+ [67] munsell_0.5.0          tools_4.1.3            cli_3.6.0              generics_0.1.3         ggridges_0.5.4         evaluate_0.20         
+ [73] stringr_1.5.0          fastmap_1.1.1          yaml_2.3.7             goftest_1.2-3          knitr_1.42             bit64_4.0.5           
+ [79] fitdistrplus_1.1-8     RANN_2.6.1             pbapply_1.7-0          future_1.31.0          nlme_3.1-155           mime_0.12             
+ [85] R.oo_1.25.0            compiler_4.1.3         rstudioapi_0.14        plotly_4.10.1          png_0.1-8              spatstat.utils_3.0-1  
+ [91] stringi_1.7.12         lattice_0.20-45        Matrix_1.5-3           vctrs_0.5.2            pillar_1.8.1           lifecycle_1.0.3       
+ [97] spatstat.geom_3.0-6    lmtest_0.9-40          GlobalOptions_0.1.2    RcppAnnoy_0.0.20       data.table_1.14.8      irlba_2.3.5.1         
+[103] httpuv_1.6.9           R6_2.5.1               promises_1.2.0.1       KernSmooth_2.23-20     gridExtra_2.3          IRanges_2.28.0        
+[109] parallelly_1.34.0      codetools_0.2-18       MASS_7.3-55            rprojroot_2.0.3        rjson_0.2.21           withr_2.5.0           
+[115] sctransform_0.3.5      S4Vectors_0.32.4       parallel_4.1.3         hms_1.1.2              rmarkdown_2.20         Rtsne_0.16            
+[121] spatstat.explore_3.0-6 shiny_1.7.4           
