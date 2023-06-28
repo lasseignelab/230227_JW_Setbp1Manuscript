@@ -21,7 +21,6 @@ ELISA <- read_csv(here("results/ELISA/230315_jw_setbp1ELISA.csv"))
 BCA <- read_csv(here("results/ELISA/230315_jw_setbp1BCA.csv"))
 ```
 
-
 ```{r analyzing-ELISA}
 # average entire dataset except blanks:
 measurements <- t(colMeans(ELISA[, -c(7:8)]))
@@ -71,12 +70,12 @@ sample_concentrations
 setbp1ELISA_data <- rbind(measurements, sample_concentrations)
 
 setbp1ELISA_data <- as.data.frame(t(setbp1ELISA_data))
-setbp1ELISA_data$sample_ID <- c(
+setbp1ELISA_data$Sample <- c(
   "standard", "standard", "standard", "standard",
-  "standard", "standard", "cerebral cortex het",
-  "cerebral cortex WT", "kidney het", "kidney WT"
+  "standard", "standard", "S858R cerebral cortex",
+  "WT cerebral cortex", "S858R kidney", "WT kidney"
 )
-colnames(setbp1ELISA_data) <- c("OD", "concentration", "sample_ID")
+colnames(setbp1ELISA_data) <- c("OD", "concentration", "Sample")
 
 # plot data
 ggplot(data = setbp1ELISA_data) +
@@ -84,7 +83,7 @@ ggplot(data = setbp1ELISA_data) +
     aes(
       x = concentration,
       y = OD,
-      color = sample_ID
+      color = Sample
     ),
     position = "jitter"
   ) +
@@ -94,14 +93,14 @@ ggplot(data = setbp1ELISA_data) +
 
 # plot data with eq
 png(here("results/ELISA/setbp1ELISA_quantification.png"),
-  width = 1000, height = 1000
+  width = 1500, height = 1000, res = 250
 )
 ggscatter(
   data = setbp1ELISA_data,
   x = "concentration",
   y = "OD",
-  color = "sample_ID",
-  size = 3, shape = "sample_ID",
+  color = "Sample",
+  size = 3, shape = "Sample",
   palette = get_palette(c("#644DD4", "#5F9EFD", "#FE6100", "#FFB000", "black"), 5),
   add = "reg.line", add.params = list(color = "black"),
   ggtheme = theme_bw(),
@@ -109,7 +108,14 @@ ggscatter(
   ylab = "Optical Density (OD) at 450 nm",
   title = "Setbp1 ELISA Quantification"
 ) +
-  stat_regline_equation(label.x = 3, label.y = 1.2)
+  stat_regline_equation(label.x = 3, label.y = 1.2) +
+  theme_bw() +
+  theme(text = element_text(family = "Helvetica")) +
+  theme(axis.title.x = element_text(face = "bold")) +
+  theme(axis.title.y = element_text(face = "bold")) +
+  theme(legend.title = element_text(face = "bold")) +
+  theme(legend.text = element_text(face = "bold")) +
+  theme(title = element_text(face = "bold"))
 dev.off()
 ```
 
@@ -150,21 +156,21 @@ sample_concentrations <- unlist(as.vector(sample_concentrations))
 sample_concentrations
 
 # wrangle and format concentrations
-sample_ID <- c(
-  "cortex_het", "cortex_het", "cortex_het", "cortex_wt",
-  "cortex_wt", "cortex_wt", "kidney_het", "kidney_het",
-  "kidney_het", "kidney_wt", "kidney_wt", "kidney_wt"
+Sample <- c(
+  "S858R cerebral cortex", "S858R cerebral cortex", "S858R cerebral cortex", "WT cerebral cortex",
+  "WT cerebral cortex", "WT cerebral cortex", "S858R kidney", "S858R kidney",
+  "S858R kidney", "WT kidney", "WT kidney", "WT kidney"
 )
-rep_conc_ELISA <- as.data.frame(cbind(sample_ID, as.numeric(sample_concentrations)))
+rep_conc_ELISA <- as.data.frame(cbind(Sample, as.numeric(sample_concentrations)))
 
 # plot data
 png(here("results/ELISA/setbp1ELISA_quantification_boxplot.png"),
-  width = 1000, height = 1000
+  width = 1500, height = 1000, res = 250
 )
 ggplot(data = rep_conc_ELISA, aes(
-  x = sample_ID,
+  x = Sample,
   y = sample_concentrations,
-  fill = sample_ID
+  fill = Sample
 )) +
   geom_boxplot() +
   geom_point() +
@@ -177,11 +183,19 @@ ggplot(data = rep_conc_ELISA, aes(
   ) +
   ggtitle("Setbp1 Protein Concentration") +
   scale_fill_manual(values = c(
-    "kidney_wt" = "#FE6100",
-    "kidney_het" = "#FFB000",
-    "cortex_het" = "#5F9EFD",
-    "cortex_wt" = "#644DD4"
-  ))
+    "WT kidney" = "#FE6100",
+    "S858R kidney" = "#FFB000",
+    "S858R cerebral cortex" = "#5F9EFD",
+    "WT cerebral cortex" = "#644DD4"
+  )) +
+  theme_bw() +
+  theme(text = element_text(family = "Helvetica")) +
+  theme(axis.title.x = element_text(face = "bold")) +
+  theme(axis.title.y = element_text(face = "bold")) +
+  theme(legend.title = element_text(face = "bold")) +
+  theme(legend.text = element_text(face = "bold")) +
+  theme(title = element_text(face = "bold")) +
+  theme(axis.text.x = element_text(face = "bold", angle = 45, hjust = 1, color = "black"))
 dev.off()
 ```
 
@@ -232,12 +246,12 @@ sample_concentrations
 setbp1BCA_data <- rbind(measurements[, c(1:5, 9:12)], sample_concentrations)
 
 setbp1BCA_data <- as.data.frame(t(setbp1BCA_data))
-setbp1BCA_data$sample_ID <- c(
+setbp1BCA_data$Sample <- c(
   "standard", "standard", "standard", "standard",
-  "standard", "cerebral cortex het",
-  "cerebral cortex WT", "kidney het", "kidney WT"
+  "standard", "S858R cerebral cortex",
+  "WT cerebral cortex", "S858R kidney", "WT kidney"
 )
-colnames(setbp1BCA_data) <- c("OD", "concentration", "sample_ID")
+colnames(setbp1BCA_data) <- c("OD", "concentration", "Sample")
 
 # plot data
 ggplot(data = setbp1BCA_data) +
@@ -245,7 +259,7 @@ ggplot(data = setbp1BCA_data) +
     aes(
       x = concentration,
       y = OD,
-      color = sample_ID
+      color = Sample
     ),
     position = "jitter"
   ) +
@@ -255,14 +269,14 @@ ggplot(data = setbp1BCA_data) +
 
 # plot data with eq
 png(here("results/ELISA/setbp1BCA_quantification.png"),
-  width = 1000, height = 1000
+  width = 1500, height = 1000, res = 250
 )
 ggscatter(
   data = setbp1BCA_data,
   x = "concentration",
   y = "OD",
-  color = "sample_ID", size = 3,
-  shape = "sample_ID",
+  color = "Sample", size = 3,
+  shape = "Sample",
   add = "reg.line", add.params = list(color = "black"),
   palette = get_palette(c("#644DD4", "#5F9EFD", "#FE6100", "#FFB000", "black"), 5),
   ggtheme = theme_bw(),
@@ -270,7 +284,14 @@ ggscatter(
   ylab = "Optical Density (OD) at 562 nm",
   title = "Setbp1 BCA Quantification"
 ) +
-  stat_regline_equation(label.x = 3, label.y = 1.2)
+  stat_regline_equation(label.x = 3, label.y = 1.2) +
+  theme_bw() +
+  theme(text = element_text(family = "Helvetica")) +
+  theme(axis.title.x = element_text(face = "bold")) +
+  theme(axis.title.y = element_text(face = "bold")) +
+  theme(legend.title = element_text(face = "bold")) +
+  theme(legend.text = element_text(face = "bold")) +
+  theme(title = element_text(face = "bold"))
 dev.off()
 ```
 
@@ -311,23 +332,23 @@ sample_concentrations <- unlist(as.vector(sample_concentrations))
 sample_concentrations
 
 # wrangle and format concentrations
-sample_ID <- c("cortex_het", "cortex_het", "cortex_het", "cortex_wt", "cortex_wt", "cortex_wt", "kidney_het", "kidney_het", "kidney_het", "kidney_wt", "kidney_wt", "kidney_wt")
-rep_conc_BCA <- as.data.frame(cbind(sample_ID, as.numeric(sample_concentrations)))
+Sample <- c("S858R cerebral cortex", "S858R cerebral cortex", "S858R cerebral cortex", "WT cerebral cortex", "WT cerebral cortex", "WT cerebral cortex", "S858R kidney", "S858R kidney", "S858R kidney", "WT kidney", "WT kidney", "WT kidney")
+rep_conc_BCA <- as.data.frame(cbind(Sample, as.numeric(sample_concentrations)))
 
 # plot data
 png(here("results/ELISA/setbp1BCA_quantification_boxplot.png"),
-  width = 1000, height = 1000
+  width = 1500, height = 2000, res = 250
 )
 ggplot(data = rep_conc_BCA, aes(
-  x = sample_ID,
+  x = Sample,
   y = sample_concentrations,
-  fill = sample_ID
+  fill = Sample
 )) +
   scale_fill_manual(values = c(
-    "kidney_wt" = "#FE6100",
-    "kidney_het" = "#FFB000",
-    "cortex_het" = "#5F9EFD",
-    "cortex_wt" = "#644DD4"
+    "WT kidney" = "#FE6100",
+    "S858R kidney" = "#FFB000",
+    "S858R cerebral cortex" = "#5F9EFD",
+    "WT cerebral cortex" = "#644DD4"
   )) +
   geom_boxplot() +
   geom_point() +
@@ -338,9 +359,18 @@ ggplot(data = rep_conc_BCA, aes(
     geom = "errorbar", # Boxplot with error bars
     width = 0.2
   ) +
-  ggtitle("Setbp1 Protein Concentration BCA")
+  ggtitle("Setbp1 Protein Concentration BCA") +
+  theme_bw() +
+  theme(text = element_text(family = "Helvetica")) +
+  theme(axis.title.x = element_text(face = "bold")) +
+  theme(axis.title.y = element_text(face = "bold")) +
+  theme(legend.title = element_text(face = "bold")) +
+  theme(legend.text = element_text(face = "bold")) +
+  theme(title = element_text(face = "bold")) +
+  theme(axis.text.x = element_text(face = "bold", angle = 45, hjust = 1, color = "black"))
 dev.off()
 ```
+
 
 Determining total proportion of total protein that Setbp1 is:
 *ELISA quantifies Setbp1 protein concentration in ng/mL
@@ -356,25 +386,25 @@ ELISA_concentrations <- ng_concentrations[, 2:3] # save in new df for merging
 Step 2: Compare ELISA in ug/mL to BCA in ug/mL to calculate a proportion
 ```{r calc-prop}
 BCA_concentrations <- setbp1BCA_data[6:9, 2:3] # subset Setbp1 samples
-colnames(BCA_concentrations) <- c("BCA_ug_mL", "sample_ID") # rename cols to make more clear for merging
+colnames(BCA_concentrations) <- c("BCA_ug_mL", "Sample") # rename cols to make more clear for merging
 
 concentrations_ug_mL <- merge(BCA_concentrations, ELISA_concentrations)
 concentrations_ug_mL$Setbp1_prop <- concentrations_ug_mL$ELISA_ug_mL / concentrations_ug_mL$BCA_ug_mL # dividing ELISA concentration by total protein concentration
 concentrations_ug_mL$Setbp1_percent <- concentrations_ug_mL$Setbp1_prop * 100 # converting to a percent
 
-ggplot(concentrations_ug_mL, aes(y = Setbp1_percent, x = sample_ID, fill = sample_ID)) +
+ggplot(concentrations_ug_mL, aes(y = Setbp1_percent, x = Sample, fill = Sample)) +
   scale_fill_manual(values = c(
-    "kidney_wt" = "#FE6100",
-    "kidney_het" = "#FFB000",
-    "cortex_het" = "#5F9EFD",
-    "cortex_wt" = "#644DD4"
+    "WT kidney" = "#FE6100",
+    "S858R kidney" = "#FFB000",
+    "S858R cerebral cortex" = "#5F9EFD",
+    "WT cerebral cortex" = "#644DD4"
   )) +
   geom_bar(stat = "identity") +
   theme_bw() +
   geom_signif(
     comparisons = list(
-      c("cerebral cortex WT", "cerebral cortex het"),
-      c("kidney WT", "kidney het")
+      c("WT cerebral cortex", "S858R cerebral cortex"),
+      c("WT kidney", "S858R kidney")
     ),
     map_signif_level = TRUE
   )
@@ -390,27 +420,35 @@ ELISA_concentrations <- ng_concentrations[, 2:3] # save in new df for merging
 Step 2: Compare ELISA in ug/mL to BCA in ug/mL to calculate a proportion
 ```{r calc-prop}
 BCA_concentrations <- setbp1BCA_data[6:9, 2:3] # subset Setbp1 samples
-colnames(BCA_concentrations) <- c("BCA_ug_mL", "sample_ID") # rename cols to make more clear for merging
+colnames(BCA_concentrations) <- c("BCA_ug_mL", "Sample") # rename cols to make more clear for merging
 
 concentrations_ug_mL <- merge(BCA_concentrations, ELISA_concentrations)
 concentrations_ug_mL$Setbp1_prop <- concentrations_ug_mL$ELISA_ug_mL / concentrations_ug_mL$BCA_ug_mL # dividing ELISA concentration by total protein concentration
 concentrations_ug_mL$Setbp1_percent <- concentrations_ug_mL$Setbp1_prop * 100 # converting to a percent
 
 png(here("results/ELISA/setbp1_percent_total_protein_barplot.png"),
-  width = 1000, height = 1000
+  width = 1000, height = 1000, res = 250
 )
-ggplot(concentrations_ug_mL, aes(y = Setbp1_percent, x = sample_ID, fill = sample_ID)) +
+ggplot(concentrations_ug_mL, aes(y = Setbp1_percent, x = Sample, fill = Sample)) +
   geom_bar(stat = "identity") +
   theme_bw() +
   scale_fill_manual(values = c(
-    "kidney_wt" = "#FE6100",
-    "kidney_het" = "#FFB000",
-    "cortex_het" = "#5F9EFD",
-    "cortex_wt" = "#644DD4"
+    "WT kidney" = "#FE6100",
+    "S858R kidney" = "#FFB000",
+    "S858R cerebral cortex" = "#5F9EFD",
+    "WT cerebral cortex" = "#644DD4"
   )) +
   ggtitle("Proportion of Total Protein") +
-  ylab("percent of Setb1p protein") +
-  xlab("Group")
+  ylab("percent of Setbp1 protein") +
+  xlab("Group") +
+  theme_bw() +
+  theme(text = element_text(family = "Helvetica")) +
+  theme(axis.title.x = element_text(face = "bold")) +
+  theme(axis.title.y = element_text(face = "bold")) +
+  theme(legend.title = element_text(face = "bold")) +
+  theme(legend.text = element_text(face = "bold")) +
+  theme(title = element_text(face = "bold")) +
+  theme(axis.text.x = element_text(face = "bold", angle = 45, hjust = 1, color = "black"))
 dev.off()
 ```
 
@@ -424,34 +462,34 @@ ELISA_concentrations_reps <- rep_conc_ELISA[, c(1, 3)] # save in new df for merg
 
 Step 2: Compare ELISA in ug/mL to BCA in ug/mL to calculate a proportion
 ```{r calculate-prop}
-colnames(rep_conc_BCA) <- c("sample_ID", "BCA_ug_mL") # rename cols to make more clear for merging
+colnames(rep_conc_BCA) <- c("Sample", "BCA_ug_mL") # rename cols to make more clear for merging
 
 concentrations_ug_mL <- cbind(rep_conc_BCA, ELISA_concentrations_reps) %>% .[, -3]
 concentrations_ug_mL$Setbp1_prop <- concentrations_ug_mL$ELISA_ug_mL / as.numeric(concentrations_ug_mL$BCA_ug_mL) # dividing ELISA concentration by total protein concentration
 concentrations_ug_mL$Setbp1_percent <- concentrations_ug_mL$Setbp1_prop * 100 # converting to a percent
 
 # calculate a p-value and plot with singificance indicated
-compare_means(Setbp1_percent ~ sample_ID, concentrations_ug_mL, method = "t.test")
+compare_means(Setbp1_percent ~ Sample, concentrations_ug_mL, method = "t.test")
 my_comparisons <- list(
-  c("cortex_het", "cortex_wt"),
-  c("kidney_het", "kidney_wt"), c("cortex_het", "kidney_het")
+  c("S858R cerebral cortex", "WT cerebral cortex"),
+  c("S858R kidney", "WT kidney"), c("S858R cerebral cortex", "S858R kidney")
 )
 
 png(here("results/ELISA/setbp1_percent_total_protein_boxplot.png"),
-  width = 1000, height = 1000
+  width = 1500, height = 2000, res = 250
 )
 ggplot(data = concentrations_ug_mL, aes(
-  x = sample_ID,
+  x = Sample,
   y = Setbp1_percent,
-  fill = sample_ID,
+  fill = Sample,
   add = "jitter",
   legend = "none"
 )) +
   scale_fill_manual(values = c(
-    "kidney_wt" = "#FE6100",
-    "kidney_het" = "#FFB000",
-    "cortex_het" = "#5F9EFD",
-    "cortex_wt" = "#644DD4"
+    "WT kidney" = "#FE6100",
+    "S858R kidney" = "#FFB000",
+    "S858R cerebral cortex" = "#5F9EFD",
+    "WT cerebral cortex" = "#644DD4"
   )) +
   geom_boxplot() +
   geom_point() +
@@ -467,7 +505,15 @@ ggplot(data = concentrations_ug_mL, aes(
     comparisons = my_comparisons,
     label = "p.signif",
     method = "t.test",
-  )
+  ) +
+  theme_bw() +
+  theme(text = element_text(family = "Helvetica")) +
+  theme(axis.title.x = element_text(face = "bold")) +
+  theme(axis.title.y = element_text(face = "bold")) +
+  theme(legend.title = element_text(face = "bold")) +
+  theme(legend.text = element_text(face = "bold")) +
+  theme(title = element_text(face = "bold")) +
+  theme(axis.text.x = element_text(face = "bold", angle = 45, hjust = 1, color = "black"))
 dev.off()
 ```
 
