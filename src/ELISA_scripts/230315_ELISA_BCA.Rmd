@@ -427,7 +427,7 @@ concentrations_ug_mL$Setbp1_prop <- concentrations_ug_mL$ELISA_ug_mL / concentra
 concentrations_ug_mL$Setbp1_percent <- concentrations_ug_mL$Setbp1_prop * 100 # converting to a percent
 
 png(here("results/ELISA/setbp1_percent_total_protein_barplot.png"),
-  width = 1000, height = 1000, res = 250
+  width = 1500, height = 1000, res = 250
 )
 ggplot(concentrations_ug_mL, aes(y = Setbp1_percent, x = Sample, fill = Sample)) +
   geom_bar(stat = "identity") +
