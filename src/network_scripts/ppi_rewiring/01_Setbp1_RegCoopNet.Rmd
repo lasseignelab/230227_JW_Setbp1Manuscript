@@ -319,7 +319,7 @@ cortex_banfi <- unique(cortex_banfi)
 
 ```{r annotate-mechanism}
 # annotate for mechanism based off of Banfi et al (can be 'cell cycle', 'chromatin remodeling', 'DNA damage', 'phosphorylation', 'binding')
-binding <- c("Kmt2a", "Hcif1") #from "epigenetic hub" paper
+#binding <- c("Kmt2a", "Hcif1") #from "epigenetic hub" paper
 cell_cycle <- c("Cdk2", "Trp53", "Tp53", "Tceal1", "Set")
 chromatin_remodeling <- c("Anp32a", "Taf1a", "Set")
 dna_damage <- c("Apex1", "Anp32a", "Apex", "Hmg2", "Hmgb2", "Nme1", "Set", "Trex1")
