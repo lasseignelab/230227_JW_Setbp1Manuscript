@@ -4,6 +4,10 @@ output: html_document
 date: "2023-06-20"
 ---
 
+Goal: Identify the overlap between all community and cell type pairings for each tissue as well as only between the Communities containing TF Setbp1. 
+* Cerebral cortex: TF Setbp1 is in community 1
+* Kidney: TF Setbp1 is in community 1
+
 ```{r}
 set.seed(2178)
 library(netZooR)
