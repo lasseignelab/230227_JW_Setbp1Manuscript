@@ -5,7 +5,9 @@ date: '2023-06-13'
 output: html_document
 ---
 
-Goal: Investigate expression of SET in kidney and cortex S858R samples. 
+Goal #1: Investigate expression of SET in kidney and cortex S858R samples, in order to confirm it's expression aligns with what is known in the literature or that it is not different across cell types and conditions. 
+
+Goal #2: Identify if there are any NPCs in the the data. This was done by looking at Sox2 expression, a [known](https://www.sanbio.nl/resources/blogs/blog-about-npcs-nscs) marker of proliferative NPCs in the brain. 
 
 ```{r}
 set.seed(2178)
@@ -114,8 +116,6 @@ panel_2AB
 dev.off()
 ```
 
-
-
 ```{r}
 fptm <- proc.time() - ptm
 fptm <- (fptm[3] / 60) / 60
@@ -124,7 +124,7 @@ print(paste0("Run time: ", fptm, " hours"))
 [1] "Run time: 0.149947777777778 hours"
 
 ```{r}
-style_file(here("src/module_scores/03_Setbp1_reactive_astrocytes.Rmd")) # Note: lintr was run as well
+style_file(here("src/module_scores/15_Set_Sox2_profiling.Rmd")) # Note: lintr was run as well
 ```
 
 ```{r}
