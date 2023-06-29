@@ -142,7 +142,6 @@ png(
 # Plot
 pheatmap(t(geneset_acts_mat), border_color = NA, color = my_color, breaks = my_breaks)
 dev.off()
-
 ```
 
 ```{r processing-time}
