@@ -319,7 +319,7 @@ cortex_banfi <- unique(cortex_banfi)
 
 ```{r annotate-mechanism}
 # annotate for mechanism based off of Banfi et al (can be 'cell cycle', 'chromatin remodeling', 'DNA damage', 'phosphorylation', 'binding')
-#binding <- c("Kmt2a", "Hcif1") #from "epigenetic hub" paper
+binding <- c("Kmt2a", "Hcif1") #from "epigenetic hub" paper
 cell_cycle <- c("Cdk2", "Trp53", "Tp53", "Tceal1", "Set")
 chromatin_remodeling <- c("Anp32a", "Taf1a", "Set")
 dna_damage <- c("Apex1", "Anp32a", "Apex", "Hmg2", "Hmgb2", "Nme1", "Set", "Trex1")
@@ -376,8 +376,8 @@ cortex_banfi <- cortex_banfi[, -which(names(cortex_banfi) %in% columns_to_remove
 kidney_banfi <- kidney_banfi[, -which(names(kidney_banfi) %in% columns_to_remove)]
 
 # save
-write.csv(cortex_banfi, here("results/ppi_rewiring/all_mxn_cortex_banfi.csv")) 
-write.csv(kidney_banfi, here("results/ppi_rewiring/all_mxn_kidney_banfi.csv")) 
+# write.csv(cortex_banfi, here("results/ppi_rewiring/all_mxn_cortex_banfi.csv")) 
+# write.csv(kidney_banfi, here("results/ppi_rewiring/all_mxn_kidney_banfi.csv")) 
 ```
 
 ```{r splitting-by-condition}
@@ -387,37 +387,62 @@ cortex_banfi_het <- cortex_banfi[apply(cortex_banfi, 1, function(row) any(grepl(
 cortex_banfi_ctrl <- cortex_banfi[apply(cortex_banfi, 1, function(row) any(grepl("control", row))),]
 ```
 
+```{r keeping-both-conditions}
+# Cortex
+# Create a new column named 'condition'
+cortex_banfi$condition <- ""
+
+# Create a new column named 'condition' and use ifelse to populate it based on cell_type
+cortex_banfi$condition <- ifelse(grepl("_heterozygouscortex", cortex_banfi$source), "S858R", "WT")
+
+
+# Remove "_controlcortex" or "_heterozygouscortex" from the 'cell_type' column
+cortex_banfi$cell_type <- gsub("_heterozygouscortex", "", cortex_banfi$source)
+cortex_banfi$cell_type <- gsub("_controlcortex", "", cortex_banfi$cell_type)
+
+# Kidney
+# Create a new column named 'condition'
+kidney_banfi$condition <- ""
+
+# Create a new column named 'condition' and use ifelse to populate it based on cell_type
+kidney_banfi$condition <- ifelse(grepl("_heterozygouskidney", kidney_banfi$source), "S858R", "WT")
+
+
+# Remove "_controlcortex" or "_heterozygouscortex" from the 'cell_type' column
+kidney_banfi$cell_type <- gsub("_heterozygouskidney", "", kidney_banfi$source)
+kidney_banfi$cell_type <- gsub("_controlkidney", "", kidney_banfi$cell_type)
+```
+
+
 ## plot colored by annotation and grouped by mechanism
-
-### het cortex
-```{r visualizing-mechanisms-sign-change-for-geneset-het}
+### both
+```{r visualizing-mechanisms-sign-change-for-geneset-both-cortex}
 # curious...going to subset for Setbp1 gene set in gene_ppi column
-het_cortex <- cortex_banfi_het[cortex_banfi_het$gene_ppi %in% setbp1_genes,]
-het_cortex$cell_type <- sub("_heterozygouscortex", "", het_cortex$source)
+cortex <- cortex_banfi[cortex_banfi$gene_ppi %in% setbp1_genes,]
 
-write.csv(het_cortex, file = here("results/ppi_rewiring/het_cortex_mechanisms.csv"))
+#removing Setbp1 because it is not a target of Setbp1 
+cortex <- cortex[cortex$gene_ppi != "Setbp1",]
+
+write.csv(cortex, file = here("results/ppi_rewiring/cortex_mechanisms.csv"))
 
 ## grab just values from cell_type, annotation, gene_ppi, and mechanism, keep rownames and then order (below) by rowname
-het_cortex <- het_cortex[, c("annotation", "cell_type", "gene_ppi", "mechanism"), drop = FALSE]
+cortex <- cortex[, c("annotation", "cell_type", "gene_ppi", "mechanism", "condition"), drop = FALSE]
+  
+cortex_pivot <- pivot_wider(cortex, names_from = c("cell_type", "condition"), values_from = "annotation", names_repair = "minimal")
+cortex_pivot[is.na(cortex_pivot)] <- 0
 
+rownames <- cortex_pivot$gene_ppi # add gene names as rownames
+cortex_pivot <- cortex_pivot[, -1, drop = FALSE] # drop gene column
 
-het_cortex_pivot <- pivot_wider(het_cortex, names_from = c("cell_type"), values_from = "annotation", names_repair = "minimal")
-het_cortex_pivot[is.na(het_cortex_pivot)] <- 0
-rownames <- het_cortex_pivot$gene_ppi # add gene names as rownames
-het_cortex_pivot <- het_cortex_pivot[, -1, drop = FALSE] # drop gene column
+cortex_pivot <- cortex_pivot[, -1, drop = FALSE]
+rownames(cortex_pivot) <- rownames
 
-rowmeta <- as.data.frame(het_cortex_pivot$mechanism)
-
-het_cortex_pivot <- het_cortex_pivot[, -1, drop = FALSE]
-rownames(het_cortex_pivot) <- rownames
-rownames(rowmeta) <- rownames(het_cortex_pivot)
-colnames(rowmeta) <- "mechanism"
 
 # grab meta data for plot:
-meta <- as.data.frame(colnames(het_cortex_pivot))
-# meta.data <- t(as.data.frame(strsplit(sub("(_)(?=[^_]+$)", " ", meta$`colnames(het_cortex_pivot)`, perl = TRUE), " ")))
-rownames(meta) <- meta$`colnames(het_cortex_pivot)`
-colnames(meta) <- c("cell_type")
+meta <- as.data.frame(colnames(cortex_pivot))
+meta <- t(as.data.frame(strsplit(sub("(_)(?=[^_]+$)", " ", meta$`colnames(cortex_pivot)`, perl = TRUE), " ")))
+rownames(meta) <- colnames(cortex_pivot)
+colnames(meta) <- c("cell_type", "condition")
 
 
 # define order of annotations and colors:
@@ -428,13 +453,14 @@ annotation_colors <- list("cell_type" = c("excitatory_neurons" = "#DC71FA",
                                           "microglia" = "#C216B7",
                                           "opcs" = "#00C1AA",
                                           "pericytes" = "#027461",
-                                          "fibro_cortex" = "#0a2f6f")) 
+                                          "fibro_cortex" = "#0a2f6f"),
+                          "condition" = c("WT" = "#644DD4", "S858R" = "#5F9EFD")) 
 
 # set heatmap annotations:
 heat.anno <- HeatmapAnnotation(df = meta, show_annotation_name = TRUE, col = annotation_colors)
 
 # convert dataframe to matrix
-mat <- as.matrix(het_cortex_pivot)
+mat <- as.matrix(cortex_pivot)
 
 # plot heatmap
 # Heatmap
@@ -457,7 +483,7 @@ plot <- Heatmap(mat,
   top_annotation = heat.anno,
 )
 
-png(here("results/ppi_rewiring/cortex_het_sign_change_heatmap.png"),
+png(here("results/ppi_rewiring/cortex_all_sign_change_heatmap.png"),
   res = 250,
   height = 1000,
   width = 2000
@@ -466,116 +492,41 @@ plot
 dev.off()
 ```
 
-### control cortex
-```{r visualizing-mechanisms-sign-change-for-geneset-ctrl}
+```{r visualizing-mechanisms-sign-change-for-geneset-het-kidney}
 # curious...going to subset for Setbp1 gene set in gene_ppi column
-ctrl_cortex <- cortex_banfi_ctrl[cortex_banfi_ctrl$gene_ppi %in% setbp1_genes,]
-ctrl_cortex$cell_type <- sub("_controlcortex", "", ctrl_cortex$source)
+kidney <- kidney_banfi[kidney_banfi$gene_ppi %in% setbp1_genes,]
 
-write.csv(ctrl_cortex, file = here("results/ppi_rewiring/ctrl_cortex_mechanisms.csv"))
+#removing Setbp1 because it is not a target of Setbp1 
+kidney <- kidney[kidney$gene_ppi != "Setbp1",]
+
+write.csv(kidney, file = here("results/ppi_rewiring/kidney_mechanisms.csv"))
 
 ## grab just values from cell_type, annotation, gene_ppi, and mechanism, keep rownames and then order (below) by rowname
-ctrl_cortex <- ctrl_cortex[, c("annotation", "cell_type", "gene_ppi", "mechanism"), drop = FALSE]
+kidney <- kidney[, c("annotation", "cell_type", "gene_ppi", "mechanism", "condition"), drop = FALSE]
+  
+kidney_pivot <- pivot_wider(kidney, names_from = c("cell_type", "condition"), values_from = "annotation", names_repair = "minimal")
+kidney_pivot[is.na(kidney_pivot)] <- 0
 
+rownames <- kidney_pivot$gene_ppi # add gene names as rownames
+kidney_pivot <- kidney_pivot[, -1, drop = FALSE] # drop gene column
 
-ctrl_cortex_pivot <- pivot_wider(ctrl_cortex, names_from = c("cell_type"), values_from = "annotation", names_repair = "minimal")
-ctrl_cortex_pivot[is.na(ctrl_cortex_pivot)] <- 0
-rownames <- ctrl_cortex_pivot$gene_ppi # add gene names as rownames
-ctrl_cortex_pivot <- ctrl_cortex_pivot[, -1, drop = FALSE] # drop gene column
+kidney_pivot <- kidney_pivot[, -1, drop = FALSE]
+rownames(kidney_pivot) <- rownames
 
-rowmeta <- as.data.frame(ctrl_cortex_pivot$mechanism)
-
-ctrl_cortex_pivot <- ctrl_cortex_pivot[, -1, drop = FALSE]
-rownames(ctrl_cortex_pivot) <- rownames
-rownames(rowmeta) <- rownames(ctrl_cortex_pivot)
-colnames(rowmeta) <- "mechanism"
 
 # grab meta data for plot:
-meta <- as.data.frame(colnames(ctrl_cortex_pivot))
-rownames(meta) <- meta$`colnames(ctrl_cortex_pivot)`
-colnames(meta) <- c("cell_type")
+meta <- as.data.frame(colnames(kidney_pivot))
+meta <- t(as.data.frame(strsplit(sub("(_)(?=[^_]+$)", " ", meta$`colnames(kidney_pivot)`, perl = TRUE), " ")))
+rownames(meta) <- colnames(kidney_pivot)
+colnames(meta) <- c("cell_type", "condition")
 
 
 # define order of annotations and colors:
-annotation_colors <- list("cell_type" = c("excitatory_neurons" = "#DC71FA",
-                                          "inhibitory_neurons" = "#00BBDB",
-                                          "oligodendrocytes" = "#7997FF",
-                                          "astrocytes" = "#6968B4",
-                                          "microglia" = "#C216B7",
-                                          "opcs" = "#00C1AA",
-                                          "pericytes" = "#027461",
-                                          "fibro_cortex" = "#0a2f6f")) 
-
-# set heatmap annotations:
-heat.anno <- HeatmapAnnotation(df = meta, show_annotation_name = TRUE, col = annotation_colors)
-
-# convert dataframe to matrix
-mat <- as.matrix(ctrl_cortex_pivot)
-
-# plot heatmap
-# Heatmap
-
-plot <- Heatmap(mat,
-  col = c("both_negative" = "red", "both_positive" = "#628D56", "neg_pos" = "#E9C61D", "pos_neg" = "#E7872B"),
-  heatmap_legend_param = list(title = "regNet to CoopNet score change in ctrl"),
-  cluster_rows = TRUE,
-  cluster_columns = TRUE,
-  column_order = NULL,
-  show_row_dend = TRUE,
-  show_column_dend = FALSE,
-  row_names_gp = gpar(fontface = "bold", fontfamily = "Helvetica"),
-  show_row_names = TRUE,
-  show_column_names = FALSE,
-  use_raster = TRUE,
-  raster_device = c("png"),
-  bottom_annotation = NULL,
-  row_title_gp = gpar(fontface = "bold"),
-  top_annotation = heat.anno,
-)
-
-
-png(here("results/ppi_rewiring/cortex_ctrl_sign_change_heatmap.png"),
-  res = 250,
-  height = 1000,
-  width = 2000
-)
-plot
-dev.off()
-```
-
-### het kidney
-```{r visualizing-mechanisms-sign-change-for-geneset-het}
-# curious...going to subset for Setbp1 gene set in gene_ppi column
-het_kidney <- kidney_banfi_het[kidney_banfi_het$gene_ppi %in% setbp1_genes,]
-het_kidney$cell_type <- sub("_heterozygouskidney", "", het_kidney$source)
-
-write.csv(het_kidney, file = here("results/ppi_rewiring/het_kidney_mechanisms.csv"))
-
-## grab just values from cell_type, annotation, gene_ppi, and mechanism, keep rownames and then order (below) by rowname
-het_kidney <- het_kidney[, c("annotation", "cell_type", "gene_ppi", "mechanism"), drop = FALSE]
-het_kidney <- unique(het_kidney)
-
-
-het_kidney_pivot <- pivot_wider(het_kidney, names_from = c("cell_type"), values_from = "annotation", names_repair = "minimal")
-het_kidney_pivot[is.na(het_kidney_pivot)] <- 0
-rownames <- het_kidney_pivot$gene_ppi # add gene names as rownames
-het_kidney_pivot <- het_kidney_pivot[, -1, drop = FALSE] # drop gene column
-
-rowmeta <- as.data.frame(het_kidney_pivot$mechanism)
-
-het_kidney_pivot <- het_kidney_pivot[, -1, drop = FALSE]
-rownames(het_kidney_pivot) <- rownames
-rownames(rowmeta) <- rownames(het_kidney_pivot)
-colnames(rowmeta) <- "mechanism"
-
-# grab meta data for plot:
-meta <- as.data.frame(colnames(het_kidney_pivot))
-rownames(meta) <- meta$`colnames(het_kidney_pivot)`
-colnames(meta) <- c("cell_type")
-
-
-# define order of annotations and colors:
-annotation_colors <- list("cell_type" = c(
+annotation_colors <- list( "condition" = c(
+    "WT" = "#FE6100",
+    "S858R" = "#FFB000"
+  ),
+  "cell_type" = c(
     "Bcell" = "#FFBE1D",
     "CDIC_typeA" = "#4E3801",
     "CDIC_typeB" = "#EEDF37",
@@ -592,13 +543,14 @@ annotation_colors <- list("cell_type" = c(
     "pericytes" = "#FFE196",
     "PCTS2" = "#FF7600",
     "PT" = "#F8766D",
-    "smcs" = "#FFE196")) 
+    "smcs" = "#FFE196"
+  )) 
 
 # set heatmap annotations:
 heat.anno <- HeatmapAnnotation(df = meta, show_annotation_name = TRUE, col = annotation_colors)
 
 # convert dataframe to matrix
-mat <- as.matrix(het_kidney_pivot)
+mat <- as.matrix(kidney_pivot)
 
 # plot heatmap
 # Heatmap
@@ -621,97 +573,9 @@ plot <- Heatmap(mat,
   top_annotation = heat.anno,
 )
 
-png(here("results/ppi_rewiring/kidney_het_sign_change_heatmap.png"),
+png(here("results/ppi_rewiring/kidney_all_sign_change_heatmap.png"),
   res = 250,
-  height = 3000,
-  width = 2000
-)
-plot
-dev.off()
-```
-
-### control kidney
-```{r visualizing-mechanisms-sign-change-for-geneset-ctrl}
-# curious...going to subset for Setbp1 gene set in gene_ppi column
-ctrl_kidney <- kidney_banfi_ctrl[kidney_banfi_ctrl$gene_ppi %in% setbp1_genes,]
-ctrl_kidney$cell_type <- sub("_controlkidney", "", ctrl_kidney$source)
-
-write.csv(ctrl_kidney, file = here("results/ppi_rewiring/ctrl_kidney_mechanisms.csv"))
-
-## grab just values from cell_type, annotation, gene_ppi, and mechanism, keep rownames and then order (below) by rowname
-ctrl_kidney <- ctrl_kidney[, c("annotation", "cell_type", "gene_ppi", "mechanism"), drop = FALSE]
-ctrl_kidney <- unique(ctrl_kidney)
-
-ctrl_kidney_pivot <- pivot_wider(ctrl_kidney, names_from = c("cell_type"), values_from = "annotation", names_repair = "minimal")
-ctrl_kidney_pivot[is.na(ctrl_kidney_pivot)] <- 0
-rownames <- ctrl_kidney_pivot$gene_ppi # add gene names as rownames
-ctrl_kidney_pivot <- ctrl_kidney_pivot[, -1, drop = FALSE] # drop gene column
-
-rowmeta <- as.data.frame(ctrl_kidney_pivot$mechanism)
-
-ctrl_kidney_pivot <- ctrl_kidney_pivot[, -1, drop = FALSE]
-rownames(ctrl_kidney_pivot) <- rownames
-rownames(rowmeta) <- rownames(ctrl_kidney_pivot)
-colnames(rowmeta) <- "mechanism"
-
-# grab meta data for plot:
-meta <- as.data.frame(colnames(ctrl_kidney_pivot))
-rownames(meta) <- meta$`colnames(ctrl_kidney_pivot)`
-colnames(meta) <- c("cell_type")
-
-
-# define order of annotations and colors:
-annotation_colors <- list("cell_type" = c(
-    "Bcell" = "#FFBE1D",
-    "CDIC_typeA" = "#4E3801",
-    "CDIC_typeB" = "#EEDF37",
-    "CDPC" = "#F03F00",
-    "DCT" = "#6D0404",
-    "DLH" = "#AA6320",
-    "endothelial" = "#CF9400",
-    "fibroblasts" = "#FFC8C4",
-    "LOH" = "#AA937E",
-    "macrophages" = "#C70F0F",
-    "PCTS1" = "#A85A5A",
-    "podocytes" = "#BD085E",
-    "PST" = "#948802",
-    "pericytes" = "#FFE196",
-    "PCTS2" = "#FF7600",
-    "PT" = "#F8766D",
-    "smcs" = "#FFE196")) 
-
-# set heatmap annotations:
-heat.anno <- HeatmapAnnotation(df = meta, show_annotation_name = TRUE, col = annotation_colors)
-
-# convert dataframe to matrix
-mat <- as.matrix(ctrl_kidney_pivot)
-
-# plot heatmap
-# Heatmap
-
-plot <- Heatmap(mat,
-  col = c("both_negative" = "red", "both_positive" = "#628D56", "neg_pos" = "#E9C61D", "pos_neg" = "#E7872B"),
-  heatmap_legend_param = list(title = "regNet to CoopNet score change in ctrl"),
-  cluster_rows = TRUE,
-  cluster_columns = TRUE,
-  column_order = NULL,
-  show_row_dend = TRUE,
-  show_column_dend = FALSE,
-  row_names_gp = gpar(fontface = "bold", fontfamily = "Helvetica"),
-  show_row_names = TRUE,
-  #row_ha = rowAnnotation(Group = rowmeta$mechanism, col = c("DNA damage" = "red", "cell cycle" = "blue")),
-  show_column_names = FALSE,
-  use_raster = TRUE,
-  raster_device = c("png"),
-  bottom_annotation = NULL,
-  row_title_gp = gpar(fontface = "bold"),
-  top_annotation = heat.anno,
-)
-
-
-png(here("results/ppi_rewiring/kidney_ctrl_sign_change_heatmap.png"),
-  res = 250,
-  height = 3000,
+  height = 1000,
   width = 2000
 )
 plot
