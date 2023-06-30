@@ -282,7 +282,7 @@ rownames(data) <- names
 
 meta <- as.data.frame(cell_type)
 colnames(meta) <- "Cell Type"
-rownames(meta) <- colnames(mat)
+rownames(meta) <- colnames(data)
 ## convert data to matrix
 mat <- as.matrix(data)
 
