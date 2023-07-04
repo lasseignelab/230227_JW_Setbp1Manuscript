@@ -433,9 +433,17 @@ png(here("results/module_scores/kidney_pkd_down_modulescores.png"),
 )
 VlnPlot(kidney_int_celltypes,
   features = "pkd_down_score1", split.by = "type", pt.size = 0
-) +
-  theme(legend.position = "right") &
-  scale_colour_gradientn(colours = rev(brewer.pal(n = 11, name = "RdBu")))
+)  +
+    theme_bw() +
+    scale_fill_manual(values = c("control" = "#FE6100", "heterozygous" = "#FFB000")) +
+    theme(text = element_text(family = "Helvetica")) +
+    theme(axis.text.x = element_text(angle = 45, color = "black", hjust = 1)) +
+    theme(axis.title.x = element_blank()) +
+    theme(axis.text = element_text(face = "bold")) +
+    theme(legend.title = element_text(face = "bold")) +
+    theme(legend.text = element_text(face = "bold")) +
+    labs(y = "Downregulated PKD genes Module Score") +
+    theme(axis.title.y = element_text(face = "bold"))
 dev.off()
 
 ## up
@@ -455,8 +463,16 @@ png(here("results/module_scores/kidney_pkd_up_modulescores.png"),
 VlnPlot(kidney_int_celltypes,
   features = "pkd_up_score1", split.by = "type", pt.size = 0
 ) +
-  theme(legend.position = "right") &
-  scale_colour_gradientn(colours = rev(brewer.pal(n = 11, name = "RdBu")))
+  theme_bw() +
+    scale_fill_manual(values = c("control" = "#FE6100", "heterozygous" = "#FFB000")) +
+    theme(text = element_text(family = "Helvetica")) +
+    theme(axis.text.x = element_text(angle = 45, color = "black", hjust = 1)) +
+    theme(axis.title.x = element_blank()) +
+    theme(axis.text = element_text(face = "bold")) +
+    theme(legend.title = element_text(face = "bold")) +
+    theme(legend.text = element_text(face = "bold")) +
+    labs(y = "Upregulated PKD genes Module Score") +
+    theme(axis.title.y = element_text(face = "bold"))
 dev.off()
 
 # Pp2a signature
