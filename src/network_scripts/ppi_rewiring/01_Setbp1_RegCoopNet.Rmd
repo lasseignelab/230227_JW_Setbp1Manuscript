@@ -1154,7 +1154,7 @@ for (i in files) {
 }
 
 # Apply the function to each dataframe in the list
-test <- lapply(regNet_list, subset_positive_score)
+test <- lapply(regNet_list, function(df) df[df$score > 0,])
 ```
 
 ```{r filter-regNet}
@@ -1392,6 +1392,11 @@ The filtered nondup_list contains a dataframe for each pairing of interest, wher
 ```{r}
 write.csv(combined_df, file = here("results/ppi_rewiring/cts_setbp1_geneset_overlap_by_mech.csv"), row.names = FALSE)
 save(filtered_nondup_list, file = here("results/ppi_rewiring/cts_setbp1_geneset_overlap_by_mech.Rdata"))
+```
+
+```{r}
+fptm <- proc.time() - ptm
+fptm[3] / 60
 ```
 
 
