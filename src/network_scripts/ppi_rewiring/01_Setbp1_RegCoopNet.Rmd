@@ -15,7 +15,7 @@ Step 4. Create final data frame with Setbp1 TF, target gene, regNet scores, PPI,
 Step 5. Removing self-interactions
 Step 6. plotting distributions of scores for regNet and coopNet
 Step 7. comparing gene regulation presence to ppi presence (using sign change as a metric)
-Step 8. compare seed ppi and ppi after running PANDA
+Step 8. compare seed (STRING) ppi and ppi after running PANDA
 
 ```{r loading-libraries}
 set.seed(2178)
