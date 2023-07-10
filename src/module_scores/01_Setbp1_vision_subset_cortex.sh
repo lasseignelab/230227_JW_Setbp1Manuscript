@@ -1,5 +1,5 @@
 #!/bin/bash
-## run the Rscript 14_Setbp1_vision_cortex.R and schedule this job to SLURM
+## run the Rscript 01_Setbp1_vision_subset_cortex.R and schedule this job to SLURM
 
 
 #SBATCH --job-name=cor_vis_sub
@@ -25,7 +25,7 @@ module load Singularity/3.5.2-GCC-5.4.0-2.26
 
 #variables
 wd="/data/user/jbarham3/230227_JW_Setbp1Manuscript"
-src="/data/user/jbarham3/230227_JW_Setbp1Manuscript/src/seurat_scripts" #be sure that your subdirectories are structured the same
+src="/data/user/jbarham3/230227_JW_Setbp1Manuscript/src/module_scores" #be sure that your subdirectories are structured the same
 
 export SINGULARITYENV_PASSWORD='pass'
 export SINGULARITYENV_USER='jbarham3'
