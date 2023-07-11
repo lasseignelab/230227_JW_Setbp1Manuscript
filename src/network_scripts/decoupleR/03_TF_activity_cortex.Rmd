@@ -35,7 +35,6 @@ collectri <- read_csv(here("data/processed/decoupleR_prior_CollecTRI/mouse_prior
 ```
 ```{r}
 load(here("data/setbp1_cerebralintcelltypes.Rdata"))
-load(here("data/kidney_integrated_celltypes_postSoup.Rdata"))
 ```
 
 # Cortex: 
