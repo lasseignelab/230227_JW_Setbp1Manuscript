@@ -194,7 +194,7 @@ for(i in files){
 ```
 
 ```{r comparing-seed-ppi-to-coopNet}
-seed_ppi <- read.table(file = "/data/user/jbarham3/230227_JW_Setbp1Manuscript/data/processed/ppi_inputs/mm10_ppi.txt", sep = "\t") #load in ppi data
+seed_ppi <- read.table(file = here("data/processed/ppi_inputs/mm10_ppi.txt"), sep = "\t") #load in ppi data
 seed_ppi$from_to <- paste(seed_ppi$from, seed_ppi$to, sep = "_")
 
 load(files[1])
