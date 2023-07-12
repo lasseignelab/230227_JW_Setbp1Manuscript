@@ -36,8 +36,7 @@ Pathways of Interest for Enrichment Investigation in SGS Cortex and Kidney:
 * Cell Cycle- G2M Checkpoint (Mouse): https://www.gsea-msigdb.org/gsea/msigdb/mouse/geneset/HALLMARK_G2M_CHECKPOINT.html
 * OXPHOS- Oxidative Phosphorylation (Mouse): https://www.gsea-msigdb.org/gsea/msigdb/mouse/geneset/HALLMARK_OXIDATIVE_PHOSPHORYLATION.html
 * p53- p53 pathways (Mouse): https://www.gsea-msigdb.org/gsea/msigdb/mouse/geneset/HALLMARK_P53_PATHWAY.html
-* Inflammatory response (Mouse): https://www.gsea-msigdb.org/gsea/msigdb/mouse/geneset/HALLMARK_INFLAMMATORY_RESPONSE.html
-* AKI signatures- consistently up and downregulated genes in AKI: https://www.frontiersin.org/articles/10.3389/fgene.2020.00411/full
+* Inflammatory response (Mouse): https://www.gsea-msigdb.org/gsea/msigdb/mouse/geneset/HALLMARK_INFLAMMATORY_RESPONSE.htmla
 * PKD signatures- PIONTEK PKD1 Targets (Up and Down): https://www.gsea-msigdb.org/gsea/msigdb/mouse/geneset/PIONTEK_PKD1_TARGETS_DN.html, https://www.gsea-msigdb.org/gsea/msigdb/mouse/geneset/PIONTEK_PKD1_TARGETS_UP.html
 * PP2A phosphatase - (Mouse): https://www.gsea-msigdb.org/gsea/msigdb/mouse/geneset/GOMF_PROTEIN_PHOSPHATASE_2A_BINDING.html?keywords=phosphatase
 
@@ -334,18 +333,11 @@ dev.off()
 ## AddModuleScore Analysis 
 Calculates the average expression levels of each program (cluster) on single nuclei level, subtracted by the aggregated expression of control feature sets. All analyzed features are binned based on averaged expression, and the control features are randomly selected from each bin.
 
-We were curious if an AKI or PKD signature was present in the SGS kidneys. It appears after performing Module Score analysis that there is no notable difference between kidney signatures across conditions. 
+We were curious if a PKD signature was present in the SGS kidneys. It appears after performing Module Score analysis that there is no notable difference between kidney signatures across conditions. 
 
-In addition to AKI and PKD signatures, SET is a known inhibitor of PP2A and plays a role in altered H3K9 Acetylation [info here](https://www.nature.com/articles/s41467-023-39043-x)m therefore we also assessed module scores and expression for PP2A activity and ortholog of PP2A, Ppp2ca, in both tissues.  
+In addition to PKD signatures, SET is a known inhibitor of PP2A and plays a role in altered H3K9 Acetylation [info here](https://www.nature.com/articles/s41467-023-39043-x)m therefore we also assessed module scores and expression for PP2A activity and ortholog of PP2A, Ppp2ca, in both tissues.  
 
 ### Set up signatures
-
-```{r aki-signature}
-aki_upgenes <- c("Adam8", "Adamts1", "Adm", "Akap12", "Akr1b8", "Aldh1a2", "Aloxe3", "Anxa1", "Anxa3", "Apobec3", "Arf2", "Asns", "Atf3", "Bcl3", "Birc3", "Cd14", "Cd44", "Cd68", "Cd9", "Cd93", "Cebpd", "Chrnb1", "Clcf1", "Cldn4", "Cldn7", "Ctgf", "Ctsc", "Cyr61", "Ddx21", "Dusp10", "Dusp5", "Edn1", "Efhd2", "Elf4", "Emp1", "Entpd1", "Epha2", "F2r", "F3", "Fam57a", "Flnc", "Fndc4", "Fosl1", "Fosl2", "Fut2", "Fxyd5", "Gas7", "Gdf15", "Gprc5a", "Havcr1", "Hbegf", "Hilpda", "Hmox1", "Hpcal4", "Igf2bp2", "Il1f6", "Il34", "Irak3", "Itga5", "Klf4", "Klf6", "Klf7", "Krtp28", "Krt20", "Lamc2", "Lif", "Lrp8", "Lrrc32", "Lrrc8c", "Maff", "Map3k6", "Map4k4", "Mapk6", "Mmp3", "Mthfd1l", "Myc", "Myh9", "Nek6", "Ngf", "Nras", "Nt5c1a", "Nucb2", "Oasl1", "Pdgfb", "Pdk4", "Pdlim7", "Plat", "Plaur", "Plin2", "Plk3", "Plp2", "Ppm1j", "Ppp1r14b", "Pprc1", "Procr", "Prrg4", "Ptger4", "Ptgs2", "Ptpn12", "Pvr", "Pxdc1", "Qsox1", "Rab31", "Rad18", "Rap2b", "Rbm3", "Rell1", "Rhbdf2", "Rin1", "Rnd1", "Rnd3", "Rras2", "Rtn4", "Runx1", "Samd4", "Sbno2", "Sema7a", "Serpinb1a", "Serpine1", "Sfn", "Slc16a1", "Slc25a24", "Slc38a2", "Slc7a5", "Slc7a6", "Smad1", "Smox", "Socs3", "Sox9", "Sphk1", "Sprr1a", "Sprr2f", "Sprr2g", "Spry2", "Spsb1", "St3gal1", "Stil", "Syt12", "Taf1d", "Taf4b", "Tcerg1", "Tgfbr1", "Thbd", "Timp1", "Tinagl1", "Tmcc3", "Tmed5", "Tmem173", "Tnc", "Tnfrsf12a", "Tnfrsf1a", "Tpm3", "Trmt61a", "Tubb6", "Txnrd1", "Uchl1", "Vopp1")
-
-aki_downgenes <- c("1700040L02Rik", "Abhd14b", "Acad12", "Acmsd", "Acot11", "Acox2", "Acss2", "Ak4", "Akr1c14", "Akr1c18", "Aldh4a1", "Apeh", "Atp6v1b1", "BC067074", "Bcat1", "Bdh1", "Bhmt2", "Bphl", "Bsnd", "Casr", "Cbs", "Cdkl1", "Ceacam2", "Cmah", "Crot", "Cth", "Cubn", "Cyp2j11", "D3Ertd751e", "Dhdh", "Dnajc28", "Fam107a", "Fggy", "Fmo5", "Fras1", "G6pc", "Galm", "Gatb", "Gatm", "Glyctk", "Gm10804", "Hgd", "Hnmt", "Hsd3b2", "Hykk", "Ift122", "Inpp5j", "Kcnj1", "Keg1", "Klhl3", "Kmo", "Lrrc31", "Lyplal1", "Map2k6", "Mccc1", "Mccc2", "Mep1b", "Mgam", "Nccrp1", "Oxgr1", "Pbld1", "Pde4c", "Pfkm", "Pnkd", "Pter", "Ranbp3l", "Rhcg", "Serpina1d", "Serpina1f", "Sfrp1", "Shmt2", "Slc15a2", "Slc16a9", "Slc22a13", "Slc22ap28", "Slc22a26", "Slc23a1", "Slc25a21", "Slc8a1", "Slco4c1", "Smarca2", "Snx29", "Suox", "Tln2", "Tmem207", "Tmem25", "Tpmt", "Ugt8a")
-```
-
 
 ```{r pkd-signature}
 pkd_upgenes <- getGmt(here("data/unprocessed/PIONTEK_PKD1_TARGETS_UP.v2023.1.Mm.gmt"))
@@ -370,46 +362,6 @@ load(here("data/setbp1_cerebralintcelltypes.Rdata"))
 
 
 ```{r kidney-running-AddModuleScore}
-# aki down scoring
-aki_downgenes <- as.list(aki_downgenes)
-
-kidney_int_celltypes <- AddModuleScore(kidney_int_celltypes,
-  features = list(aki_downgenes),
-  name = "aki_down_score"
-)
-## Plot scores
-png(here("results/module_scores/kidney_aki_down_modulescores.png"),
-  res = 250,
-  height = 3000,
-  width = 4000
-)
-VlnPlot(kidney_int_celltypes,
-  features = "aki_down_score1", split.by = "type", pt.size = 0
-) +
-  theme(legend.position = "right") &
-  scale_colour_gradientn(colours = rev(brewer.pal(n = 11, name = "RdBu")))
-dev.off()
-
-# aki up scoring
-aki_upgenes <- as.list(aki_upgenes)
-
-kidney_int_celltypes <- AddModuleScore(kidney_int_celltypes,
-  features = list(aki_upgenes),
-  name = "aki_up_score"
-)
-## Plot scores
-png(here("results/module_scores/kidney_aki_up_modulescores.png"),
-  res = 250,
-  height = 3000,
-  width = 4000
-)
-VlnPlot(kidney_int_celltypes,
-  features = "aki_up_score1", split.by = "type", pt.size = 0
-) +
-  theme(legend.position = "right") &
-  scale_colour_gradientn(colours = rev(brewer.pal(n = 11, name = "RdBu")))
-dev.off()
-
 # pkd signature scoring
 
 ## down
