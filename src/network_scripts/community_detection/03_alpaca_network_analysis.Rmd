@@ -101,6 +101,13 @@ jaccard_df <- data.frame(celltype_module = names(jaccard_results), jaccard_index
 # View the Jaccard results
 head(jaccard_df)
 
+# See how many pairings have a jaccard < 0.1
+length(jaccard_df$jaccard_index) # 2800
+j <- jaccard_df[jaccard_df$jaccard_index < 0.1,]
+length(j$jaccard_index) #2476 out of 2800 different cell type community pairings have a jaccard similarity less than 0.1 for cerebral cortex
+prop_cortex <- 2476/2800
+prop_cortex # 0.8842857
+
 setbp1_comm_filtered <- jaccard_df %>%
   # separate the celltype_module column into two new columns: celltype1 and celltype2
   separate(celltype_module, into = c("celltype1", "module1", "celltype2", "module2"), sep = "_")
@@ -134,6 +141,7 @@ setbp1_cortex_hist <- hist(jaccard_df$jaccard_index,
                     ylab = "Frequency", 
                     col = "#5F9EFD", 
                     border = "black")
+
 dev.off()
 
 ```
@@ -215,6 +223,13 @@ jaccard_df <- data.frame(celltype_module = names(jaccard_results), jaccard_index
 
 # View the Jaccard results
 head(jaccard_df)
+
+# See how many pairings have a jaccard < 0.1
+length(jaccard_df$jaccard_index) # 21378
+j <- jaccard_df[jaccard_df$jaccard_index < 0.1,]
+length(j$jaccard_index) #20056 out of 21378 different cell type community pairings have a jaccard similarity less than 0.1 for kidney
+prop_kid <- 20056/21378
+prop_kid # 0.9381607
 
 setbp1_comm_filtered <- jaccard_df %>%
   # separate the celltype_module column into two new columns: celltype1 and celltype2
