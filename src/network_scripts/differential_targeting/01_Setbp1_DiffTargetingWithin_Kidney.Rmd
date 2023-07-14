@@ -274,6 +274,9 @@ write.csv(gene_targeting_all_het, file = here("results/diff_targeting/kidney_gen
 ```
 
 ```{r ridgeline-plot-targeting-scores}
+load(here("data/kidney_gene_targeting_ctrl.Rdata"))
+load(here("data/kidney_gene_targeting_het.Rdata"))
+
 combined <- merge(gene_targeting_all_ctrl, gene_targeting_all_het, by = "gene")
 
 colnames(combined)
@@ -717,6 +720,7 @@ data_label <- pivot_longer(data[,c(4, 5)], cols = c(1,2), values_to = "sum")
 data_plot$num <- data_label$sum
 
 data_plot$norm <- data_plot$sum/data_plot$num #normalize data by number of genes with enriched targeting
+write_csv(data_plot, file = here("results/diff_targeting/normalized_global_diff_targeting_kidney.csv"))
 
 #setting plot order
 data_plot <- arrange(data_plot, desc(norm))
@@ -745,6 +749,22 @@ ggplot(data_plot, aes(x = norm, y = reorder(cell_type, norm))) +
   scale_y_discrete(expand=expansion(mult=c(0.05,0.05)))
 dev.off()
 ```
+
+```{r calculating-prop-het-enriched-dt-genes-by-celltype}
+dims <- dim(het_enriched) # 20429 genes in this data
+dims
+
+pos_prop <- (pos_non_zero_counts/dims[1]) * 100
+pos_prop
+
+neg_prop <- (neg_non_zero_counts/dims[1]) * 100
+neg_prop
+
+percentage_dt_genes <- as.data.frame(rbind(pos_prop, neg_prop))
+write_csv(percentage_dt_genes, file = here("results/diff_targeting/percentage_dt_genes_kidney.csv"))
+```
+Percent of genes with increased DT in S858R: 
+
 Saving het_enriched without negatives for plotting:
 ```{r}
 het_enriched <- replace(het_enriched, het_enriched[, ] < 0, 0) # creating dataframe where the differential is enriched in the het condition
