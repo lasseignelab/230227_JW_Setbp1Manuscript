@@ -508,7 +508,7 @@ plot_title <- "Targeting of all genes within Cell-types in Setbp1 Ctrl Cerebral 
 targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, plot_title)
 ```
 
-```{r ctrl-setbp1-gene-targets-within}
+```{r visualizing-ctrl-setbp1-gene-targets-within}
 # filtering based off of gene set
 data <- ctrl_all_gene_targeting_within[ctrl_all_gene_targeting_within$gene %in% setbp1_genes, ]
 
@@ -577,6 +577,7 @@ for (i in cell_names) {
 
 het_enriched <- diff_gene_targeting
 ```
+
 
 ```{r ID-top-quantile-threshold}
 # Create a list to store the histograms
@@ -697,6 +698,11 @@ data_plot$num <- data_label$sum
 
 data_plot$norm <- data_plot$sum/data_plot$num #normalize data by number of genes with enriched targeting
 
+save(data_plot, file = here("results/diff_targeting/normalized_global_diff_targeting.Rdata"))
+write_csv(data_plot, file = here("results/diff_targeting/normalized_global_diff_targeting.csv"))
+```
+
+```{r}
 #setting plot order
 data_plot <- arrange(data_plot, desc(norm))
 data_plot$order <- seq(1:16)
@@ -724,6 +730,27 @@ ggplot(data_plot, aes(x = norm, y = reorder(cell_type, norm))) +
   xlim(c(-350, 399))
 dev.off()
 ```
+
+```{r calculating-prop-het-enriched-dt-genes-by-celltype}
+dims <- dim(het_enriched) # 22033 genes in this data
+dims
+
+pos_prop <- (pos_non_zero_counts/dims[1]) * 100
+pos_prop
+
+neg_prop <- (neg_non_zero_counts/dims[1]) * 100
+neg_prop
+
+percentage_dt_genes <- as.data.frame(rbind(pos_prop, neg_prop))
+write_csv(percentage_dt_genes, file = here("results/diff_targeting/percentage_dt_genes_cortex.csv"))
+```
+Percent of genes with increased DT in S858R: 
+        astrocytes excitatory_neurons       fibro_cortex inhibitory_neurons          microglia   oligodendrocytes               opcs          pericytes 
+         26.891481          25.003404          12.503971          16.575137          19.793038           9.095448          24.903554           3.081741 
+        
+Percent of genes with decreased DT in S858R: 
+        astrocytes excitatory_neurons       fibro_cortex inhibitory_neurons          microglia   oligodendrocytes               opcs          pericytes 
+          23.11079           25.00340           27.31811           22.97917           19.75219           72.30064           19.86112           80.93768 
 
 Saving het_enriched without negatives for rest of plotting: 
 ```{r}
