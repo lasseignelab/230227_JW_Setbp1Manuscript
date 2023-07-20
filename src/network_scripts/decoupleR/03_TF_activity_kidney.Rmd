@@ -101,7 +101,7 @@ hist(ctrl_df$mean)
 ```
 Since data is on the same scale, in order to compare between conditions we wanted to calculate the percentage change of the Setbp1 and its gene set between condtions (and for all TFs)
 
-Calculating the absolute percentage change in order to see which TFs exhibit the largest difference in activities are most different between conditions. THe more positive percent change indicates that the magnitude of the change in TF activity between conditions was higher in the S858R than WT. All percent changes were then quartile filtered to only include TFs that had a percent chagne > Q3. Original TF Activity values were then plotted for these TFs across cell types in each respective tissue, filtering the TFs to only focus on those that are in the Setbp1 gene set or Setbp1.
+Calculating the absolute percentage change in order to see which TFs exhibit the largest difference in activities are most different between conditions. The more positive percent change indicates that the magnitude of the change in TF activity between conditions was higher in the S858R than WT and the inverse for WT. All percent changes were then quartile filtered to only include TFs that had a percent change > Q3 or < Q1 for S858R and WT respectively. Original TF Activity values were then plotted for these TFs across cell types in each respective tissue, filtering the TFs to only focus on those that are in the Setbp1 gene set or Setbp1.
 ```{r}
 # merge control and het dataframes
 merged_df <- merge(ctrl_df, het_df, by = c("cluster", "source"))
@@ -110,19 +110,52 @@ colnames(merged_df) <- c("cluster", "source", "ctrl_mean", "het_mean")
 # calculate percent change between mean TF activity between condition; large positive percent change indicates the magnitude of average TF acitvity for that TF was larger in the S858R
 merged_df$percent_change <- ((abs(merged_df$het_mean) - abs(merged_df$ctrl_mean)) / abs(merged_df$ctrl_mean)) * 100
 
-# next want to filter the data at a specific threshold; using upper quartile
-summary(merged_df$percent_change) # Q3 is at 35.1
-merged_df <- merged_df[merged_df$percent_change > 35.1, ]
+# next want to filter the data at a specific threshold; using the tail quartiles
+summary(merged_df$percent_change) # Q3 is at 35.1, Q1 is at -35.3
+merged_df_Q3 <- merged_df[merged_df$percent_change > 35.1, ]
+merged_df_Q1 <- merged_df[merged_df$percent_change < -35.3, ]
 
-geneset_acts_mat <- merged_df %>%
+# combining into single data frame
+merged_df <- rbind(merged_df_Q3, merged_df_Q1)
+
+# grabbing pos and neg for plotting
+merged_df_pos <- subset(merged_df, merged_df$percent_change > 0)
+
+geneset_acts_mat_pos <- merged_df_pos %>%
   filter(source %in% setbp1_genes) %>%
   pivot_wider(
     id_cols = "cluster", names_from = "source",
     values_from = "het_mean"
   ) %>%
   column_to_rownames("cluster") %>%
-  mutate_all(~ replace(., is.na(.), 0)) %>%
-  as.matrix()
+  mutate_all(~ replace(., is.na(.), 0))
+
+
+merged_df_neg <- subset(merged_df, merged_df$percent_change < 0)
+
+geneset_acts_mat_neg <- merged_df_neg %>%
+  filter(source %in% setbp1_genes) %>%
+  pivot_wider(
+    id_cols = "cluster", names_from = "source",
+    values_from = "het_mean"
+  ) %>%
+  column_to_rownames("cluster") %>%
+  mutate_all(~ replace(., is.na(.), 0))
+
+
+# order TFs same in both
+
+## id common columns and sort
+common <- intersect(colnames(geneset_acts_mat_neg), colnames(geneset_acts_mat_pos))
+sorted <- sort(common)
+
+## id non overlapping columns
+non_pos <- setdiff(colnames(geneset_acts_mat_pos), common)
+non_neg <- setdiff(colnames(geneset_acts_mat_neg), common)
+
+geneset_acts_mat_pos <- cbind(geneset_acts_mat_pos[, sorted], geneset_acts_mat_pos[, non_pos])
+
+geneset_acts_mat_neg <- cbind(geneset_acts_mat_neg[, sorted], geneset_acts_mat_neg[, non_neg])
 
 # Choose color palette
 palette_length <- 100
@@ -133,14 +166,24 @@ my_breaks <- c(
   seq(0.05, 3, length.out = floor(palette_length / 2))
 )
 
+## plot positive
 png(
-  filename = here("results/TF_activity/kidney_setbp1_geneset.png"),
-  width = 1100,
-  height = 1100,
+  filename = here("results/TF_activity/kidney_setbp1_geneset_pos.png"),
+  width = 900,
+  height = 1000,
   res = 250
 )
-# Plot
-pheatmap(t(geneset_acts_mat), border_color = NA, color = my_color, breaks = my_breaks)
+pheatmap(t(geneset_acts_mat_pos), border_color = NA, color = my_color, breaks = my_breaks, cluster_rows = FALSE, cluster_cols = FALSE)
+dev.off()
+
+## plot negative
+png(
+  filename = here("results/TF_activity/kidney_setbp1_geneset_neg.png"),
+  width = 900,
+  height = 1000,
+  res = 250
+)
+pheatmap(t(geneset_acts_mat_neg), border_color = NA, color = my_color, breaks = my_breaks, cluster_rows = FALSE, cluster_cols = FALSE)
 dev.off()
 ```
 
