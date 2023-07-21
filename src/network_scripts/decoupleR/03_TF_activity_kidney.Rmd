@@ -118,74 +118,137 @@ merged_df_Q1 <- merged_df[merged_df$percent_change < -35.3, ]
 # combining into single data frame
 merged_df <- rbind(merged_df_Q3, merged_df_Q1)
 
-# grabbing pos and neg for plotting
-merged_df_pos <- subset(merged_df, merged_df$percent_change > 0)
+# annotate
+merged_df$condition <- ifelse(merged_df$percent_change >0, "S858R", "WT")
 
-geneset_acts_mat_pos <- merged_df_pos %>%
+# filter for gene set, pivot wider, replace NA
+merged_het <- subset(merged_df, merged_df$percent_change > 0)
+
+pivot_het <- merged_het %>%
   filter(source %in% setbp1_genes) %>%
-  pivot_wider(
-    id_cols = "cluster", names_from = "source",
-    values_from = "het_mean"
-  ) %>%
-  column_to_rownames("cluster") %>%
+  pivot_wider(.,
+  id_cols = source,
+  names_from = c(condition, cluster),
+  values_from = het_mean,
+  names_sep = "_"
+) %>%
   mutate_all(~ replace(., is.na(.), 0))
 
+merged_ctrl <- subset(merged_df, merged_df$percent_change < 0)
 
-merged_df_neg <- subset(merged_df, merged_df$percent_change < 0)
-
-geneset_acts_mat_neg <- merged_df_neg %>%
+pivot_ctrl <- merged_ctrl %>%
   filter(source %in% setbp1_genes) %>%
-  pivot_wider(
-    id_cols = "cluster", names_from = "source",
-    values_from = "het_mean"
-  ) %>%
-  column_to_rownames("cluster") %>%
+  pivot_wider(.,
+  id_cols = source,
+  names_from = c(condition, cluster),
+  values_from = ctrl_mean,
+  names_sep = "_"
+) %>%
   mutate_all(~ replace(., is.na(.), 0))
 
+pivot <- merge(pivot_het, pivot_ctrl, by = "source")
 
-# order TFs same in both
+# reorder the columns
+column_names <- colnames(pivot)
 
-## id common columns and sort
-common <- intersect(colnames(geneset_acts_mat_neg), colnames(geneset_acts_mat_pos))
-sorted <- sort(common)
+# Extract the pattern after the first "_"
+extract_pattern <- function(x) sub("^[^_]*_", "", x)
+patterns <- sapply(column_names, extract_pattern)
 
-## id non overlapping columns
-non_pos <- setdiff(colnames(geneset_acts_mat_pos), common)
-non_neg <- setdiff(colnames(geneset_acts_mat_neg), common)
+# Get unique patterns and sort them
+unique_patterns <- unique(patterns)
+sorted_patterns <- sort(unique_patterns)
 
-geneset_acts_mat_pos <- cbind(geneset_acts_mat_pos[, sorted], geneset_acts_mat_pos[, non_pos])
+# Create a mapping from the original pattern to its position in the sorted list
+pattern_order <- match(patterns, sorted_patterns)
 
-geneset_acts_mat_neg <- cbind(geneset_acts_mat_neg[, sorted], geneset_acts_mat_neg[, non_neg])
+# Create the new order of column names based on the pattern_order
+new_order <- order(pattern_order, column_names)
 
-# Choose color palette
-palette_length <- 100
-my_color <- colorRampPalette(c("Darkblue", "white", "red"))(palette_length)
+# Reorder the 'pivot' data frame based on the new_order
+pivot <- pivot[, new_order]
 
-my_breaks <- c(
-  seq(-3, 0, length.out = ceiling(palette_length / 2) + 1),
-  seq(0.05, 3, length.out = floor(palette_length / 2))
+# move TF to rownames
+rownames <- pivot$source
+pivot <- pivot[, !(colnames(pivot) %in% c("source"))]
+rownames(pivot) <- rownames
+
+# grab meta data for plot:
+meta <- as.data.frame(colnames(pivot))
+meta.data <- t(as.data.frame(strsplit(sub("^(.*?)_", "\\1 ", meta$`colnames(pivot)`, perl = TRUE), " ")))
+
+rownames(meta.data) <- meta$`colnames(pivot)`
+colnames(meta.data) <- c("condition", "cell_type")
+
+
+annotation_colors <- list(
+  "condition" = c(
+    "WT" = "#FE6100",
+    "S858R" = "#FFB000"
+  ),
+  "cell_type" = c(
+    "B_cells" = "#FFBE1D",
+    "CDIC_typeA" = "#4E3801",
+    "CDIC_typeB" = "#EEDF37",
+    "CDPC" = "#F03F00",
+    "DCT" = "#6D0404",
+    "DLH" = "#AA6320",
+    "endothelial" = "#CF9400",
+    "fibroblasts" = "#FFC8C4",
+    "LOH" = "#AA937E",
+    "macrophages" = "#C70F0F",
+    "PCTS1" = "#A85A5A",
+    "podocytes" = "#BD085E",
+    "PST" = "#948802",
+    "pericytes" = "#FFE196",
+    "PCTS2" = "#FF7600",
+    "proximal_tubule" = "#F8766D",
+    "smooth_muscle_cells" = "#FFE196"
+  )
 )
 
-## plot positive
+# set heatmap annotations:
+heat.anno <- HeatmapAnnotation(
+  df = meta.data,
+  show_annotation_name = TRUE,
+  col = annotation_colors
+)
+
+# set heatmap annotations:
+heat.anno <- HeatmapAnnotation(df = meta.data, show_annotation_name = TRUE, col = annotation_colors)
+
+# convert dataframe to matrix
+mat <- as.matrix(pivot)
+
+# plot heatmap
+# Heatmap
+col_fun <- colorRamp2(c(-2, 0, 2), c("blue", "white", "red"))
 png(
-  filename = here("results/TF_activity/kidney_setbp1_geneset_pos.png"),
-  width = 900,
-  height = 1000,
-  res = 250
+  filename = here("results/TF_activity/kidney_tf_activity_geneset.png"),
+  width = 3000,
+  height = 3000,
+  res = 300
 )
-pheatmap(t(geneset_acts_mat_pos), border_color = NA, color = my_color, breaks = my_breaks, cluster_rows = FALSE, cluster_cols = FALSE)
-dev.off()
-
-## plot negative
-png(
-  filename = here("results/TF_activity/kidney_setbp1_geneset_neg.png"),
-  width = 900,
-  height = 1000,
-  res = 250
+Heatmap(mat,
+  col = col_fun,
+  heatmap_legend_param = list(title = "TF Activity", at = c(-2, 0, 2)),
+  cluster_rows = TRUE,
+  cluster_columns = FALSE,
+  column_order = NULL,
+  show_row_dend = TRUE,
+  show_column_dend = TRUE,
+  row_names_gp = gpar(fontface = "bold", fontfamily = "Helvetica"),
+  row_title_gp = gpar(fontface = "bold"),
+  show_row_names = TRUE,
+  show_column_names = FALSE,
+  use_raster = TRUE,
+  raster_device = c("png"),
+  bottom_annotation = NULL,
+  top_annotation = heat.anno, row_title = "TF", row_title_side = "right"
 )
-pheatmap(t(geneset_acts_mat_neg), border_color = NA, color = my_color, breaks = my_breaks, cluster_rows = FALSE, cluster_cols = FALSE)
 dev.off()
 ```
+
 
 ```{r processing-time}
 fptm <- proc.time() - ptm
