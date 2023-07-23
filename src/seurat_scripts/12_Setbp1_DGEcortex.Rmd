@@ -82,7 +82,7 @@ head(excitatory_neurons_data, n = 5)
 ```
 
 ```{r}
-excitatory_neurons_het <- excitatory_neurons_data[excitatory_neurons_data$p_val_adj < 0.5 & excitatory_neurons_data$avg_log2FC > 0.1 | excitatory_neurons_data$avg_log2FC < -0.1, ]
+excitatory_neurons_het <- excitatory_neurons_data[excitatory_neurons_data$p_val_adj < 0.05 & excitatory_neurons_data$avg_log2FC > 0.1 | excitatory_neurons_data$avg_log2FC < -0.1, ]
 excitatory_neurons_het <- excitatory_neurons_het[excitatory_neurons_het$cluster == "heterozygous", ]
 
 # add column to data to indicate if DE or not:
@@ -105,7 +105,7 @@ head(inhibitory_neurons_data, n = 5)
 ```
 
 ```{r}
-inhibitory_neurons_het <- inhibitory_neurons_data[inhibitory_neurons_data$p_val_adj < 0.5 & inhibitory_neurons_data$avg_log2FC > 0.1 | inhibitory_neurons_data$avg_log2FC < -0.1, ]
+inhibitory_neurons_het <- inhibitory_neurons_data[inhibitory_neurons_data$p_val_adj < 0.05 & inhibitory_neurons_data$avg_log2FC > 0.1 | inhibitory_neurons_data$avg_log2FC < -0.1, ]
 inhibitory_neurons_het <- inhibitory_neurons_het[inhibitory_neurons_het$cluster == "heterozygous", ]
 
 # add column to data to indicate if DE or not:
@@ -127,7 +127,7 @@ head(astrocytes_data, n = 5)
 ```
 
 ```{r}
-astrocytes_het <- astrocytes_data[astrocytes_data$p_val_adj < 0.5 & astrocytes_data$avg_log2FC > 0.1 | astrocytes_data$avg_log2FC < -0.1, ]
+astrocytes_het <- astrocytes_data[astrocytes_data$p_val_adj < 0.05 & astrocytes_data$avg_log2FC > 0.1 | astrocytes_data$avg_log2FC < -0.1, ]
 astrocytes_het <- astrocytes_het[astrocytes_het$cluster == "heterozygous", ]
 
 # add column to data to indicate if DE or not:
@@ -149,7 +149,7 @@ head(microglia_data, n = 5)
 ```
 
 ```{r}
-microglia_het <- microglia_data[microglia_data$p_val_adj < 0.5 & microglia_data$avg_log2FC > 0.1 | microglia_data$avg_log2FC < -0.1, ]
+microglia_het <- microglia_data[microglia_data$p_val_adj < 0.05 & microglia_data$avg_log2FC > 0.1 | microglia_data$avg_log2FC < -0.1, ]
 microglia_het <- microglia_het[microglia_het$cluster == "heterozygous", ]
 
 # add column to data to indicate if DE or not:
@@ -171,7 +171,7 @@ head(pericytes_data, n = 5)
 ```
 
 ```{r}
-pericytes_het <- pericytes_data[pericytes_data$p_val_adj < 0.5 & pericytes_data$avg_log2FC > 0.1 | pericytes_data$avg_log2FC < -0.1, ]
+pericytes_het <- pericytes_data[pericytes_data$p_val_adj < 0.05 & pericytes_data$avg_log2FC > 0.1 | pericytes_data$avg_log2FC < -0.1, ]
 pericytes_het <- pericytes_het[pericytes_het$cluster == "heterozygous", ]
 
 # add column to data to indicate if DE or not:
@@ -192,7 +192,7 @@ head(opcs_data, n = 5)
 ```
 
 ```{r}
-opcs_het <- opcs_data[opcs_data$p_val_adj < 0.5 & opcs_data$avg_log2FC > 0.1 | opcs_data$avg_log2FC < -0.1, ]
+opcs_het <- opcs_data[opcs_data$p_val_adj < 0.05 & opcs_data$avg_log2FC > 0.1 | opcs_data$avg_log2FC < -0.1, ]
 opcs_het <- opcs_het[opcs_het$cluster == "heterozygous", ]
 
 # add column to data to indicate if DE or not:
@@ -214,7 +214,7 @@ head(oligodendrocytes_data, n = 5)
 ```
 
 ```{r}
-oligodendrocytes_het <- oligodendrocytes_data[oligodendrocytes_data$p_val_adj < 0.5 & oligodendrocytes_data$avg_log2FC > 0.1 | oligodendrocytes_data$avg_log2FC < -0.1, ]
+oligodendrocytes_het <- oligodendrocytes_data[oligodendrocytes_data$p_val_adj < 0.05 & oligodendrocytes_data$avg_log2FC > 0.1 | oligodendrocytes_data$avg_log2FC < -0.1, ]
 oligodendrocytes_het <- oligodendrocytes_het[oligodendrocytes_het$cluster == "heterozygous", ]
 
 # add column to data to indicate if DE or not:
@@ -236,7 +236,7 @@ head(fibroblasts_data, n = 5)
 
 
 ```{r}
-fibroblasts_het <- fibroblasts_data[fibroblasts_data$p_val_adj < 0.5 & fibroblasts_data$avg_log2FC > 0.1 | fibroblasts_data$avg_log2FC < -0.1, ]
+fibroblasts_het <- fibroblasts_data[fibroblasts_data$p_val_adj < 0.05 & fibroblasts_data$avg_log2FC > 0.1 | fibroblasts_data$avg_log2FC < -0.1, ]
 fibroblasts_het <- fibroblasts_het[fibroblasts_het$cluster == "heterozygous", ]
 
 # add column to data to indicate if DE or not:
@@ -327,34 +327,33 @@ cerebral_subset <- DEGs_cerebralcells[DEGs_cerebralcells$gene %in% setbp1_genes,
 genes_mat <- cerebral_subset[, c("avg_log2FC", "cell_type", "gene", "cluster", "p_val_adj"), drop = FALSE]
 
 # filtering for significant values
-genes_mat <- genes_mat[genes_mat$p_val_adj < 0.5, ]
+genes_mat <- genes_mat[genes_mat$p_val_adj < 0.05, ]
 genes_mat <- genes_mat[, -5]
 
-genes_pivot <- pivot_wider(genes_mat, names_from = c("cell_type", "cluster"), values_from = "avg_log2FC", names_repair = "minimal")
+# grabbbing just S858R
+genes_mat <- genes_mat[genes_mat$cluster == "heterozygous",]
+genes_mat <- subset(genes_mat, select = -cluster)
+
+genes_pivot <- pivot_wider(genes_mat, names_from = c("cell_type"), values_from = "avg_log2FC", names_repair = "minimal")
 genes_pivot[is.na(genes_pivot)] <- 0
 rownames <- genes_pivot$gene # add gene names as rownames
-genes_pivot <- genes_pivot[, -1, drop = FALSE] # drop gene column
+genes_pivot <- subset(genes_pivot, select = -gene) # drop gene column
 rownames(genes_pivot) <- rownames
 
 # grab meta data for plot:
 meta <- as.data.frame(colnames(genes_pivot))
-meta.data <- t(as.data.frame(strsplit(sub("(_)(?=[^_]+$)", " ", meta$`colnames(genes_pivot)`, perl = TRUE), " ")))
-rownames(meta.data) <- meta$`colnames(genes_pivot)`
-colnames(meta.data) <- c("cell_type", "condition")
+rownames(meta) <- meta$`colnames(genes_pivot)`
+colnames(meta) <- c("cell_type")
 
 
-# define order of annotations and colors:
-ordered.meta.data <- meta.data[order(rownames(meta.data)), ] # order by cell type
-
-
-annotation_colors <- list("condition" = c("control" = "#644DD4", "heterozygous" = "#5F9EFD"), "cell_type" = c("excitatory_neurons" = "#DC71FA", "inhibitory_neurons" = "#00BBDB", "oligodendrocytes" = "#7997FF", "astrocytes" = "#6968B4", "microglia" = "#C216B7", "opcs" = "#00C1AA", "pericytes" = "#027461", "fibroblasts" = "#0a2f6f"))
+annotation_colors <- list("cell_type" = c("excitatory_neurons" = "#DC71FA", "inhibitory_neurons" = "#00BBDB", "oligodendrocytes" = "#7997FF", "astrocytes" = "#6968B4", "microglia" = "#C216B7", "opcs" = "#00C1AA", "pericytes" = "#027461", "fibroblasts" = "#0a2f6f"))
 
 # set heatmap annotations:
-heat.anno <- HeatmapAnnotation(df = ordered.meta.data, show_annotation_name = TRUE, col = annotation_colors)
+heat.anno <- HeatmapAnnotation(df = meta, show_annotation_name = TRUE, col = annotation_colors)
 
 
 # ensure the column order of the expression data matches row order of annotation table
-genes_pivot <- genes_pivot[, rownames(ordered.meta.data), drop = FALSE]
+genes_pivot <- genes_pivot[, rownames(meta), drop = FALSE]
 rownames(genes_pivot) <- rownames
 
 # convert dataframe to matrix
@@ -362,14 +361,14 @@ mat <- as.matrix(genes_pivot)
 
 # plot heatmap
 # Heatmap
-col_fun <- colorRamp2(c(-0.5, 0, 0.5), c("purple", "black", "yellow"))
+col_fun <- colorRamp2(c(-0.5, 0, 0.5), c("#8C5209", "white", "#35978F"))
 png(
   filename = here("results/figures/cortex_DEGsetbp1_heatmap.png"),
   width = 1000,
   height = 1000
 )
 Heatmap(mat,
-  col = col_fun,
+  col = col_fun, #brewer.pal(9, "BrBG"),
   heatmap_legend_param = list(title = "avg_log2FC"),
   cluster_rows = TRUE,
   cluster_columns = FALSE,
