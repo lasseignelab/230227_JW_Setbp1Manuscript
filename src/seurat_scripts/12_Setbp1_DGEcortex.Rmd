@@ -343,10 +343,10 @@ rownames(genes_pivot) <- rownames
 # grab meta data for plot:
 meta <- as.data.frame(colnames(genes_pivot))
 rownames(meta) <- meta$`colnames(genes_pivot)`
-colnames(meta) <- c("cell_type")
+colnames(meta) <- c("Cell Type")
 
 
-annotation_colors <- list("cell_type" = c("excitatory_neurons" = "#DC71FA", "inhibitory_neurons" = "#00BBDB", "oligodendrocytes" = "#7997FF", "astrocytes" = "#6968B4", "microglia" = "#C216B7", "opcs" = "#00C1AA", "pericytes" = "#027461", "fibroblasts" = "#0a2f6f"))
+annotation_colors <- list("Cell Type" = c("excitatory_neurons" = "#DC71FA", "inhibitory_neurons" = "#00BBDB", "oligodendrocytes" = "#7997FF", "astrocytes" = "#6968B4", "microglia" = "#C216B7", "opcs" = "#00C1AA", "pericytes" = "#027461", "fibroblasts" = "#0a2f6f"))
 
 # set heatmap annotations:
 heat.anno <- HeatmapAnnotation(df = meta, show_annotation_name = TRUE, col = annotation_colors)
@@ -364,11 +364,12 @@ mat <- as.matrix(genes_pivot)
 col_fun <- colorRamp2(c(-0.5, 0, 0.5), c("#8C5209", "white", "#35978F"))
 png(
   filename = here("results/figures/cortex_DEGsetbp1_heatmap.png"),
-  width = 1000,
-  height = 1000
+  width = 2000,
+  height = 2000,
+  res = 300
 )
 Heatmap(mat,
-  col = col_fun, #brewer.pal(9, "BrBG"),
+  col = col_fun,
   heatmap_legend_param = list(title = "avg_log2FC"),
   cluster_rows = TRUE,
   cluster_columns = FALSE,
@@ -377,11 +378,13 @@ Heatmap(mat,
   show_column_dend = FALSE,
   show_row_names = TRUE,
   show_column_names = FALSE,
+  row_names_gp = gpar(fontface = "bold", fontfamily = "Helvetica"),
+  row_title_gp = gpar(fontface = "bold"),
   use_raster = TRUE,
   raster_device = c("png"),
   bottom_annotation = NULL,
   top_annotation = heat.anno,
-  column_title = "Differential Expression of Setbp1 Targets Across Cell-types in Cerebral Cortex", row_title = "Setbp1 Targets", row_title_side = "right"
+  #column_title = "Differential Expression of Setbp1 Targets Across Cell-types in Cerebral Cortex", row_title = "Setbp1 Targets", row_title_side = "right"
 )
 dev.off()
 ```
