@@ -438,6 +438,6 @@ loaded via a namespace (and not attached):
 
 ```{r}
 # run style
-style_file(here("src/seurat_scripts/Setbp1_DGEcortex_06.Rmd"))
+style_file(here("src/seurat_scripts/12_Setbp1_DGEcortex.Rmd"))
 # lintr was run as well
 ```
