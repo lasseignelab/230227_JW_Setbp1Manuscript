@@ -99,7 +99,7 @@ head(bcell_data, n = 5)
 
 ```{r}
 # subsetting just the DEG from Het:
-bcell_het <- bcell_data[bcell_data$p_val_adj < 0.5 &
+bcell_het <- bcell_data[bcell_data$p_val_adj < 0.05 &
   bcell_data$avg_log2FC > 0.1 |
   bcell_data$avg_log2FC < -0.1, ]
 bcell_het <- bcell_het[bcell_het$cluster == "heterozygous", ]
@@ -130,7 +130,7 @@ head(CDIC_typeA_data, n = 5)
 
 ```{r}
 # subsetting just the DEG from Het:
-CDIC_typeA_het <- CDIC_typeA_data[CDIC_typeA_data$p_val_adj < 0.5 &
+CDIC_typeA_het <- CDIC_typeA_data[CDIC_typeA_data$p_val_adj < 0.05 &
   CDIC_typeA_data$avg_log2FC > 0.1 |
   CDIC_typeA_data$avg_log2FC < -0.1, ]
 CDIC_typeA_het <- CDIC_typeA_het[CDIC_typeA_het$cluster == "heterozygous", ]
@@ -160,7 +160,7 @@ head(CDIC_typeB_data, n = 5)
 ```
 
 ```{r}
-CDIC_typeB_het <- CDIC_typeB_data[CDIC_typeB_data$p_val_adj < 0.5 &
+CDIC_typeB_het <- CDIC_typeB_data[CDIC_typeB_data$p_val_adj < 0.05 &
   CDIC_typeB_data$avg_log2FC > 0.1 |
   CDIC_typeB_data$avg_log2FC < -0.1, ]
 CDIC_typeB_het <- CDIC_typeB_het[CDIC_typeB_het$cluster == "heterozygous", ]
@@ -190,7 +190,7 @@ head(CDPC_data, n = 5)
 ```
 
 ```{r}
-CDPC_het <- CDPC_data[CDPC_data$p_val_adj < 0.5 &
+CDPC_het <- CDPC_data[CDPC_data$p_val_adj < 0.05 &
   CDPC_data$avg_log2FC > 0.1 |
   CDPC_data$avg_log2FC < -0.1, ]
 CDPC_het <- CDPC_het[CDPC_het$cluster == "heterozygous", ]
@@ -222,7 +222,7 @@ head(DCT_data, n = 5)
 
 ```{r}
 # subsetting just the DEG from Het:
-DCT_het <- DCT_data[DCT_data$p_val_adj < 0.5 &
+DCT_het <- DCT_data[DCT_data$p_val_adj < 0.05 &
   DCT_data$avg_log2FC > 0.1 | DCT_data$avg_log2FC < -0.1, ]
 DCT_het <- DCT_het[DCT_het$cluster == "heterozygous", ]
 
@@ -251,7 +251,7 @@ head(DLH_data, n = 5)
 
 ```{r}
 # subsetting just the DEG from Het:
-DLH_het <- DLH_data[DLH_data$p_val_adj < 0.5 &
+DLH_het <- DLH_data[DLH_data$p_val_adj < 0.05 &
   DLH_data$avg_log2FC > 0.1 | DLH_data$avg_log2FC < -0.1, ]
 DLH_het <- DLH_het[DLH_het$cluster == "heterozygous", ]
 
@@ -280,7 +280,7 @@ head(endo_data, n = 5)
 
 ```{r}
 # subsetting just the DEG from Het:
-endo_het <- endo_data[endo_data$p_val_adj < 0.5 &
+endo_het <- endo_data[endo_data$p_val_adj < 0.05 &
   endo_data$avg_log2FC > 0.1 | endo_data$avg_log2FC < -0.1, ]
 endo_het <- endo_het[endo_het$cluster == "heterozygous", ]
 # add column to data to indicate if DE or not:
@@ -309,7 +309,7 @@ head(fibro_data, n = 5)
 
 ```{r}
 # subsetting just the DEG from Het:
-fibro_het <- fibro_data[fibro_data$p_val_adj < 0.5 &
+fibro_het <- fibro_data[fibro_data$p_val_adj < 0.05 &
   fibro_data$avg_log2FC > 0.1 |
   fibro_data$avg_log2FC < -0.1, ]
 fibro_het <- fibro_het[fibro_het$cluster == "heterozygous", ]
@@ -341,7 +341,7 @@ head(LOH_data, n = 5)
 
 ```{r}
 # subsetting just the DEG from Het:
-LOH_het <- LOH_data[LOH_data$p_val_adj < 0.5 &
+LOH_het <- LOH_data[LOH_data$p_val_adj < 0.05 &
   LOH_data$avg_log2FC > 0.1 | LOH_data$avg_log2FC < -0.1, ]
 LOH_het <- LOH_het[LOH_het$cluster == "heterozygous", ]
 
@@ -370,7 +370,7 @@ head(macro_data, n = 5)
 
 ```{r}
 # subsetting just the DEG from Het:
-macro_het <- macro_data[macro_data$p_val_adj < 0.5 &
+macro_het <- macro_data[macro_data$p_val_adj < 0.05 &
   macro_data$avg_log2FC > 0.1 |
   macro_data$avg_log2FC < -0.1, ]
 macro_het <- macro_het[macro_het$cluster == "heterozygous", ]
@@ -401,7 +401,7 @@ head(PCTS1_data, n = 5)
 
 ```{r}
 # subsetting just the DEG from Het:
-PCTS1_het <- PCTS1_data[PCTS1_data$p_val_adj < 0.5 &
+PCTS1_het <- PCTS1_data[PCTS1_data$p_val_adj < 0.05 &
   PCTS1_data$avg_log2FC > 0.1 |
   PCTS1_data$avg_log2FC < -0.1, ]
 PCTS1_het <- PCTS1_het[PCTS1_het$cluster == "heterozygous", ]
@@ -435,7 +435,7 @@ head(podo_data, n = 5)
 
 ```{r}
 # subsetting just the DEG from Het:
-podo_het <- podo_data[podo_data$p_val_adj < 0.5 &
+podo_het <- podo_data[podo_data$p_val_adj < 0.05 &
   podo_data$avg_log2FC > 0.1 |
   podo_data$avg_log2FC < -0.1, ]
 podo_het <- podo_het[podo_het$cluster == "heterozygous", ]
@@ -469,7 +469,7 @@ head(PST_data, n = 5)
 
 ```{r}
 # subsetting just the DEG from Het:
-PST_het <- PST_data[PST_data$p_val_adj < 0.5 & PST_data$avg_log2FC > 0.1 |
+PST_het <- PST_data[PST_data$p_val_adj < 0.05 & PST_data$avg_log2FC > 0.1 |
   PST_data$avg_log2FC < -0.1, ]
 PST_het <- PST_het[PST_het$cluster == "heterozygous", ]
 
@@ -501,7 +501,7 @@ head(pericytes_data, n = 5)
 
 ```{r}
 # subsetting just the DEG from Het:
-pericytes_het <- pericytes_data[pericytes_data$p_val_adj < 0.5 &
+pericytes_het <- pericytes_data[pericytes_data$p_val_adj < 0.05 &
   pericytes_data$avg_log2FC > 0.1 |
   pericytes_data$avg_log2FC < -0.1, ]
 pericytes_het <- pericytes_het[pericytes_het$cluster == "heterozygous", ]
@@ -532,7 +532,7 @@ head(PCTS2_data, n = 5)
 
 ```{r}
 # subsetting just the DEG from Het:
-PCTS2_het <- PCTS2_data[PCTS2_data$p_val_adj < 0.5 &
+PCTS2_het <- PCTS2_data[PCTS2_data$p_val_adj < 0.05 &
   PCTS2_data$avg_log2FC > 0.1 |
   PCTS2_data$avg_log2FC < -0.1, ]
 PCTS2_het <- PCTS2_het[PCTS2_het$cluster == "heterozygous", ]
@@ -563,7 +563,7 @@ head(smcs_data, n = 5)
 
 ```{r}
 # subsetting just the DEG from Het:
-smcs_het <- smcs_data[smcs_data$p_val_adj < 0.5 &
+smcs_het <- smcs_data[smcs_data$p_val_adj < 0.05 &
   smcs_data$avg_log2FC > 0.1 |
   smcs_data$avg_log2FC < -0.1, ]
 smcs_het <- smcs_het[smcs_het$cluster == "heterozygous", ]
@@ -594,7 +594,7 @@ head(prox_tubule_data, n = 5)
 
 ```{r}
 # subsetting just the DEG from Het:
-prox_tubule_het <- prox_tubule_data[prox_tubule_data$p_val_adj < 0.5 &
+prox_tubule_het <- prox_tubule_data[prox_tubule_data$p_val_adj < 0.05 &
   prox_tubule_data$avg_log2FC > 0.1 |
   prox_tubule_data$avg_log2FC < -0.1, ]
 prox_tubule_het <- prox_tubule_het[prox_tubule_het$cluster == "heterozygous", ]
@@ -697,41 +697,30 @@ setbp1_genes <- append(setbp1_genes, "Setbp1")
 kidney_subset <- DEGs_kidneycells[DEGs_kidneycells$gene %in% setbp1_genes, ]
 
 # grab just log2fc values from DEG matrix, keep rownames and then order (below) by rowname
-genes_mat <- kidney_subset[, c("avg_log2FC", "cell_type", "gene", "cluster", "p_val_adj"),
-  drop = FALSE
-]
+genes_mat <- kidney_subset[, c("avg_log2FC", "cell_type", "gene", "cluster", "p_val_adj"), drop = FALSE]
 
 # filtering for significant values
-genes_mat <- genes_mat[genes_mat$p_val_adj < 0.5, ]
+genes_mat <- genes_mat[genes_mat$p_val_adj < 0.05, ]
 genes_mat <- genes_mat[, -5]
 
-genes_pivot <- pivot_wider(genes_mat,
-  names_from = c("cell_type", "cluster"),
-  values_from = "avg_log2FC",
-  names_repair = "minimal"
-)
+# grabbbing just S858R
+genes_mat <- genes_mat[genes_mat$cluster == "heterozygous",]
+genes_mat <- subset(genes_mat, select = -cluster)
+
+genes_pivot <- pivot_wider(genes_mat, names_from = c("cell_type"), values_from = "avg_log2FC", names_repair = "minimal")
 genes_pivot[is.na(genes_pivot)] <- 0
 rownames <- genes_pivot$gene # add gene names as rownames
-genes_pivot <- genes_pivot[, -1, drop = FALSE] # drop gene column
+genes_pivot <- subset(genes_pivot, select = -gene) # drop gene column
 rownames(genes_pivot) <- rownames
 
 # grab meta data for plot:
 meta <- as.data.frame(colnames(genes_pivot))
-meta.data <- t(as.data.frame(strsplit(sub("(_)(?=[^_]+$)", " ", meta$`colnames(genes_pivot)`, perl = TRUE), " ")))
-rownames(meta.data) <- meta$`colnames(genes_pivot)`
-colnames(meta.data) <- c("cell_type", "condition")
-
-
-# define order of annotations and colors:
-ordered.meta.data <- meta.data[order(rownames(meta.data)), ] # order by cell type
+rownames(meta) <- meta$`colnames(genes_pivot)`
+colnames(meta) <- c("Cell Type")
 
 
 annotation_colors <- list(
-  "condition" = c(
-    "control" = "#FE6100",
-    "heterozygous" = "#FFB000"
-  ),
-  "cell_type" = c(
+  "Cell Type" = c(
     "B_cells" = "#FFBE1D",
     "CDIC_typeA" = "#4E3801",
     "CDIC_typeB" = "#EEDF37",
@@ -753,15 +742,11 @@ annotation_colors <- list(
 )
 
 # set heatmap annotations:
-heat.anno <- HeatmapAnnotation(
-  df = ordered.meta.data,
-  show_annotation_name = TRUE,
-  col = annotation_colors
-)
+heat.anno <- HeatmapAnnotation(df = meta, show_annotation_name = TRUE, col = annotation_colors)
 
 
 # ensure the column order of the expression data matches row order of annotation table
-genes_pivot <- genes_pivot[, rownames(ordered.meta.data), drop = FALSE]
+genes_pivot <- genes_pivot[, rownames(meta), drop = FALSE]
 rownames(genes_pivot) <- rownames
 
 # convert dataframe to matrix
@@ -769,11 +754,12 @@ mat <- as.matrix(genes_pivot)
 
 # plot heatmap
 # Heatmap
-col_fun <- colorRamp2(c(-1, 0, 1), c("purple", "black", "yellow"))
+col_fun <- colorRamp2(c(-0.5, 0, 0.5), c("#8C5209", "white", "#35978F"))
 png(
   filename = here("results/figures/kidney_DEGsetbp1_heatmap.png"),
   width = 2000,
-  height = 2000
+  height = 3500,
+  res = 300
 )
 Heatmap(mat,
   col = col_fun,
@@ -785,11 +771,13 @@ Heatmap(mat,
   show_column_dend = TRUE,
   show_row_names = TRUE,
   show_column_names = FALSE,
+  row_names_gp = gpar(fontface = "bold", fontfamily = "Helvetica"),
+  row_title_gp = gpar(fontface = "bold"),
   use_raster = TRUE,
   raster_device = c("png"),
   bottom_annotation = NULL,
   top_annotation = heat.anno,
-  column_title = "Differential Expression of Setbp1 Targets Across Cell-types in Kidney", row_title = "Setbp1 Targets", row_title_side = "right"
+  #column_title = "Differential Expression of Setbp1 Targets Across Cell-types in Kidney", row_title = "Setbp1 Targets", row_title_side = "right"
 )
 dev.off()
 ```
@@ -844,6 +832,6 @@ loaded via a namespace (and not attached):
 
 ```{r}
 # run style
-style_file(here("src/seurat_scripts/Setbp1_DGEkidney_06.Rmd"))
+style_file(here("src/seurat_scripts/12_Setbp1_DGEkidney.Rmd"))
 # lintr was run as well
 ```
