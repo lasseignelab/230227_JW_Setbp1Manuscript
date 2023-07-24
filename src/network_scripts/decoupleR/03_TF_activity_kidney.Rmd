@@ -119,7 +119,7 @@ merged_df_Q1 <- merged_df[merged_df$percent_change < -35.3, ]
 merged_df <- rbind(merged_df_Q3, merged_df_Q1)
 
 # annotate
-merged_df$condition <- ifelse(merged_df$percent_change >0, "S858R", "WT")
+merged_df$condition <- ifelse(merged_df$percent_change > 0, "S858R", "WT")
 
 # filter for gene set, pivot wider, replace NA
 merged_het <- subset(merged_df, merged_df$percent_change > 0)
@@ -127,11 +127,11 @@ merged_het <- subset(merged_df, merged_df$percent_change > 0)
 pivot_het <- merged_het %>%
   filter(source %in% setbp1_genes) %>%
   pivot_wider(.,
-  id_cols = source,
-  names_from = c(condition, cluster),
-  values_from = het_mean,
-  names_sep = "_"
-) %>%
+    id_cols = source,
+    names_from = c(condition, cluster),
+    values_from = het_mean,
+    names_sep = "_"
+  ) %>%
   mutate_all(~ replace(., is.na(.), 0))
 
 merged_ctrl <- subset(merged_df, merged_df$percent_change < 0)
@@ -139,11 +139,11 @@ merged_ctrl <- subset(merged_df, merged_df$percent_change < 0)
 pivot_ctrl <- merged_ctrl %>%
   filter(source %in% setbp1_genes) %>%
   pivot_wider(.,
-  id_cols = source,
-  names_from = c(condition, cluster),
-  values_from = ctrl_mean,
-  names_sep = "_"
-) %>%
+    id_cols = source,
+    names_from = c(condition, cluster),
+    values_from = ctrl_mean,
+    names_sep = "_"
+  ) %>%
   mutate_all(~ replace(., is.na(.), 0))
 
 pivot <- merge(pivot_het, pivot_ctrl, by = "source")
@@ -222,11 +222,11 @@ mat <- as.matrix(pivot)
 
 # plot heatmap
 # Heatmap
-col_fun <- colorRamp2(c(-2, 0, 2), c("blue", "white", "red"))
+col_fun <- colorRamp2(c(-2, 0, 2), c("#8C5209", "white", "#35978F"))
 png(
   filename = here("results/TF_activity/kidney_tf_activity_geneset.png"),
   width = 3000,
-  height = 3000,
+  height = 2500,
   res = 300
 )
 Heatmap(mat,

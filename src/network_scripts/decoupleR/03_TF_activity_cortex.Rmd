@@ -202,11 +202,12 @@ mat <- as.matrix(pivot)
 
 # plot heatmap
 # Heatmap
-col_fun <- colorRamp2(c(-2, 0, 2), c("blue", "white", "red"))
+col_fun <- colorRamp2(c(-2, 0, 2), c("#8C5209", "white", "#35978F"))
+
 png(
   filename = here("results/TF_activity/cortex_tf_activity_geneset.png"),
-  width = 3000,
-  height = 3000,
+  width = 2500,
+  height = 2000,
   res = 300
 )
 Heatmap(mat,
