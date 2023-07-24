@@ -423,7 +423,7 @@ cortex <- cortex_banfi[cortex_banfi$gene_ppi %in% setbp1_genes,]
 #removing Setbp1 because it is not a target of Setbp1 
 cortex <- cortex[cortex$gene_ppi != "Setbp1",]
 
-write.csv(cortex, file = here("results/ppi_rewiring/cortex_mechanisms.csv"))
+#write.csv(cortex, file = here("results/ppi_rewiring/cortex_mechanisms.csv"))
 
 ## grab just values from cell_type, annotation, gene_ppi, and mechanism, keep rownames and then order (below) by rowname
 cortex <- cortex[, c("annotation", "cell_type", "gene_ppi", "mechanism", "condition"), drop = FALSE]
@@ -467,7 +467,7 @@ mat <- as.matrix(cortex_pivot)
 
 plot <- Heatmap(mat,
   col = c("both_negative" = "red", "both_positive" = "#628D56", "neg_pos" = "#E9C61D", "pos_neg" = "#E7872B"),
-  heatmap_legend_param = list(title = "regNet to CoopNet score change"),
+  heatmap_legend_param = list(title = "Direction"),
   cluster_rows = TRUE,
   cluster_columns = TRUE,
   column_order = NULL,
@@ -484,7 +484,7 @@ plot <- Heatmap(mat,
 )
 
 png(here("results/ppi_rewiring/cortex_all_sign_change_heatmap.png"),
-  res = 250,
+  res = 300,
   height = 1000,
   width = 2000
 )
@@ -557,7 +557,7 @@ mat <- as.matrix(kidney_pivot)
 
 plot <- Heatmap(mat,
   col = c("both_negative" = "red", "both_positive" = "#628D56", "neg_pos" = "#E9C61D", "pos_neg" = "#E7872B"),
-  heatmap_legend_param = list(title = "regNet to CoopNet score change"),
+  heatmap_legend_param = list(title = "Direction"),
   cluster_rows = TRUE,
   cluster_columns = TRUE,
   column_order = NULL,
@@ -574,7 +574,7 @@ plot <- Heatmap(mat,
 )
 
 png(here("results/ppi_rewiring/kidney_all_sign_change_heatmap.png"),
-  res = 250,
+  res = 300,
   height = 1000,
   width = 2000
 )
@@ -596,7 +596,7 @@ kidney_banfi_ctrl <- kidney_banfi_ctrl[kidney_banfi_ctrl$gene_ppi %in% setbp1_ge
 cortex_banfi_het$cell_type <- sub("_heterozygouscortex", "", cortex_banfi_het$source)
 
 png(here("results/ppi_rewiring/cortex_het_score_quant_dotplot.png"),
-  res = 250,
+  res = 300,
   height = 2000,
   width = 2000)
 
@@ -607,7 +607,7 @@ ggplot(cortex_banfi_het, aes(x = cell_type, y = gene_ppi,
              color = "black") +
   scale_shape_manual(values = c(Positive = 24, Negative = 25),
                      name = "regNet Score (Shape)") +
-  scale_fill_gradientn(colors = c("darkblue", "purple", "white", "yellow", "orange"),
+  scale_fill_gradientn(colors = c("#724408", "#8C5209", "white", "#35978F", "#2B766F"),
                        values = rescale(c(-125, -100, 0, 100, 252)),
                        name = "coopNet Score",
                        breaks = c(-200, -100, 0, 100, 200)) +
@@ -638,7 +638,7 @@ dev.off()
 kidney_banfi_het$cell_type <- sub("_heterozygouskidney", "", kidney_banfi_het$source)
 
 png(here("results/ppi_rewiring/kidney_het_score_quant_dotplot.png"),
-  res = 250,
+  res = 300,
   height = 2000,
   width = 2000)
 
@@ -649,7 +649,7 @@ ggplot(kidney_banfi_het, aes(x = cell_type, y = gene_ppi,
              color = "black") +
   scale_shape_manual(values = c(Positive = 24, Negative = 25),
                      name = "regNet Score (Shape)") +
-  scale_fill_gradientn(colors = c("darkblue", "purple", "white", "yellow", "orange"),
+  scale_fill_gradientn(colors = c("#724408", "#8C5209", "white", "#35978F", "#2B766F"),
                        values = rescale(c(-90, -50, 0, 50, 103)),
                        name = "coopNet Score",
                        breaks = c(-100, -50, 0, 50, 100)) +
@@ -687,7 +687,7 @@ cortex_banfi_apex1 <- cortex_banfi_het[cortex_banfi_het$mechanism == "DNA damage
 cortex_banfi_trp53 <- cortex_banfi_het[cortex_banfi_het$mechanism == "cell cycle",]
 
 png(here("results/ppi_rewiring/cortex_het_dna_damage_dotplot.png"),
-  res = 250,
+  res = 300,
   height = 2000,
   width = 2000)
 
@@ -698,7 +698,7 @@ cor_dna <- ggplot(cortex_banfi_apex1, aes(x = cell_type, y = gene_ppi,
              color = "black") +
   scale_shape_manual(values = c(Positive = 24, Negative = 25),
                      name = "regNet Score (Shape)") +
-  scale_fill_gradientn(colors = c("darkblue", "purple", "white", "yellow", "orange"),
+  scale_fill_gradientn(colors = c("#724408", "#8C5209", "white", "#35978F", "#2B766F"),
                        values = rescale(c(-125, -100, 0, 100, 252)),
                        name = "coopNet Score",
                        breaks = c(-200, -100, 0, 100, 200)) +
@@ -728,7 +728,7 @@ cor_dna
 dev.off()
 
 png(here("results/ppi_rewiring/cortex_het_cellcycle_dotplot.png"),
-  res = 250,
+  res = 300,
   height = 2000,
   width = 2000)
 
@@ -739,7 +739,7 @@ cor_cell <- ggplot(cortex_banfi_trp53, aes(x = cell_type, y = gene_ppi,
              color = "black") +
   scale_shape_manual(values = c(Positive = 24, Negative = 25),
                      name = "regNet Score (Shape)") +
-  scale_fill_gradientn(colors = c("purple", "white", "yellow"),
+  scale_fill_gradientn(colors = c("#8C5209", "white", "#35978F"),
                        values = rescale(c(-100, 0, 150)),
                        name = "coopNet Score",
                        breaks = c(-100, 0, 150)) +
@@ -775,7 +775,7 @@ kidney_banfi_apex1 <- kidney_banfi_het[kidney_banfi_het$mechanism == "DNA damage
 kidney_banfi_trp53 <- kidney_banfi_het[kidney_banfi_het$mechanism == "cell cycle",]
 
 png(here("results/ppi_rewiring/kidney_het_dna_damage_dotplot.png"),
-  res = 250,
+  res = 300,
   height = 2000,
   width = 2000)
 
@@ -786,7 +786,7 @@ kid_dna <- ggplot(kidney_banfi_apex1, aes(x = cell_type, y = gene_ppi,
              color = "black") +
   scale_shape_manual(values = c(Positive = 24, Negative = 25),
                      name = "regNet Score (Shape)") +
-  scale_fill_gradientn(colors = c("darkblue", "purple", "white", "yellow", "orange"),
+  scale_fill_gradientn(colors = c("#724408", "#8C5209", "white", "#35978F", "#2B766F"),
                        values = rescale(c(-90, -50, 0, 50, 103)),
                        name = "coopNet Score",
                        breaks = c(-100, -50, 0, 50, 100)) +
@@ -816,7 +816,7 @@ kid_dna
 dev.off()
 
 png(here("results/ppi_rewiring/kidney_het_cellcycle_dotplot.png"),
-  res = 250,
+  res = 300,
   height = 2000,
   width = 2000)
 
@@ -827,7 +827,7 @@ kid_cell <- ggplot(kidney_banfi_trp53, aes(x = cell_type, y = gene_ppi,
              color = "black") +
   scale_shape_manual(values = c(Positive = 24, Negative = 25),
                      name = "regNet Score (Shape)") +
-  scale_fill_gradientn(colors = c("darkblue", "purple", "white", "yellow", "orange"),
+  scale_fill_gradientn(colors = c("#724408", "#8C5209", "white", "#35978F", "#2B766F"),
                        values = rescale(c(-90, -50, 0, 50, 103)),
                        name = "coopNet Score",
                        breaks = c(-100, -50, 0, 50, 100)) +
@@ -867,7 +867,7 @@ cortex_banfi_apex1 <- cortex_banfi_ctrl[cortex_banfi_ctrl$mechanism == "DNA dama
 cortex_banfi_trp53 <- cortex_banfi_ctrl[cortex_banfi_ctrl$mechanism == "cell cycle",]
 
 png(here("results/ppi_rewiring/cortex_ctrl_dna_damage_dotplot.png"),
-  res = 250,
+  res = 300,
   height = 2000,
   width = 2000)
 
@@ -878,7 +878,7 @@ cor_dna_ctrl <- ggplot(cortex_banfi_apex1, aes(x = cell_type, y = gene_ppi,
              color = "black") +
   scale_shape_manual(values = c(Positive = 24, Negative = 25),
                      name = "regNet Score (Shape)") +
-  scale_fill_gradientn(colors = c("darkblue", "purple", "white", "yellow", "orange"),
+  scale_fill_gradientn(colors = c("#724408", "#8C5209", "white", "#35978F", "#2B766F"),
                        values = rescale(c(-125, -100, 0, 100, 252)),
                        name = "coopNet Score",
                        breaks = c(-200, -100, 0, 100, 200)) +
@@ -908,7 +908,7 @@ cor_dna_ctrl
 dev.off()
 
 png(here("results/ppi_rewiring/cortex_ctrl_cellcycle_dotplot.png"),
-  res = 250,
+  res = 300,
   height = 2000,
   width = 2000)
 
@@ -919,7 +919,7 @@ cor_cell_ctrl <- ggplot(cortex_banfi_trp53, aes(x = cell_type, y = gene_ppi,
              color = "black") +
   scale_shape_manual(values = c(Positive = 24, Negative = 25),
                      name = "regNet Score (Shape)") +
-  scale_fill_gradientn(colors = c("purple", "white", "yellow"),
+  scale_fill_gradientn(colors = c("#8C5209", "white", "#35978F"),
                        values = rescale(c(-100, 0, 150)),
                        name = "coopNet Score",
                        breaks = c(-100, 0, 150)) +
@@ -955,7 +955,7 @@ kidney_banfi_apex1 <- kidney_banfi_ctrl[kidney_banfi_ctrl$mechanism == "DNA dama
 kidney_banfi_trp53 <- kidney_banfi_ctrl[kidney_banfi_ctrl$mechanism == "cell cycle",]
 
 png(here("results/ppi_rewiring/kidney_ctrl_dna_damage_dotplot.png"),
-  res = 250,
+  res = 300,
   height = 2000,
   width = 2000)
 
@@ -966,7 +966,7 @@ kid_dna_ctrl <- ggplot(kidney_banfi_apex1, aes(x = cell_type, y = gene_ppi,
              color = "black") +
   scale_shape_manual(values = c(Positive = 24, Negative = 25),
                      name = "regNet Score (Shape)") +
-  scale_fill_gradientn(colors = c("darkblue", "purple", "white", "yellow", "orange"),
+  scale_fill_gradientn(colors = c("#724408", "#8C5209", "white", "#35978F", "#2B766F"),
                        values = rescale(c(-90, -50, 0, 50, 103)),
                        name = "coopNet Score",
                        breaks = c(-100, -50, 0, 50, 100)) +
@@ -996,7 +996,7 @@ kid_dna_ctrl
 dev.off()
 
 png(here("results/ppi_rewiring/kidney_ctrl_cellcycle_dotplot.png"),
-  res = 250,
+  res = 300,
   height = 2000,
   width = 2000)
 
@@ -1007,7 +1007,7 @@ kid_cell_ctrl <- ggplot(kidney_banfi_trp53, aes(x = cell_type, y = gene_ppi,
              color = "black") +
   scale_shape_manual(values = c(Positive = 24, Negative = 25),
                      name = "regNet Score (Shape)") +
-  scale_fill_gradientn(colors = c("darkblue", "purple", "white", "yellow", "orange"),
+  scale_fill_gradientn(colors = c("#724408", "#8C5209", "white", "#35978F", "#2B766F"),
                        values = rescale(c(-90, -50, 0, 50, 103)),
                        name = "coopNet Score",
                        breaks = c(-100, -50, 0, 50, 100)) +
@@ -1049,7 +1049,7 @@ legend_combined <- get_legend(cor_dna)  # Extract the legend from plot1
 plot_combined_with_legend <- plot_grid(plot_combined, legend_combined, ncol = 2, rel_widths = c(4, 1))
 
 png(here("results/ppi_rewiring/cortex_het_grouped_dotplot.png"),
-  res = 250,
+  res = 300,
   height = 2000,
   width = 3000)
 plot_combined_with_legend
@@ -1065,7 +1065,7 @@ legend_combined <- get_legend(cor_dna_ctrl)  # Extract the legend from plot1
 plot_combined_with_legend <- plot_grid(plot_combined, legend_combined, ncol = 2, rel_widths = c(4, 1))
 
 png(here("results/ppi_rewiring/cortex_ctrl_grouped_dotplot.png"),
-  res = 250,
+  res = 300,
   height = 2000,
   width = 3000)
 plot_combined_with_legend
@@ -1083,7 +1083,7 @@ legend_combined <- get_legend(kid_dna)  # Extract the legend from plot1
 plot_combined_with_legend <- plot_grid(plot_combined, legend_combined, ncol = 2, rel_widths = c(4, 1))
 
 png(here("results/ppi_rewiring/kidney_het_grouped_dotplot.png"),
-  res = 250,
+  res = 300,
   height = 2000,
   width = 3000)
 plot_combined_with_legend
@@ -1099,7 +1099,7 @@ legend_combined <- get_legend(kid_dna_ctrl)  # Extract the legend from plot1
 plot_combined_with_legend <- plot_grid(plot_combined, legend_combined, ncol = 2, rel_widths = c(4, 1))
 
 png(here("results/ppi_rewiring/kidney_ctrl_grouped_dotplot.png"),
-  res = 250,
+  res = 300,
   height = 2000,
   width = 3000)
 plot_combined_with_legend

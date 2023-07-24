@@ -4,14 +4,13 @@ author: "Jordan Whitlock"
 date: '2023-05-24'
 output: html_document
 ---
-using docker 1.0.6
-
 Goal: Perform Functional Enrichment Analysis (FEA) on heterozygous enriched, differentially targeted genes from the Setbp1 gene set using Gene Ontology and Human Phenotype from gprofiler. 
 
 ```{r libraries-processingtime-seed}
 set.seed(2178)
 library(ComplexHeatmap)
 library(gprofiler2)
+library(circlize)
 library(here)
 library(styler)
 library(lintr)
@@ -177,17 +176,18 @@ rownames(data) <- names
 
 meta <- as.data.frame(cell_type)
 colnames(meta) <- "Cell Type"
+rownames(meta) <- colnames(data)
 
 ## set heatmap annotations
 annotation_colors <- list(`Cell Type` = c(
   "astrocytes" = "#6968B4",
   "opcs" = "#00C1AA",
-  # "pericytes" = "#027461",
+  "pericytes" = "#027461",
   "fibro_cortex" = "#0a2f6f",
   "excitatory_neurons" = "#DC71FA",
   "inhibitory_neurons" = "#00BBDB",
-  "microglia" = "#C216B7",
-  "oligodendrocytes" = "#7997FF"
+  "microglia" = "#C216B7"#,
+  #"oligodendrocytes" = "#7997FF"
 ))
 
 heat.anno <- HeatmapAnnotation(
@@ -199,10 +199,12 @@ heat.anno <- HeatmapAnnotation(
 ## convert data to matrix
 mat <- as.matrix(data)
 
+col_fun <- colorRamp2(c(0, 0.1, 0.2, 0.3), c("white", "#83CDC1", "#35978F", "#03665E"))
+
 ## plot heatmap
 cor_heatmap <- Heatmap(mat,
-  col = colorRampPalette(c("black", "yellow", "orange", "red"))(4),
-  heatmap_legend_param = list(title = "Recall"),
+  col = col_fun,
+  heatmap_legend_param = list(title = "Recall", direction = "horizontal"),
   cluster_rows = TRUE,
   cluster_columns = TRUE,
   column_order = NULL,
@@ -219,17 +221,16 @@ cor_heatmap <- Heatmap(mat,
   row_names_gp = gpar(fontface = "bold", fontfamily = "Helvetica")
 )
 
-
-plot <- plot_grid(grid.grabExpr(draw(cor_heatmap,
-  annotation_legend_side = "right",
-  legend_grouping = "original"
+plot_cortex <- plot_grid(grid.grabExpr(draw(cor_heatmap,
+  annotation_legend_side = "left",
+  legend_grouping = "original", heatmap_legend_side = "bottom"
 )))
 png(here("results/diff_targeting/cortex_het_enriched_DT_from_geneset_GO_HP_pathways_recall.png"),
-  res = 250,
-  height = 5000,
+  res = 300,
+  height = 3000,
   width = 3000
 )
-plot
+plot_cortex
 dev.off()
 ```
 
@@ -310,11 +311,12 @@ annotation_colors <- list(`Cell Type` = c(
 
 heat.anno <- HeatmapAnnotation(df = meta, show_annotation_name = TRUE, col = annotation_colors)
 
+col_fun <- colorRamp2(c(0, 0.1, 0.2, 0.3), c("white", "#83CDC1", "#35978F", "#03665E"))
 
 ## plot heatmap
 kid_heatmap <- Heatmap(mat,
-  col = colorRampPalette(c("black", "yellow", "orange", "red"))(4),
-  heatmap_legend_param = list(title = "Recall"),
+  col = col_fun,
+  heatmap_legend_param = list(title = "Recall", direction = "horizontal"),
   cluster_rows = TRUE,
   cluster_columns = TRUE,
   column_order = NULL,
@@ -325,6 +327,7 @@ kid_heatmap <- Heatmap(mat,
   use_raster = TRUE,
   raster_device = c("png"),
   bottom_annotation = NULL,
+  row_names_max_width = unit(12, "cm"),
   top_annotation = heat.anno,
   row_title = "Pathways", row_title_side = "left",
   row_title_gp = gpar(fontface = "bold"),
@@ -332,18 +335,23 @@ kid_heatmap <- Heatmap(mat,
 )
 
 
-plot <- plot_grid(grid.grabExpr(draw(kid_heatmap,
-  annotation_legend_side = "right",
-  legend_grouping = "original"
+plot_kidney <- plot_grid(grid.grabExpr(draw(kid_heatmap,
+  annotation_legend_side = "left",
+  legend_grouping = "original", heatmap_legend_side = "bottom"
 )))
 png(here("results/diff_targeting/kidney_het_enriched_DT_geneset_GO_HP_pathways_recall.png"),
-  res = 250,
-  height = 5000,
+  res = 300,
+  height = 3000,
   width = 3000
 )
-plot
+plot_kidney
 dev.off()
 ```
+
+```{r}
+plot_cortex | plot_kidney
+```
+
 
 ```{r processing-time}
 fptm <- proc.time() - ptm
