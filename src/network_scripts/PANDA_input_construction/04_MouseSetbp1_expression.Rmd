@@ -3,7 +3,7 @@ title: "MouseSetbp1_PANDA_expression"
 output: html_document
 date: '2022-10-27'
 ---
-This script extracts all processed count matrices from the Seurat object and pseudobulks them to create sample x gene matrices for each cell type as the expression input for PANDA. 
+This script extracts all processed count matrices from the Seurat object and pseudobulked them to create sample x gene matrices for each cell type as the expression input for PANDA. 
 
 ```{r load-libraries}
 set.seed(2178)
@@ -29,7 +29,7 @@ load(here("data/kidney_integrated_celltypes_postSoup.Rdata"))
 
 
 ## Pseudobulk the cerebral data for PANDA Input:
-(following tutorial here: https://hbctraining.github.io/scRNA-seq/lessons/pseudobulk_DESeq2_scrnaseq.html)
+Note: [following tutorial](https://hbctraining.github.io/scRNA-seq/lessons/pseudobulk_DESeq2_scrnaseq.html) as an example
 
 ### Set up data and aggregate 
 ```{r}
@@ -46,7 +46,7 @@ metadata$cluster_id <- factor(cerebral_int_celltypes@active.ident)
 sce_cerebral <- SingleCellExperiment(assays = list(counts = counts), colData = metadata)
 
 
-control_cerebral_sce <- sce_cerebral[, sce_cerebral$type == "control"] # if the dataset has a non-WT group, would also filter for that here
+control_cerebral_sce <- sce_cerebral[, sce_cerebral$type == "control"] # if the data set has a non-WT group, would also filter for that here
 
 
 heterozygous_cerebral_sce <- sce_cerebral[, sce_cerebral$type == "heterozygous"]
@@ -58,14 +58,14 @@ assays(control_cerebral_sce) # check assays present -- counts
 colData(control_cerebral_sce) # show all the columns present
 dim(counts(control_cerebral_sce)) # note dims here are same as sce because this is ALL control data
 counts(control_cerebral_sce)[1:6, 1:6] # looking at first 6 rows and first 6 columns in gene x cell count matrix
-# explore cellular metadata for dataset
+# explore cellular metadata for data set
 dim(colData(control_cerebral_sce))
 
 assays(heterozygous_cerebral_sce) # check assays present -- counts
 colData(heterozygous_cerebral_sce) # show all the columns present
 dim(counts(heterozygous_cerebral_sce)) #note dims here are same as sce because this is ALL heterozygous data
 counts(heterozygous_cerebral_sce)[1:6, 1:6] # looking at first 6 rows and first 6 columns in gene x cell count matrix
-# explore cellular metadata for dataset
+# explore cellular metadata for data set
 dim(colData(heterozygous_cerebral_sce))
 
 
@@ -245,7 +245,7 @@ save(fibro_cortex,
 
 
 ## Pseudobulk the kidney data for PANDA Input:
-(following tutorial here: https://hbctraining.github.io/scRNA-seq/lessons/pseudobulk_DESeq2_scrnaseq.html)
+Performed the same way as cerebral cortex
 
 ### Set up data and aggregate 
 ```{r}

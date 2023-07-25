@@ -1,16 +1,16 @@
 ---
-title: "HumanMouse_PANDA_ppi_04"
+title: "03_Mouse_PANDA_ppi"
 output: html_document
 date: '2022-11-15'
 ---
 # Overview: 
-* Generating PPI Input for Human:
+* Generating PPI Input:
   * STRING:
-    * The NetZoo package has a nice wrapper function here: https://netzoo.github.io/netZooR/reference/source.PPI.html, however, one cannot change the filtering threshold using this package. 
+    * The NetZoo package has a nice [wrapper function](https://netzoo.github.io/netZooR/reference/source.PPI.html), however, one cannot change the filtering threshold using the package. 
     * The stringDB package is used to pull in the latest version of string (v11.5, accessed 221026)
     * All that is needed is for the user to specify the input query TFs that an individual would like to search for in the string database. 
-    * Then the species.index must be specified, here I use the mouse NCBI taxon-id (human - 9606; https://string-db.org/cgi/organisms, mouse -10090; https://string-db.org/cgi/organisms).
-  * Input TFs were obtained from the TF Motif input constructed for both species and enriched for additional databases to include CIS-BP, TRRUST, SIGNOR, and MSIGDB SETBP1 ChIP-seq data. The files are called 'hu_motif_all.txt' and 'mus_motif_all.txt'
+    * Then the species.index must be specified, here I use the mouse NCBI taxon-id ([mouse -10090](https://string-db.org/cgi/organisms)).
+  * Input TFs were obtained from the TF Motif input constructed for mouse and enriched for additional databases to include CIS-BP, TRRUST, SIGNOR, and MSIGDB SETBP1 ChIP-seq data. The file is called 'mus_motif_all.txt'
   
 * Input data structure:
   * Column 1: TF_Info (TFs)
@@ -18,10 +18,9 @@ date: '2022-11-15'
   * Column 3: Interaction (score, in this case a 1 for present or 0 for not present)
   
 * PPI function parameters:
-  * species_code: obtained from string-db organism codes (example: 9606)
+  * species_code: obtained from string-db organism codes (example: 10090)
   * string_version: version of string database user wants to construct PPI from (example: 11.5)
-  * score_cutoff: Threshold scores go from 0 - 1000 and represent the confidence in the interactions present based on literature and experimental data. The lower the threshold, the less stringent. For example a score of 500 indicates every second interaction might be a false positive. 
-    * (https://string-db.org/cgi/info)
+  * score_cutoff: [Threshold scores](https://string-db.org/cgi/info) go from 0 - 1000 and represent the confidence in the interactions present based on literature and experimental data. The lower the threshold, the less stringent. For example a score of 500 indicates every second interaction might be a false positive. 
   * output: name of output object
 
 # Code: 
@@ -36,28 +35,11 @@ source(here("src/functions/functions.R"))
 set.seed(2178)
 ```
 
-## loading in the TF-motif input data (needed as input to construct PPI for both species):
-These inputs were generated in the HumanMouse_TF_motif_enrichment.Rmd
-```{r}
-hu_motif_all <- read.table(here("data/processed/motif_inputs/hu_motif_all.txt"),
-  sep = "\t")
-```
-
+## loading in the TF-motif input data (needed as input to construct PPI for mouse):
 ```{r}
 mus_motif_all <- read.table(here("data/processed/motif_inputs/mus_motif_all.txt"),
-                            sep = "\t")
-```
-
-# generate human PPI input 
-
-## constructing unthresholded human ppi
-```{r constructing-human-ppi}
-hg38_ppi <- ppi(species_code = 9606, score_cutoff = 0, string_version = 11.5, data = hu_motif_all)
-```
-
-## saving the final human PPI input 
-```{r}
-write.table(hg38_ppi, file = here("data/processed/ppi_inputs/hg38_ppi.txt"), sep = "\t") # save final input data to Cheaha for use in network construction
+  sep = "\t"
+)
 ```
 
 # generate mouse PPI input 
@@ -132,7 +114,7 @@ proc.time()
  
 ```{r}
 # run style
-style_file(here("src/network_scripts/input_construction/Human_PANDA_ppi.Rmd"))
+style_file(here("src/network_scripts/PANDA_input_construction/03_Mouse_ppi.Rmd"))
 # lintr was run as well
 ```
 
