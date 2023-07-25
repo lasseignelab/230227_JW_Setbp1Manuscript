@@ -5,8 +5,6 @@ date: '2023-05-15'
 output: html_document
 ---
 
-Note for Code Reviewer, this was run in 1.0.5 docker
-
 ```{r}
 set.seed(2178)
 library(here)
