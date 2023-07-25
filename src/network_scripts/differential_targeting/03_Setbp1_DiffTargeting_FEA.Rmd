@@ -1,5 +1,5 @@
 ---
-title: "02_Setbp1_DiffTargeting_FEA"
+title: "03_Setbp1_DiffTargeting_FEA"
 author: "Jordan Whitlock"
 date: '2023-05-24'
 output: html_document
@@ -108,7 +108,7 @@ DT_kidney_cts <- data[data$gene %in% unique_values, ] # None
 ```
 
 Using a custom background for gost (custom_bg), of the Setbp1 Target gene set. 
-* Rationale: (from LW) The background (others call the 'universe') for a FEA is just saying all possible genes that could have been used as input (i.e. if input genes were filtered only for protein-coding genes, there's no chance a non-protein-coding gene would show up, so the stats need to be adjusted for what's possible.) 
+* Rationale: The background (others call the 'universe') for a FEA is just saying all possible genes that could have been used as input (i.e. if input genes were filtered only for protein-coding genes, there's no chance a non-protein-coding gene would show up, so the stats need to be adjusted for what's possible.) 
 * custom_bg: vector of gene names to use as a statistical background. If given, the domain_scope is by default set to "custom", if domain_scope is set to "custom_annotated", then this is used instead
 
 ```{r fea-GO-HP-cortex-setbp1-geneset}
@@ -362,7 +362,7 @@ fptm[3] / 60
 
 ```{r style-file}
 # run style
-style_file(here("src/network_scripts/differential_targeting/02_Setbp1_DiffTargeting_FEA.Rmd")) # commented out after being run once
+style_file(here("src/network_scripts/differential_targeting/03_Setbp1_DiffTargeting_FEA.Rmd")) # commented out after being run once
 # lintr was run as well
 ```
 

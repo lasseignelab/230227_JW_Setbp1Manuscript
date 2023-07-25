@@ -3,8 +3,6 @@ title: "01_Setbp1_DiffTargetingWithin_Cortex"
 output: html_document
 date: '2023-02-13'
 ---
-note to code reviewer: this was run in docker 1.0.5
- 
 This analysis determines differential gene targeting scores within cell types between conditions from the PANDA regulatory networks. All networks below were filtered to only include positive weights.
 
 #load in required libraries & functions
@@ -42,14 +40,16 @@ setbp1_genes <- append(setbp1_genes, "Setbp1")
 ## setting heatmap data needed for the rest of the script
 ```{r heatmap-color-annotation}
 # setting annotation colors
-annotation_colors <- list("cell_type" = c("excitatory_neurons" = "#DC71FA",
-                                          "inhibitory_neurons" = "#00BBDB",
-                                          "oligodendrocytes" = "#7997FF",
-                                          "astrocytes" = "#6968B4",
-                                          "microglia" = "#C216B7",
-                                          "opcs" = "#00C1AA",
-                                          "pericytes" = "#027461",
-                                          "fibro_cortex" = "#0a2f6f"))
+annotation_colors <- list("cell_type" = c(
+  "excitatory_neurons" = "#DC71FA",
+  "inhibitory_neurons" = "#00BBDB",
+  "oligodendrocytes" = "#7997FF",
+  "astrocytes" = "#6968B4",
+  "microglia" = "#C216B7",
+  "opcs" = "#00C1AA",
+  "pericytes" = "#027461",
+  "fibro_cortex" = "#0a2f6f"
+))
 ```
 
 ## load in PANDA object containing list of all cell types from Setbp1 data
@@ -118,14 +118,16 @@ ggplot(data = merged_control, aes(
   geom_density(adjust = 1.5, alpha = .4) +
   ggtitle("Distribution of regNet edge weights in control Cerebral Cortex") +
   theme_bw() +
-  scale_color_manual(values = c("#6968B4",
-                                "#DC71FA",
-                                "#0a2f6f",
-                                "#00BBDB",
-                                "#C216B7",
-                                "#027461",
-                                "#7997FF",
-                                "#00C1AA"))
+  scale_color_manual(values = c(
+    "#6968B4",
+    "#DC71FA",
+    "#0a2f6f",
+    "#00BBDB",
+    "#C216B7",
+    "#027461",
+    "#7997FF",
+    "#00C1AA"
+  ))
 dev.off()
 
 # wrangling data
@@ -144,14 +146,16 @@ ggplot(data = merged_het, aes(
   geom_density(adjust = 1.5, alpha = .4) +
   ggtitle("Distribution of regNet edge weights in S858R Cerebral Cortex") +
   theme_bw() +
-  scale_color_manual(values = c("#6968B4",
-                                "#DC71FA",
-                                "#0a2f6f",
-                                "#00BBDB",
-                                "#C216B7",
-                                "#027461",
-                                "#7997FF",
-                                "#00C1AA"))
+  scale_color_manual(values = c(
+    "#6968B4",
+    "#DC71FA",
+    "#0a2f6f",
+    "#00BBDB",
+    "#C216B7",
+    "#027461",
+    "#7997FF",
+    "#00C1AA"
+  ))
 dev.off()
 ```
 
@@ -171,14 +175,16 @@ ggplot(data = merged_het_pos, aes(x = edge_weight, group = cell_type, color = ce
   geom_density(adjust = 1.5, alpha = .4) +
   ggtitle("Distribution of regNet edge weights > 0 in S858R Cerebral Cortex") +
   theme_bw() +
-  scale_color_manual(values = c("#6968B4",
-                                "#DC71FA",
-                                "#0a2f6f",
-                                "#00BBDB",
-                                "#C216B7",
-                                "#027461",
-                                "#7997FF",
-                                "#00C1AA"))
+  scale_color_manual(values = c(
+    "#6968B4",
+    "#DC71FA",
+    "#0a2f6f",
+    "#00BBDB",
+    "#C216B7",
+    "#027461",
+    "#7997FF",
+    "#00C1AA"
+  ))
 dev.off()
 
 # plotting only positive ctrl edge weights
@@ -191,19 +197,21 @@ ggplot(data = merged_control_pos, aes(x = edge_weight, group = cell_type, color 
   geom_density(adjust = 1.5, alpha = .4) +
   ggtitle("Distribution of regNet edge weights >0 in control Cerebral Cortex") +
   theme_bw() +
-  scale_color_manual(values = c("#6968B4",
-                                "#DC71FA",
-                                "#0a2f6f",
-                                "#00BBDB",
-                                "#C216B7",
-                                "#027461",
-                                "#7997FF",
-                                "#00C1AA"))
+  scale_color_manual(values = c(
+    "#6968B4",
+    "#DC71FA",
+    "#0a2f6f",
+    "#00BBDB",
+    "#C216B7",
+    "#027461",
+    "#7997FF",
+    "#00C1AA"
+  ))
 dev.off()
 ```
 
 ## wrangling data to proper format, filtering for only positive edge weights, and calculating targeting scores:
-Gene targeting score, a numerical score representing the extent to which a gene is targeted by TFs in a given biological context. The gene targeting score is calculated by summing the weights of all inbound regulatory edges for a gene or outbound edges for a TF (https://doi.org/10.3389/fgene.2021.649942). 
+Gene [targeting score](https://doi.org/10.3389/fgene.2021.649942), a numerical score representing the extent to which a gene is targeted by TFs in a given biological context. The gene targeting score is calculated by summing the weights of all inbound regulatory edges for a gene or outbound edges for a TF. 
 * regNetmatrix: The PANDA regNet output matrix of TF and Genes and their edge weights from running pandaR 
 * variable_name: Here this is the cell type, or variable you would like the targeting score matrix stored as in your global environment 
 * edge_weight_name: This is the name of the edge_weight column in your matrix (options: het_edge_weight, ctrl_edge_weight)
@@ -305,8 +313,8 @@ combined <- merge(gene_targeting_all_ctrl, gene_targeting_all_het, by = "gene")
 
 colnames(combined) <- c("gene", "astrocytes_ctrl", "excitatory_neurons_ctrl", "cortex_fibroblasts_ctrl", "inhibitory_neurons_ctrl", "microglia_ctrl", "pericytes_ctrl", "oligodendrocytes_ctrl", "opcs_ctrl", "astrocytes_het", "excitatory_neurons_het", "cortex_fibroblasts_het", "inhibitory_neurons_het", "microglia_het", "pericytes_het", "oligodendrocytes_het", "opcs_het")
 
-combined <- melt(combined) #melting data
-variable_info <- t(as.data.frame(strsplit(sub("(_)(?=[^_]+$)", " ", combined$variable, perl = TRUE), " "))) #adding cell type and condition annotation info
+combined <- melt(combined) # melting data
+variable_info <- t(as.data.frame(strsplit(sub("(_)(?=[^_]+$)", " ", combined$variable, perl = TRUE), " "))) # adding cell type and condition annotation info
 
 combined <- cbind(combined, variable_info)
 colnames(combined) <- c("gene", "variable_info", "targeting_score", "cell_type", "condition")
@@ -314,7 +322,7 @@ colnames(combined) <- c("gene", "variable_info", "targeting_score", "cell_type",
 png(here("results/diff_targeting/cortex_targeting_score_ridgeline_condition.png"), height = 500, width = 800)
 ggplot(combined) +
   geom_density_ridges(aes(x = targeting_score, y = cell_type, fill = condition), alpha = 0.8) +
-  scale_fill_manual(values = c("#644DD4","#5F9EFD")) + 
+  scale_fill_manual(values = c("#644DD4", "#5F9EFD")) +
   theme_bw() +
   ggtitle("Gene Targeting Score Distribution in Cerebral Cortex")
 dev.off()
@@ -323,14 +331,16 @@ png(here("results/diff_targeting/cortex_targeting_score_ridgeline_celltypes.png"
 ggplot(combined) +
   geom_density_ridges(aes(x = targeting_score, y = cell_type, group = interaction(cell_type, condition), fill = cell_type, alpha = condition)) +
   theme_bw() +
-  scale_fill_manual(values = c("#6968B4",
-                                "#DC71FA",
-                                "#0a2f6f",
-                                "#00BBDB",
-                                "#C216B7",
-                                "#027461",
-                                "#7997FF",
-                                "#00C1AA")) +
+  scale_fill_manual(values = c(
+    "#6968B4",
+    "#DC71FA",
+    "#0a2f6f",
+    "#00BBDB",
+    "#C216B7",
+    "#027461",
+    "#7997FF",
+    "#00C1AA"
+  )) +
   scale_alpha_manual(values = c(0.25, 0.8))
 dev.off()
 ```
@@ -344,7 +354,7 @@ cell_names
 gene_rank_het <- list() # creating empty list to store within
 
 for (i in cell_names) {
-  rank_het <- gene_targeting_all_het[, names(gene_targeting_all_het) %in% c("gene", i)] %>% 
+  rank_het <- gene_targeting_all_het[, names(gene_targeting_all_het) %in% c("gene", i)] %>%
     .[order(.[i], decreasing = TRUE), ] %>%
     mutate(rank = seq_len(nrow(.))) %>%
     mutate(cell_type = i) %>%
@@ -359,7 +369,7 @@ het_gene_targeting_within <- do.call(bind_rows, gene_rank_het) # collapsing list
 gene_rank_het <- list() # creating empty list to store within
 
 for (i in cell_names) {
-  rank_het <- gene_targeting_all_het[, names(gene_targeting_all_het) %in% c("gene", i)] %>% 
+  rank_het <- gene_targeting_all_het[, names(gene_targeting_all_het) %in% c("gene", i)] %>%
     .[order(.[i], decreasing = TRUE), ] %>%
     mutate(rank = seq_len(nrow(.))) %>%
     mutate(cell_type = i) %>%
@@ -442,7 +452,7 @@ cell_names
 gene_rank_ctrl <- list() # creating empty list to store within
 
 for (i in cell_names) {
-  rank_ctrl <- gene_targeting_all_ctrl[, names(gene_targeting_all_ctrl) %in% c("gene", i)] %>% 
+  rank_ctrl <- gene_targeting_all_ctrl[, names(gene_targeting_all_ctrl) %in% c("gene", i)] %>%
     .[order(.[i], decreasing = TRUE), ] %>%
     mutate(rank = seq_len(nrow(.))) %>%
     mutate(cell_type = i) %>%
@@ -457,7 +467,7 @@ ctrl_gene_targeting_within <- do.call(bind_rows, gene_rank_ctrl) # collapsing li
 gene_rank_ctrl <- list() # creating empty list to store within
 
 for (i in cell_names) {
-  rank_ctrl <- gene_targeting_all_ctrl[, names(gene_targeting_all_ctrl) %in% c("gene", i)] %>% 
+  rank_ctrl <- gene_targeting_all_ctrl[, names(gene_targeting_all_ctrl) %in% c("gene", i)] %>%
     .[order(.[i], decreasing = TRUE), ] %>%
     mutate(rank = seq_len(nrow(.))) %>%
     mutate(cell_type = i) %>%
@@ -533,7 +543,7 @@ targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, pl
 
 ## calculating differential targeting score between conditions 
 GOAL: ID genes with largest difference in targeting _between conditions within each cell type_:
-* Using the combined het/ctrl dataframe for each cell type above, calculate the difference (het-ctrl) for the targeting weight where the more positive difference indicates higher gene targeting in het. 
+* Using the combined het/ctrl data frame for each cell type above, calculate the difference (het-ctrl) for the targeting weight where the more positive difference indicates higher gene targeting in het. 
 * The closer a value is to 0, the less difference in targeting between conditions for that cell type
 
 ```{r rearrange-data-calc-diff}
@@ -558,7 +568,7 @@ Keeping all values from differential (both positive and negative) in order to se
 ```{r calculate-het-enriched-diff-targeting}
 # creating empty data frame
 diff_gene_targeting <- data.frame(matrix(NA, nrow = nrow(combined_gene_targeting), ncol = 1))
-colnames(diff_gene_targeting) <- "gene" 
+colnames(diff_gene_targeting) <- "gene"
 diff_gene_targeting$gene <- combined_gene_targeting$gene # adding gene
 
 # calc diff targeting
@@ -584,7 +594,7 @@ het_enriched <- diff_gene_targeting
 histograms <- list()
 
 # Create histograms for each column
-for (col in colnames(het_enriched[,-1])) {
+for (col in colnames(het_enriched[, -1])) {
   p <- ggplot(het_enriched, aes(x = .data[[col]])) +
     geom_histogram(binwidth = 0.5, fill = "blue", color = "black") +
     labs(title = col, x = col, y = "Frequency")
@@ -593,7 +603,7 @@ for (col in colnames(het_enriched[,-1])) {
 }
 
 # calculate quartile for each cell type
-quartiles <- apply(het_enriched[,-1], 2, quantile, probs = c(0.25, 0.5, 0.75))
+quartiles <- apply(het_enriched[, -1], 2, quantile, probs = c(0.25, 0.5, 0.75))
 
 # Print the quartiles
 print(quartiles)
@@ -609,44 +619,44 @@ Quartiles of differential targeting scores for each cell type:
 Based off the above, all of the het enriched targeting scores will be filtered for each cell type (column) to only include all values <= Q1 (25%) and >= Q3 (75%)
 
 ```{r filtering-data-based-of-quartiles}
-astrocytes <- het_enriched[,c(1,2)]
+astrocytes <- het_enriched[, c(1, 2)]
 astrocytes <- subset(astrocytes, astrocytes <= 8.79 | astrocytes >= 149.19)
 colnames(astrocytes) <- c("gene", "targeting_score")
 astrocytes$cell_type <- "astrocytes"
 
-excitatory_neurons<- het_enriched[, c(1,3)]
-excitatory_neurons<- subset(excitatory_neurons, excitatory_neurons <= -49.718 | excitatory_neurons >= 101.878)
+excitatory_neurons <- het_enriched[, c(1, 3)]
+excitatory_neurons <- subset(excitatory_neurons, excitatory_neurons <= -49.718 | excitatory_neurons >= 101.878)
 colnames(excitatory_neurons) <- c("gene", "targeting_score")
 excitatory_neurons$cell_type <- "excitatory_neurons"
 
-fibro_cortex<- het_enriched[, c(1,4)]
-fibro_cortex<- subset(fibro_cortex, fibro_cortex <= -49.718 | fibro_cortex >= 101.878)
+fibro_cortex <- het_enriched[, c(1, 4)]
+fibro_cortex <- subset(fibro_cortex, fibro_cortex <= -49.718 | fibro_cortex >= 101.878)
 colnames(fibro_cortex) <- c("gene", "targeting_score")
 fibro_cortex$cell_type <- "fibro_cortex"
 
 
-inhibitory_neurons<- het_enriched[, c(1,5)]
-inhibitory_neurons<- subset(inhibitory_neurons, inhibitory_neurons <= -49.718 | inhibitory_neurons >= 101.878)
+inhibitory_neurons <- het_enriched[, c(1, 5)]
+inhibitory_neurons <- subset(inhibitory_neurons, inhibitory_neurons <= -49.718 | inhibitory_neurons >= 101.878)
 colnames(inhibitory_neurons) <- c("gene", "targeting_score")
 inhibitory_neurons$cell_type <- "inhibitory_neurons"
 
-microglia<- het_enriched[, c(1,6)]
-microglia<- subset(microglia, microglia <= -49.718 | microglia >= 101.878)
+microglia <- het_enriched[, c(1, 6)]
+microglia <- subset(microglia, microglia <= -49.718 | microglia >= 101.878)
 colnames(microglia) <- c("gene", "targeting_score")
 microglia$cell_type <- "microglia"
 
-oligodendrocytes<- het_enriched[, c(1,7)]
-oligodendrocytes<- subset(oligodendrocytes, oligodendrocytes <= -49.718 | oligodendrocytes >= 101.878)
+oligodendrocytes <- het_enriched[, c(1, 7)]
+oligodendrocytes <- subset(oligodendrocytes, oligodendrocytes <= -49.718 | oligodendrocytes >= 101.878)
 colnames(oligodendrocytes) <- c("gene", "targeting_score")
 oligodendrocytes$cell_type <- "oligodendrocytes"
 
-opcs<- het_enriched[, c(1,8)]
-opcs<- subset(opcs, opcs <= -49.718 | opcs >= 101.878)
+opcs <- het_enriched[, c(1, 8)]
+opcs <- subset(opcs, opcs <= -49.718 | opcs >= 101.878)
 colnames(opcs) <- c("gene", "targeting_score")
 opcs$cell_type <- "opcs"
 
-pericytes<- het_enriched[, c(1,9)]
-pericytes<- subset(pericytes, pericytes <= -49.718 | pericytes >= 101.878)
+pericytes <- het_enriched[, c(1, 9)]
+pericytes <- subset(pericytes, pericytes <= -49.718 | pericytes >= 101.878)
 colnames(pericytes) <- c("gene", "targeting_score")
 pericytes$cell_type <- "pericytes"
 
@@ -657,53 +667,53 @@ Looking globally at differential targeting
 ```{r}
 filtered_het_wide <- pivot_wider(filtered_het, values_from = "targeting_score", names_from = "cell_type")
 
-# positivies 
+# positivies
 
 ## replace all negatives and NA with 0
 pos <- filtered_het_wide %>%
-  mutate_at(vars(-gene), ~replace(., is.na(.) | . < 0, 0))
+  mutate_at(vars(-gene), ~ replace(., is.na(.) | . < 0, 0))
 pos_non_zero_counts <- sapply(pos[-1], function(x) sum(x != 0))
 pos_non_zero_counts
 
 ## sum diff targeting by cell type
-pos <- colSums(pos[,-1])
+pos <- colSums(pos[, -1])
 
 # negatives
 
 ## replace all positives and NA with 0
 neg <- filtered_het_wide %>%
-  mutate_at(vars(-gene), ~replace(., is.na(.) | . > 0, 0))
+  mutate_at(vars(-gene), ~ replace(., is.na(.) | . > 0, 0))
 neg_non_zero_counts <- sapply(neg[-1], function(x) sum(x != 0))
 neg_non_zero_counts
 
 
 ## sum diff targeting by cell type
-neg <- colSums(neg[,-1])
+neg <- colSums(neg[, -1])
 
 
-data <- as.data.frame(cbind(pos,neg))
+data <- as.data.frame(cbind(pos, neg))
 rownames(data) <- c("astrocytes", "excitatory neurons", "fibroblasts", "inhibitory neurons", "microglia", "oligodendrocytes", "opcs", "pericytes")
 data$cell_type <- rownames(data)
 data$pos_sum <- pos_non_zero_counts
 data$neg_sum <- neg_non_zero_counts
 
-data <- data[order(data$pos, decreasing = TRUE),]
+data <- data[order(data$pos, decreasing = TRUE), ]
 
 save(data, file = here("results/diff_targeting/global_diff_targeting.Rdata"))
 
-#formatting data
-data_plot <- pivot_longer(data[,c(1:3)], cols = c(1,2), values_to = "sum")
-data_label <- pivot_longer(data[,c(4, 5)], cols = c(1,2), values_to = "sum")
+# formatting data
+data_plot <- pivot_longer(data[, c(1:3)], cols = c(1, 2), values_to = "sum")
+data_label <- pivot_longer(data[, c(4, 5)], cols = c(1, 2), values_to = "sum")
 data_plot$num <- data_label$sum
 
-data_plot$norm <- data_plot$sum/data_plot$num #normalize data by number of genes with enriched targeting
+data_plot$norm <- data_plot$sum / data_plot$num # normalize data by number of genes with enriched targeting
 
 save(data_plot, file = here("results/diff_targeting/normalized_global_diff_targeting.Rdata"))
 write_csv(data_plot, file = here("results/diff_targeting/normalized_global_diff_targeting.csv"))
 ```
 
 ```{r}
-#setting plot order
+# setting plot order
 data_plot <- arrange(data_plot, desc(norm))
 data_plot$order <- seq(1:16)
 
@@ -735,10 +745,10 @@ dev.off()
 dims <- dim(het_enriched) # 22033 genes in this data
 dims
 
-pos_prop <- (pos_non_zero_counts/dims[1]) * 100
+pos_prop <- (pos_non_zero_counts / dims[1]) * 100
 pos_prop
 
-neg_prop <- (neg_non_zero_counts/dims[1]) * 100
+neg_prop <- (neg_non_zero_counts / dims[1]) * 100
 neg_prop
 
 percentage_dt_genes <- as.data.frame(rbind(pos_prop, neg_prop))
@@ -761,7 +771,7 @@ save(het_enriched, file = here("results/diff_targeting/cortex_het_enriched_gene.
 ```{r calculate-ctrl-enriched-diff-targeting}
 # creating empty data frame
 diff_gene_targeting <- data.frame(matrix(NA, nrow = nrow(combined_gene_targeting), ncol = 1))
-colnames(diff_gene_targeting) <- "gene" 
+colnames(diff_gene_targeting) <- "gene"
 diff_gene_targeting$gene <- combined_gene_targeting$gene # adding gene
 
 # calc diff targeting
@@ -845,14 +855,16 @@ pivoted <- pivot_longer(het_enriched, values_to = "targeting_score", names_to = 
 ggplot(data = pivoted, aes(x = targeting_score, group = cell_type, color = cell_type)) +
   geom_density(adjust = 1.5, alpha = .4) +
   ggtitle("Gene targeting score distribution in S8585R") +
-  scale_color_manual(values = c("#6968B4",
-                                "#DC71FA",
-                                "#0a2f6f",
-                                "#00BBDB",
-                                "#C216B7",
-                                "#027461",
-                                "#7997FF",
-                                "#00C1AA"))
+  scale_color_manual(values = c(
+    "#6968B4",
+    "#DC71FA",
+    "#0a2f6f",
+    "#00BBDB",
+    "#C216B7",
+    "#027461",
+    "#7997FF",
+    "#00C1AA"
+  ))
 summary(het_enriched)
 ```
 
@@ -868,14 +880,16 @@ ggplot(data = nonzero, aes(x = targeting_score, group = cell_type, color = cell_
   geom_density(adjust = 1.5, alpha = .4) +
   ggtitle("Gene differential targeting score distribution in S8585R") +
   theme_bw() +
-  scale_color_manual(values = c("#6968B4",
-                                "#DC71FA",
-                                "#0a2f6f",
-                                "#00BBDB",
-                                "#C216B7",
-                                "#027461",
-                                "#7997FF",
-                                "#00C1AA"))
+  scale_color_manual(values = c(
+    "#6968B4",
+    "#DC71FA",
+    "#0a2f6f",
+    "#00BBDB",
+    "#C216B7",
+    "#027461",
+    "#7997FF",
+    "#00C1AA"
+  ))
 dev.off()
 
 nonzero_long <- pivot_wider(nonzero, names_from = cell_type, values_from = targeting_score)
@@ -893,14 +907,16 @@ pivoted <- pivot_longer(ctrl_enriched, values_to = "targeting_score", names_to =
 ggplot(data = pivoted, aes(x = abs(targeting_score), group = cell_type, color = cell_type)) +
   geom_density(adjust = 1.5, alpha = .4) +
   ggtitle("Gene targeting score distribution in Control") +
-  scale_color_manual(values = c("#6968B4",
-                                "#DC71FA",
-                                "#0a2f6f",
-                                "#00BBDB",
-                                "#C216B7",
-                                "#027461",
-                                "#7997FF",
-                                "#00C1AA"))
+  scale_color_manual(values = c(
+    "#6968B4",
+    "#DC71FA",
+    "#0a2f6f",
+    "#00BBDB",
+    "#C216B7",
+    "#027461",
+    "#7997FF",
+    "#00C1AA"
+  ))
 
 summary(ctrl_enriched)
 
@@ -915,14 +931,16 @@ ggplot(data = nonzero, aes(x = abs(targeting_score), group = cell_type, color = 
   geom_density(adjust = 1.5, alpha = .4) +
   ggtitle("Gene differential targeting score distribution in Control") +
   theme_bw() +
-  scale_color_manual(values = c("#6968B4",
-                                "#DC71FA",
-                                "#0a2f6f",
-                                "#00BBDB",
-                                "#C216B7",
-                                "#027461",
-                                "#7997FF",
-                                "#00C1AA"))
+  scale_color_manual(values = c(
+    "#6968B4",
+    "#DC71FA",
+    "#0a2f6f",
+    "#00BBDB",
+    "#C216B7",
+    "#027461",
+    "#7997FF",
+    "#00C1AA"
+  ))
 dev.off()
 
 nonzero_long <- pivot_wider(nonzero, names_from = cell_type, values_from = targeting_score)
@@ -938,7 +956,7 @@ cell_names
 gene_diff_het <- list() # creating empty list to store within
 
 for (i in cell_names) {
-  rank_het <- het_enriched[, names(het_enriched) %in% c("gene", i)] %>% 
+  rank_het <- het_enriched[, names(het_enriched) %in% c("gene", i)] %>%
     .[order(.[i], decreasing = TRUE), ] %>%
     mutate(rank = seq_len(nrow(.))) %>%
     mutate(cell_type = i) %>%
@@ -953,7 +971,7 @@ cortex_het_enriched_top_genes <- do.call(bind_rows, gene_diff_het) # collapsing 
 gene_diff_het <- list() # creating empty list to store within
 
 for (i in cell_names) {
-  rank_het <- het_enriched[, names(het_enriched) %in% c("gene", i)] %>% 
+  rank_het <- het_enriched[, names(het_enriched) %in% c("gene", i)] %>%
     .[order(.[i], decreasing = TRUE), ] %>%
     mutate(rank = seq_len(nrow(.))) %>%
     mutate(cell_type = i) %>%
@@ -992,7 +1010,7 @@ cell_names
 gene_diff_ctrl <- list() # creating empty list to store within
 
 for (i in cell_names) {
-  rank_ctrl <- ctrl_enriched[, names(ctrl_enriched) %in% c("gene", i)] %>% 
+  rank_ctrl <- ctrl_enriched[, names(ctrl_enriched) %in% c("gene", i)] %>%
     .[order(.[i], decreasing = TRUE), ] %>%
     mutate(rank = seq_len(nrow(.))) %>%
     mutate(cell_type = i) %>%
@@ -1007,7 +1025,7 @@ cortex_ctrl_enriched_top_genes <- do.call(bind_rows, gene_diff_ctrl) # collapsin
 gene_diff_ctrl <- list() # creating empty list to store within
 
 for (i in cell_names) {
-  rank_ctrl <- ctrl_enriched[, names(ctrl_enriched) %in% c("gene", i)] %>% 
+  rank_ctrl <- ctrl_enriched[, names(ctrl_enriched) %in% c("gene", i)] %>%
     .[order(.[i], decreasing = TRUE), ] %>%
     mutate(rank = seq_len(nrow(.))) %>%
     mutate(cell_type = i) %>%
@@ -1040,14 +1058,14 @@ targeting_heatmap(annotation_colors, data, meta_colname, plot_path, rowtitle, pl
 
 ```{r}
 fptm <- proc.time() - ptm
-fptm[3]/60
+fptm[3] / 60
 ```
   elapsed 
 27.44132 
 
 ```{r}
 # run style
-#style_file(here("src/network_scripts/differential_targeting/Setbp1_DiffTargetingCortex_01.Rmd")) #commented out after being run once
+# style_file(here("src/network_scripts/differential_targeting/01_Setbp1_DiffTargetingWithin_Cortex.Rmd")) #commented out after being run once
 # lintr was run as well
 ```
 
