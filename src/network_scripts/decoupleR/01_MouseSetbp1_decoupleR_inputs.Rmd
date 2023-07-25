@@ -1,5 +1,5 @@
 ---
-title: "02_MouseSetbp1_decoupleR_inputs"
+title: "01_MouseSetbp1_decoupleR_inputs"
 author: "Jordan Whitlock"
 date: '2023-05-12'
 output: html_document
@@ -68,7 +68,7 @@ The prior network for decoupleR was constructed using CollecTRI (https://github.
 
 
 ```{r}
-style_file(here("src/network_scripts/decoupleR_input_construction/02_MouseSetbp1_decoupleR_expression.Rmd"))
+style_file(here("src/network_scripts/decoupleR/01_MouseSetbp1_decoupleR_inputs.Rmd"))
 
 fptm <- proc.time() - ptm
 (fptm[3] / 60)

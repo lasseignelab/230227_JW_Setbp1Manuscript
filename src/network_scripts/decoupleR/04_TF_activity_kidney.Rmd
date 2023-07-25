@@ -1,5 +1,5 @@
 ---
-title: "03_TF_activity_kidney"
+title: "04_TF_activity_kidney"
 author: "Jordan Whitlock"
 date: '2023-06-07'
 output: html_document
@@ -259,7 +259,7 @@ fptm[3] / 60
 
 ```{r style-file}
 # run style
-style_file(here("src/network_scripts/decoupleR/03_TF_activity_kidney.Rmd")) # commented out after being run once
+style_file(here("src/network_scripts/decoupleR/04_TF_activity_kidney.Rmd")) # commented out after being run once
 # lintr was run as well
 ```
 
