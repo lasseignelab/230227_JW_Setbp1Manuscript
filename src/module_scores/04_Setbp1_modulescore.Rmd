@@ -1,11 +1,9 @@
 ---
-title: "14_Setbp1_modulescore"
+title: "04_Setbp1_modulescore"
 author: "Jordan Whitlock"
 date: '2023-06-19'
 output: html_document
 ---
-Note to code reviewers: Use Docker setbp1_manuscript:1.0.11 (has VISION package added and GSEABase) 
-
 This analysis serves as a targeted investigation of cell-specific pathway involvement using [VISION](https://yoseflab.github.io/VISION/articles/VISION-vignette.html) and the Seurat 'AddModuleScore' function. 
 
 ```{r set-seed-libraries}
@@ -30,24 +28,26 @@ ptm <- proc.time()
 ```
 
 Pathways of Interest for Enrichment Investigation in SGS Cortex and Kidney:
-* All Hallmarks (Mouse): https://www.gsea-msigdb.org/gsea/msigdb/download_file.jsp?filePath=/msigdb/release/2023.1.Mm/mh.all.v2023.1.Mm.symbols.gmt
-* DNA Repair- Hallmark DNA Repair (Mouse): https://www.gsea-msigdb.org/gsea/msigdb/mouse/geneset/HALLMARK_DNA_REPAIR.html
-* Apoptosis- Hallmark Apoptosis (Mouse): https://www.gsea-msigdb.org/gsea/msigdb/mouse/geneset/HALLMARK_APOPTOSIS.html
-* Cell Cycle- G2M Checkpoint (Mouse): https://www.gsea-msigdb.org/gsea/msigdb/mouse/geneset/HALLMARK_G2M_CHECKPOINT.html
-* OXPHOS- Oxidative Phosphorylation (Mouse): https://www.gsea-msigdb.org/gsea/msigdb/mouse/geneset/HALLMARK_OXIDATIVE_PHOSPHORYLATION.html
-* p53- p53 pathways (Mouse): https://www.gsea-msigdb.org/gsea/msigdb/mouse/geneset/HALLMARK_P53_PATHWAY.html
-* Inflammatory response (Mouse): https://www.gsea-msigdb.org/gsea/msigdb/mouse/geneset/HALLMARK_INFLAMMATORY_RESPONSE.htmla
-* PKD signatures- PIONTEK PKD1 Targets (Up and Down): https://www.gsea-msigdb.org/gsea/msigdb/mouse/geneset/PIONTEK_PKD1_TARGETS_DN.html, https://www.gsea-msigdb.org/gsea/msigdb/mouse/geneset/PIONTEK_PKD1_TARGETS_UP.html
-* PP2A phosphatase - (Mouse): https://www.gsea-msigdb.org/gsea/msigdb/mouse/geneset/GOMF_PROTEIN_PHOSPHATASE_2A_BINDING.html?keywords=phosphatase
+* [All Hallmarks (Mouse)](https://www.gsea-msigdb.org/gsea/msigdb/download_file.jsp?filePath=/msigdb/release/2023.1.Mm/mh.all.v2023.1.Mm.symbols.gmt)
+* [DNA Repair- Hallmark DNA Repair (Mouse)](https://www.gsea-msigdb.org/gsea/msigdb/mouse/geneset/HALLMARK_DNA_REPAIR.html)
+* [Apoptosis- Hallmark Apoptosis (Mouse)](https://www.gsea-msigdb.org/gsea/msigdb/mouse/geneset/HALLMARK_APOPTOSIS.html)
+* [Cell Cycle- G2M Checkpoint (Mouse)](https://www.gsea-msigdb.org/gsea/msigdb/mouse/geneset/HALLMARK_G2M_CHECKPOINT.html)
+* [OXPHOS- Oxidative Phosphorylation (Mouse)](https://www.gsea-msigdb.org/gsea/msigdb/mouse/geneset/HALLMARK_OXIDATIVE_PHOSPHORYLATION.html)
+* [p53- p53 pathways (Mouse)](https://www.gsea-msigdb.org/gsea/msigdb/mouse/geneset/HALLMARK_P53_PATHWAY.html)
+* [Inflammatory response (Mouse)](https://www.gsea-msigdb.org/gsea/msigdb/mouse/geneset/HALLMARK_INFLAMMATORY_RESPONSE.html)
+* PKD signatures- PIONTEK PKD1 Targets (Up and Down): 
+    * [Data 1](https://www.gsea-msigdb.org/gsea/msigdb/mouse/geneset/PIONTEK_PKD1_TARGETS_DN.html)
+    * [Data 2](https://www.gsea-msigdb.org/gsea/msigdb/mouse/geneset/PIONTEK_PKD1_TARGETS_UP.html)
+* [PP2A phosphatase - (Mouse)](https://www.gsea-msigdb.org/gsea/msigdb/mouse/geneset/GOMF_PROTEIN_PHOSPHATASE_2A_BINDING.html?keywords=phosphatase)
 
 # Visualization of signatures in data with VISION
 
 All of the Hallmark gene set enrichment data was obtained from the [Mouse MSigDB Collections](https://www.gsea-msigdb.org/gsea/msigdb/mouse/collections.jsp). GMT files were downloaded for all 50 hallmark gene sets as [Gene Symbols](https://www.gsea-msigdb.org/gsea/msigdb/download_file.jsp?filePath=/msigdb/release/2023.1.Mm/mh.all.v2023.1.Mm.symbols.gmt) (accessed: 230620). The file obtained is called 'mh.all.v2023.1.Mm.symbols.gmt'. 
 
 Since these analysis can take an hour or more to run, we submitted them to the UAB Cheahah Supercomputer as SLURM jobs: 
-* 01_Setbp1_vision_kidney_hallmarks: The `.R` and `.sh` scripts contain all code for the analysis of all mouse hallmark signatures
 * 01_Setbp1_vision_cortex: The `.R` and `.sh` scripts contain all code for the analysis of all mouse hallmark signatures
-* 01_Setbp1_vision_subset_cortex: The `.R` and `.sh` scripts contain all code for the analysis of mouse hallmark signatures realted to what has been published about SGS in brain.
+* 02_Setbp1_vision_kidney_hallmarks: The `.R` and `.sh` scripts contain all code for the analysis of all mouse hallmark signatures
+* 03_Setbp1_vision_subset_cortex: The `.R` and `.sh` scripts contain all code for the analysis of mouse hallmark signatures related to what has been published about SGS in brain.
 
 Outputs from these were saved and imported below for visualization.
 
@@ -504,6 +504,7 @@ kid
 dev.off()
 ```
 
+
 # Information on the session and run time
 ```{r}
 fptm <- proc.time() - ptm
@@ -513,7 +514,7 @@ print(paste0("Run time: ", fptm, " hours"))
 "Run time: 0.340276666666667 hours"
 
 ```{r}
-style_file(here("src/module_scores/02_Setbp1_modulescore.Rmd")) # Note: lintr was run as well
+style_file(here("src/module_scores/04_Setbp1_modulescore.Rmd")) # Note: lintr was run as well
 ```
 
 

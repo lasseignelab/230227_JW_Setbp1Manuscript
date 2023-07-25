@@ -1,5 +1,5 @@
 #!/bin/bash
-## run the Rscript 01_Setbp1_vision_kidney_hallmarks.R and schedule this job to SLURM
+## run the Rscript 02_Setbp1_vision_kidney_hallmarks.R and schedule this job to SLURM
 
 
 #SBATCH --job-name=kid_vis_hall
@@ -33,4 +33,4 @@ export SINGULARITYENV_USER='jbarham3'
 #code to execute docker and script for analysis
 cd ${wd}
 
-singularity exec --cleanenv --no-home -B ${wd} ${wd}/bin/docker/setbp1_manuscript_1.0.11.sif Rscript --vanilla ${src}/01_Setbp1_vision_kidney_hallmarks.R # here vanilla ensures only the script is run and environment is kept clean
+singularity exec --cleanenv --no-home -B ${wd} ${wd}/bin/docker/setbp1_manuscript_1.0.11.sif Rscript --vanilla ${src}/02_Setbp1_vision_kidney_hallmarks.R # here vanilla ensures only the script is run and environment is kept clean
