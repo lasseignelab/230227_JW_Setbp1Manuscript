@@ -1,5 +1,5 @@
 ---
-_title: "230315_ELISA_BCA"
+_title: "Setbp1_ELISA_BCA"
 author: "Jordan Whitlock"
 date: '2023-03-14'
 output: html_document
@@ -555,7 +555,7 @@ loaded via a namespace (and not attached):
 
 ```{r lint-file-style}
 # run style
-style_file(here("src/ELISA_scripts/230315_ELISA_BCA.Rmd"))
+style_file(here("src/ELISA_scripts/Setbp1_ELISA_BCA.Rmd"))
 # lintr was run as well
 ```
 
