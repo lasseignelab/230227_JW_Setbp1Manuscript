@@ -46,4 +46,4 @@ file2="${files[1]}"
 folder_path="${wd}/results/PANDA"
 echo "Folder path: $folder_path"
 
-singularity exec --cleanenv --no-home -B "$wd" "$wd/bin/docker/setbp1_manuscript_1.0.6.sif" Rscript --vanilla "$wd/src/network_scripts/community_detection/alpaca_networks_array.R" "$file1" "$file2"
+singularity exec --cleanenv --no-home -B "$wd" "$wd/bin/docker/setbp1_manuscript_1.0.6.sif" Rscript --vanilla "$wd/src/network_scripts/community_detection/01_alpaca_networks_array.R" "$file1" "$file2"
