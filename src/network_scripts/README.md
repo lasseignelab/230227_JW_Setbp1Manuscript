@@ -25,6 +25,12 @@ as well.
 
 ### Scripts:
 
+### Part 1:
+
+![Untitled (3)](https://github.com/lasseignelab/230227_JW_Setbp1Manuscript/assets/62023125/fdf18b48-3bad-4cfd-a09a-8a0588ff362e)
+
+
+
 #### decoupleR Input Construction and TF Activity Analysis:
 
 This directory contains all scripts needed for setting up required
@@ -51,6 +57,9 @@ the jobs.
     ## +-- 02_decoupleR_array_job.sh
     ## +-- 03_TF_activity_cortex.Rmd
     ## \-- 04_TF_activity_kidney.Rmd
+
+### Part 2:
+![Untitled (2)](https://github.com/lasseignelab/230227_JW_Setbp1Manuscript/assets/62023125/b07d51a4-b5a0-4a29-9f50-6ecae8aff092)
 
 #### PANDA Input Construction:
 
