@@ -19,8 +19,7 @@ using R version 4.1.3.
 
 ### Scripts:
 
-![Copy of Fig1 (2)](https://github.com/lasseignelab/230227_JW_Setbp1Manuscript/assets/62023125/9931bd70-5094-48b2-90cd-ebdbc00cc51a)
-
+![Copy of Fig1 (4)](https://github.com/lasseignelab/230227_JW_Setbp1Manuscript/assets/62023125/ea117ac4-814d-4f8c-b8e1-d69a02f18cc0)
 
 Detailed information on the goal and purpose can be found within each
 processing script.
@@ -225,22 +224,9 @@ astrocytes_heterozygouscortexexpression_PANDA.Rdata
     between Setbp1 differential Communities in S858R cell types.
 
 #### Network Rewiring:
+We investigated the magnitude and direction of the regulatory network and changes in cooperativity network edge weights through quantifying proteins working together (i.e., cooperating), where SETBP1 is acting as a TF on its known target genes. Similar to the regulatory network, a more positive edge weight between two proteins indicates a greater likelihood they cooperate together. In contrast, a more negative edge weight indicates greater confidence that the two proteins do not cooperate. We used these regulatory or cooperativity edge weight magnitude and direction changes to infer potential regulatory rewiring due to the variant.
 
-While little is known about the role of specific patient variants,
-several mechanisms are hypothesized to contribute to altered
-neurodevelopment in SGS, including chromatin remodeling, disrupted cell
-cycle control, increased DNA damage, and modified PP2A complex activity.
-To further evaluate the molecular impact of the S858R variant, we
-investigated the magnitude and direction of the regulatory network and
-changes in cooperativity network edge weights through quantifying
-proteins working together (i.e., cooperating), where SETBP1 is acting as
-a TF on its known target genes. Similar to the regulatory network, a
-more positive edge weight between two proteins indicates a greater
-likelihood they cooperate together. In contrast, a more negative edge
-weight indicates greater confidence that the two proteins do not
-cooperate. We used these regulatory or cooperativity edge weight
-magnitude and direction changes to infer potential regulatory rewiring
-due to the S858R variant.
+![Untitled (5)](https://github.com/lasseignelab/230227_JW_Setbp1Manuscript/assets/62023125/4fd8deaf-2f71-4b51-b8b1-3855aa3fb01b)
 
     ## network_scripts/ppi_rewiring
     ## \-- 01_Setbp1_RegCoopNet.Rmd
