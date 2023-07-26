@@ -1,0 +1,189 @@
+﻿query,entrezgene,name,symbol,alias,taxid,MGI
+KIAA2013,77034,RIKEN cDNA 2510039O18 gene,2510039O18Rik,Kiaa2013,10090,MGI:1924284
+AASDH,231326,aminoadipate-semialdehyde dehydrogenase,Aasdh,"A230062G08Rik, A830035E16, Acsf4, U26",10090,MGI:2442517
+ABT1,30946,activator of basal transcription 1,Abt1,,10090,MGI:1353636
+AFF1,17355,"AF4/FMR2 family, member 1",Aff1,"9630032B01Rik, Af4, Mllt2h, Rob",10090,MGI:1100819
+ANAPC7,56317,anaphase promoting complex subunit 7,Anapc7,APC7,10090,MGI:1929711
+ARL5B,75869,ADP-ribosylation factor-like 5B,Arl5b,"4930587A11Rik, Arl8",10090,MGI:1923119
+ASB7,117589,ankyrin repeat and SOCS box-containing 7,Asb7,"Asb-7, D030055C23Rik",10090,MGI:2152835
+BAG5,70369,BCL2-associated athanogene 5,Bag5,"1600025G07Rik, 4930405J06Rik, Bag-5",10090,MGI:1917619
+BET1L,54399,Bet1 golgi vesicular membrane trafficking protein like,Bet1l,"2610021K23Rik, Gs15",10090,MGI:1913128
+BRCA1,12189,"breast cancer 1, early onset",Brca1,,10090,MGI:104537
+DNAI7,320662,cancer susceptibility candidate 1,Casc1,"A230084G12Rik, Cfap94, Dnai7, Las1",10090,MGI:2444480
+CCDC174,232236,coiled-coil domain containing 174,Ccdc174,C130022K22Rik,10090,MGI:2444652
+CCDC184,239650,coiled-coil domain containing 184,Ccdc184,5630400A08,10090,MGI:2146066
+CDK8,264064,cyclin-dependent kinase 8,Cdk8,,10090,MGI:1196224
+CDKN2C,12580,cyclin dependent kinase inhibitor 2C,Cdkn2c,"INK4c, p18, p18-INK4c, p18-INK6, p18INK4c",10090,MGI:105388
+CEP192,70799,centrosomal protein 192,Cep192,"4631422C13Rik, D430014P18Rik",10090,MGI:1918049
+CEP290,216274,centrosomal protein 290,Cep290,"Nphp6, b2b1454Clo, b2b1752Clo",10090,MGI:2384917
+CEPT1,99712,choline/ethanolaminephosphotransferase 1,Cept1,"9930118K05Rik, mCEPT1",10090,MGI:2139793
+CHEK1,12649,checkpoint kinase 1,Chek1,"Chk1, rad27",10090,MGI:1202065
+CHERP,27967,calcium homeostasis endoplasmic reticulum protein,Cherp,"5730408I11Rik, D8Wsu96e, DAN16, Scaf6",10090,MGI:106417
+CIAO3,67563,cytosolic iron-sulfur assembly component 3,Ciao3,"9030612I22Rik, Narfl, PRN",10090,MGI:1914813
+CLEC16A,74374,"C-type lectin domain family 16, member A",Clec16a,"4932416N17Rik, curt, mKIAA0350",10090,MGI:1921624
+CNIH2,12794,cornichon family AMPA receptor auxiliary protein 2,Cnih2,"CNIH-2, Cnil",10090,MGI:1277225
+COA8,68020,cytochrome c oxidase assembly factor 8,Coa8,"1700081D05Rik, 2810002N01Rik, Apop-1, Apop1, Apopt1",10090,MGI:1915270
+COX4I1,12857,cytochrome c oxidase subunit 4I1,Cox4i1,"COX, COX IV-1, COXIV, Cox4, Cox4a",10090,MGI:88473
+CRLS1,66586,cardiolipin synthase 1,Crls1,"0610009I22Rik, 4930557M15Rik, 5730490M08Rik",10090,MGI:1913836
+CTNNBL1,66642,"catenin, beta like 1",Ctnnbl1,"5730471K09Rik, NAP, NYD-SP19, P14L",10090,MGI:1913892
+CWF19L2,244672,"CWF19-like 2, cell cycle control (S. pombe)",Cwf19l2,"3230401L03Rik, 9030209E10",10090,MGI:1918023
+CYB5D2,192986,cytochrome b5 domain containing 2,Cyb5d2,"9330151E16Rik, Gm2",10090,MGI:2684848
+CZIB,74098,CXXC motif containing zinc binding protein,Czib,"0610037L13Rik, 1110008H16Rik",10090,MGI:1921348
+DCAF8,98193,DDB1 and CUL4 associated factor 8,Dcaf8,"D1Dau35e, D1Ucla4, H326, Wdr42a",10090,MGI:91860
+DDI2,68817,DNA-damage inducible protein 2,Ddi2,"1110056G13Rik, 1700027M01Rik, 9130022E05Rik",10090,MGI:1917244
+DLAT,235339,dihydrolipoamide S-acetyltransferase (E2 component of pyruvate dehydrogenase complex),Dlat,"6332404G05Rik, DLTA, PDC-E2",10090,MGI:2385311
+DNAJC19,67713,DnaJ heat shock protein family (Hsp40) member C19,Dnajc19,"1810055D05Rik, Tim14",10090,MGI:1914963
+DPH5,69740,diphthamide biosynthesis 5,Dph5,2410012M04Rik,10090,MGI:1916990
+DPY30,66310,"dpy-30, histone methyltransferase complex regulatory subunit",Dpy30,2810410M20Rik,10090,MGI:1913560
+DRAM2,67171,DNA-damage regulated autophagy modulator 2,Dram2,"2010305N14Rik, 2610318G18Rik, Tmem77",10090,MGI:1914421
+E4F1,13560,E4F transcription factor 1,E4f1,"p120E4F, phi-AP3",10090,MGI:109530
+EED,13626,embryonic ectoderm development,Eed,"l(7)5Rn, l7Rn5, lusk",10090,MGI:95286
+EEF1G,67160,eukaryotic translation elongation factor 1 gamma,Eef1g,"2610301D06Rik, EF1G",10090,MGI:1914410
+EIF3D,55944,"eukaryotic translation initiation factor 3, subunit D",Eif3d,"66/67kDa, Eif3s7, eIF3p66",10090,MGI:1933181
+EIF3K,73830,"eukaryotic translation initiation factor 3, subunit K",Eif3k,"1200009C21Rik, Eif3s12",10090,MGI:1921080
+EIF4B,75705,eukaryotic translation initiation factor 4B,Eif4b,"2310046H11Rik, Eif4a2",10090,MGI:95304
+ELP3,74195,elongator acetyltransferase complex subunit 3,Elp3,"2610507P14Rik, KAT9",10090,MGI:1921445
+EMC8,18117,ER membrane protein complex subunit 8,Emc8,"Cox4nb, Fam158b, Noc4",10090,MGI:1343095
+EPC2,227867,enhancer of polycomb homolog 2,Epc2,"5830499L14, D2Ertd694e",10090,MGI:1278321
+EPRS1,107508,glutamyl-prolyl-tRNA synthetase,Eprs,"2410081F06Rik, 3010002K18Rik, Eprs1, Qprs",10090,MGI:97838
+ESYT1,23943,extended synaptotagmin-like protein 1,Esyt1,"Fam62a, Mbc2, vp115",10090,MGI:1344426
+ETFDH,66841,"electron transferring flavoprotein, dehydrogenase",Etfdh,0610010I20Rik,10090,MGI:106100
+ETFRF1,67636,electron transfer flavoprotein regulatory factor 1,Etfrf1,"4930469P12Rik, Ghiso, Lyrm5",10090,MGI:1914886
+FAAP100,71885,Fanconi anemia core complex associated protein 100,Faap100,2310003H01Rik,10090,MGI:1919135
+FAF1,14084,Fas-associated factor 1,Faf1,"Dffrx, Fam",10090,MGI:109419
+FAM174B,100038347,"family with sequence similarity 174, member B",Fam174b,,10090,MGI:3698178
+FAM229B,66337,"family with sequence similarity 229, member B",Fam229b,1700025K23Rik,10090,MGI:1913587
+FKBP15,338355,FK506 binding protein 15,Fkbp15,"C430014M02Rik, FKBO133, FKBP-133, FKBP-15, FKBP133",10090,MGI:2444782
+FKTN,246179,fukutin,Fktn,"D830030O17Rik, Fcmd",10090,MGI:2179507
+GGCX,56316,gamma-glutamyl carboxylase,Ggcx,,10090,MGI:1927655
+GNL3,30877,guanine nucleotide binding protein-like 3 (nucleolar),Gnl3,Ns,10090,MGI:1353651
+GOLGA7,57437,"golgi autoantigen, golgin subfamily a, 7",Golga7,"C130038N16Rik, GCP16, GOLGA3AP1, HSPC041",10090,MGI:1931029
+HM13,14950,histocompatibility 13,H13,"1200006O09Rik, 4930443L17Rik, 5031424B04Rik, H-13, Hm13",10090,MGI:95886
+HAX1,23897,HCLS1 associated X-1,Hax1,"HAX-1, HSP1BP-1, Hs1bp1, SIG-111, Silg111",10090,MGI:1346319
+HS2ST1,23908,heparan sulfate 2-O-sulfotransferase 1,Hs2st1,"2OST, Hs2st, mKIAA0448",10090,MGI:1346049
+IFT122,81896,intraflagellar transport 122,Ift122,"Wdr10, sopb",10090,MGI:1932386
+IPO8,320727,importin 8,Ipo8,"6230418K12Rik, Abcc10, C130009K11Rik, MRP7, OM-1",10090,MGI:2444611
+ITFG1,71927,integrin alpha FG-GAP repeat containing 1,Itfg1,"2310047C21Rik, Cda08, D8Wsu49e",10090,MGI:106419
+KIFBP,72320,kinesin family binding protein,Kifbp,"0710007C18Rik, 2510003E04Rik, KBP, Kif1bp, mKIAA1279",10090,MGI:1919570
+KLHDC9,68874,kelch domain containing 9,Klhdc9,"1190002J23Rik, ESTM31",10090,MGI:1916124
+KLRC2,16642,"killer cell lectin-like receptor subfamily C, member 2",Klrc2,NKG2C,10090,MGI:1336162
+LEO1,235497,"Leo1, Paf1/RNA polymerase II complex component",Leo1,Gm185,10090,MGI:2685031
+LINS1,72635,lines homolog 1,Lins1,"2700083B01Rik, Lins, Lins2, Wins2",10090,MGI:1919885
+LRRCC1,71710,leucine rich repeat and coiled-coil domain containing 1,Lrrcc1,"1200008A14Rik, 4932441F23Rik",10090,MGI:1918960
+LSM4,50783,"LSM4 homolog, U6 small nuclear RNA and mRNA degradation associated",Lsm4,,10090,MGI:1354692
+MAP4K1,26411,mitogen-activated protein kinase kinase kinase kinase 1,Map4k1,"Hpk1, mHPK1",10090,MGI:1346882
+MBD4,17193,methyl-CpG binding domain protein 4,Mbd4,Med1,10090,MGI:1333850
+MCTS1,68995,malignant T cell amplified sequence 1,Mcts1,"1500019M23Rik, MCT-1",10090,MGI:1916245
+MCTS2,66405,malignant T cell amplified sequence 2,Mcts2,"2400002F11Rik, MCT-2",10090,MGI:1913655
+MED29,67224,mediator complex subunit 29,Med29,"2810405O22Rik, Ixl",10090,MGI:1914474
+MEF2C,17260,myocyte enhancer factor 2C,Mef2c,"5430401D19Rik, 9930028G15Rik, Mef2",10090,MGI:99458
+MKS1,380718,MKS transition zone complex subunit 1,Mks1,"B8d3, avc6",10090,MGI:3584243
+MPC1,55951,mitochondrial pyruvate carrier 1,Mpc1,"0610006G08Rik, 3830411I18Rik, Brp44l",10090,MGI:1915240
+MRFAP1,67568,Morf4 family associated protein 1,Mrfap1,"9130413I22Rik, Pam14",10090,MGI:1914818
+MRPL15,27395,mitochondrial ribosomal protein L15,Mrpl15,"HSPC145, MRP-L7, Rpml7",10090,MGI:1351639
+MRPS12,24030,mitochondrial ribosomal protein S12,Mrps12,"Rpms12, rps12",10090,MGI:1346333
+MRPS16,66242,mitochondrial ribosomal protein S16,Mrps16,"1500011E11Rik, Mprs16, S16mt",10090,MGI:1913492
+MYO9A,270163,myosin IXa,Myo9a,"4732465J09Rik, C130068I12Rik, C230003M11",10090,MGI:107735
+MZF1,109889,myeloid zinc finger 1,Mzf1,"Mzf-2, Mzf2, Zfp121, Zfp98, Znf42",10090,MGI:107457
+NAA30,70646,"N(alpha)-acetyltransferase 30, NatC catalytic subunit",Naa30,"4930487N19Rik, 5730533P17Rik, Nat12",10090,MGI:1922259
+NAALADL2,635702,N-acetylated alpha-linked acidic dipeptidase-like 2,Naaladl2,"2810043G22Rik, EG635702, Gm1021",10090,MGI:2685867
+NBR1,17966,"NBR1, autophagy cargo receptor",Nbr1,mKIAA0049,10090,MGI:108498
+NCOA5,228869,nuclear receptor coactivator 5,Ncoa5,CIA,10090,MGI:2385165
+NDFIP2,76273,Nedd4 family interacting protein 2,Ndfip2,"0710001O20Rik, 2810436B12Rik, 9130207N19Rik, N4wbp5a, mKIAA1165",10090,MGI:1923523
+NDUFAB1,70316,NADH:ubiquinone oxidoreductase subunit AB1,Ndufab1,"2210401F17Rik, 2310039H15Rik, 2610003B19Rik, 8kDa, 9130423F15Rik",10090,MGI:1917566
+NDUFS5,595136,NADH:ubiquinone oxidoreductase core subunit S5,Ndufs5,,10090,MGI:1890889
+NEURL4,216860,neuralized E3 ubiquitin protein ligase 4,Neurl4,,10090,MGI:1921092
+NOL6,230082,nucleolar protein family 6 (RNA-associated),Nol6,Nrap,10090,MGI:2140151
+NSUN5,100609,"NOL1/NOP2/Sun domain family, member 5",Nsun5,"9830109N13Rik, Nol1r, Wbscr20, Wbscr20a",10090,MGI:2140844
+NSUN6,74455,NOL1/NOP2/Sun domain family member 6,Nsun6,"4933403D21Rik, 4933414E04Rik, NOPD1",10090,MGI:1921705
+NUDT9,74167,nudix hydrolase 9,Nudt9,"1190002C07Rik, ADPR-PPase",10090,MGI:1921417
+PAF1,54624,"Paf1, RNA polymerase II complex component",Paf1,5730511K23Rik,10090,MGI:1923988
+PARG,26430,poly (ADP-ribose) glycohydrolase,Parg,,10090,MGI:1347094
+PBRM1,66923,polybromo 1,Pbrm1,"2610016F04Rik, BAF180, Pb1",10090,MGI:1923998
+PCNX4,67708,pecanex homolog 4,Pcnx4,"1810048J11Rik, 4932413O10, Pcnxl4",10090,MGI:1914958
+PDPR,319518,pyruvate dehydrogenase phosphatase regulatory subunit,Pdpr,"4930402E16Rik, mKIAA1990",10090,MGI:2442188
+PDSS2,71365,"prenyl (solanesyl) diphosphate synthase, subunit 2",Pdss2,"5430420P03Rik, Gm60, Plmp, kd, mDLP1",10090,MGI:1918615
+PHAF1,234678,phagosome assembly factor 1,Phaf1,"D230025D16Rik, Lin10",10090,MGI:2443049
+PHKB,102093,phosphorylase kinase beta,Phkb,,10090,MGI:97578
+PIGK,329777,"phosphatidylinositol glycan anchor biosynthesis, class K",Pigk,"3000001O05Rik, Gm38470, PIG-K",10090,MGI:1913863
+PKN2,109333,protein kinase N2,Pkn2,"6030436C20Rik, PRK2, Prkcl2, Stk7",10090,MGI:109211
+PPP5C,19060,"protein phosphatase 5, catalytic subunit",Ppp5c,PP5,10090,MGI:102666
+PSMB6,19175,"proteasome (prosome, macropain) subunit, beta type 6",Psmb6,"Lmp19, Mpnd",10090,MGI:104880
+PSMD8,57296,"proteasome (prosome, macropain) 26S subunit, non-ATPase, 8",Psmd8,6720456J22Rik,10090,MGI:1888669
+RAD52,19365,"RAD52 homolog, DNA repair protein",Rad52,Rad52yh,10090,MGI:101949
+RALGAPA1,56784,"Ral GTPase activating protein, alpha subunit 1",Ralgapa1,"2310003F20Rik, 4930400K19Rik, GRIPE, Garnl1, Tulip1",10090,MGI:1931050
+RBM33,381626,RNA binding motif protein 33,Rbm33,"3200001K10Rik, 6430512A10Rik, Prr8",10090,MGI:1919670
+RIOK2,67045,RIO kinase 2,Riok2,"2010110K24Rik, 2410085M17Rik",10090,MGI:1914295
+RNF111,93836,ring finger 111,Rnf111,"ARK, Arkadia",10090,MGI:1934919
+RNF139,75841,ring finger protein 139,Rnf139,4930555P18Rik,10090,MGI:1923091
+RPS16,20055,ribosomal protein S16,Rps16,,10090,MGI:98118
+RPS6KL1,238323,ribosomal protein S6 kinase-like 1,Rps6kl1,A830084F09Rik,10090,MGI:2443413
+SARS2,71984,seryl-aminoacyl-tRNA synthetase 2,Sars2,"2410015F05Rik, D7Ertd353e, SerRS, SerRSmt",10090,MGI:1919234
+SELENOF,93684,selenoprotein F,Selenof,"9430015P09Rik, Sep15",10090,MGI:1927947
+SENP8,71599,"SUMO peptidase family member, NEDD8 specific",Senp8,"9130010J17Rik, Den1, Nedp1, Prsc2",10090,MGI:1918849
+SFR1,67788,SWI5 dependent recombination repair 1,Sfr1,"6330577E15Rik, Meir5",10090,MGI:1915038
+SLC31A1,20529,"solute carrier family 31, member 1",Slc31a1,"4930445G01Rik, Ctr1",10090,MGI:1333843
+SNORD13,100217422,"small nucleolar RNA, C/D box 13",Snord13,MBII-136,10090,MGI:3819521
+SUPT5H,20924,"suppressor of Ty 5, DSIF elongation factor subunit",Supt5,"Spt5, Supt5h",10090,MGI:1202400
+TAF13,99730,TATA-box binding protein associated factor 13,Taf13,"1810004N01Rik, 2010309N11Rik, TAFII18",10090,MGI:1913500
+TAF5,226182,TATA-box binding protein associated factor 5,Taf5,6330528C20Rik,10090,MGI:2442144
+TAFAZZIN,66826,"tafazzin, phospholipid-lysophospholipid transacylase",Tafazzin,"5031411C02Rik, 9130012G04Rik, G4.5, Taz",10090,MGI:109626
+TBC1D23,67581,"TBC1 domain family, member 23",Tbc1d23,"4930451A13Rik, D030022P07Rik",10090,MGI:1914831
+TBC1D8,54610,"TBC1 domain family, member 8",Tbc1d8,"AD3, HBLP1, VRP",10090,MGI:1927225
+TCEA1,21399,transcription elongation factor A (SII) 1,Tcea1,S-II,10090,MGI:1196624
+TGDS,76355,"TDP-glucose 4,6-dehydratase",Tgds,"2610017J16Rik, 2610025M23Rik",10090,MGI:1923605
+TIMM23,53600,translocase of inner mitochondrial membrane 23,Timm23,Tim23,10090,MGI:1858317
+TMEM177,66343,transmembrane protein 177,Tmem177,2300008B03Rik,10090,MGI:1913593
+TMTC3,237500,transmembrane and tetratricopeptide repeat containing 3,Tmtc3,"9130014E20Rik, B130008E12Rik, mSmile",10090,MGI:3036255
+TOMM7,66169,translocase of outer mitochondrial membrane 7,Tomm7,"1110020J08Rik, Tom7",10090,MGI:1913419
+TRAPPC5,66682,trafficking protein particle complex 5,Trappc5,"4021401A16Rik, TRS31",10090,MGI:1913932
+TSEN2,381802,tRNA splicing endonuclease subunit 2,Tsen2,,10090,MGI:2141599
+TTC23,67009,tetratricopeptide repeat domain 23,Ttc23,1600012K10Rik,10090,MGI:1914259
+TTI2,234138,TELO2 interacting protein 2,Tti2,,10090,MGI:2384576
+TUBE1,71924,"tubulin, epsilon 1",Tube1,"2310061K05Rik, Tube",10090,MGI:1919174
+TXNL1,53382,thioredoxin-like 1,Txnl1,"32kDa, TRP32, Txnl",10090,MGI:1860078
+UBR1,22222,ubiquitin protein ligase E3 component n-recognin 1,Ubr1,,10090,MGI:1277977
+USP48,170707,ubiquitin specific peptidase 48,Usp48,"2810449C13Rik, D330022K21Rik, Usp31",10090,MGI:2158502
+UTP14A,72554,UTP14A small subunit processome component,Utp14a,"2700066J21Rik, JsdX, NY-CO-16, SDCCAG16, mKIAA0266",10090,MGI:1919804
+UTP25,215193,UTP25 small subunit processome component,Utp25,"Def, Diexf",10090,MGI:2138080
+VAMP8,22320,vesicle-associated membrane protein 8,Vamp8,"Edb, endobrevin",10090,MGI:1336882
+WDR7,104082,WD repeat domain 7,Wdr7,"TRAG, mKIAA0541",10090,MGI:1860197
+ZC3H10,103284,zinc finger CCCH type containing 10,Zc3h10,,10090,MGI:2143670
+ZC3H15,69082,zinc finger CCCH-type containing 15,Zc3h15,"1700006A17Rik, 1810012H02Rik, 2610312B22Rik, FM22, Ierepo4",10090,MGI:1919747
+ZEB1,21417,zinc finger E-box binding homeobox 1,Zeb1,"3110032K11Rik, AREB6, BZP, MEB1, Nil2",10090,MGI:1344313
+ZNF330,30932,zinc finger protein 330,Zfp330,"Noa36, Znf330",10090,MGI:1353574
+ZMAT2,66492,"zinc finger, matrin type 2",Zmat2,"2610510D14Rik, 2900082I05Rik",10090,MGI:1913742
+ZNHIT6,229937,"zinc finger, HIT type 6",Znhit6,2410019A14Rik,10090,MGI:1916996
+ZZEF1,195018,"zinc finger, ZZ-type with EF hand domain 1",Zzef1,"8430405D05Rik, C130099L13Rik, NSPA, mKIAA0399",10090,MGI:2444286
+MT-RNR1,17724,s-rRNA,mt-Rnr1,,10090,MGI:102493
+C4ORF36,,,,,,
+C4ORF46,,,,,,
+CENPBD2P,,,,,,
+CEP192-DT,,,,,,
+CZIB-DT,,,,,,
+DGCR6L,,,,,,
+DNAJC9-AS1,,,,,,
+DPH5-DT,,,,,,
+ENSG00000170846,,,,,,
+FAM230G,,,,,,
+FKTN-AS1,,,,,,
+LINC02482,,,,,,
+MCM8-AS1,,,,,,
+MPC1-DT,,,,,,
+MRFAP1L1,,,,,,
+MT-ND6,,,,,,
+MT-TE,,,,,,
+MT-TF,,,,,,
+MT-TP,,,,,,
+MTCO3P12,,,,,,
+NBR2,,,,,,
+PARGP1,,,,,,
+PCNX4-DT,,,,,,
+PDPR2P,,,,,,
+RBM33-DT,,,,,,
+RNF139-DT,,,,,,
+SOX2-OT,,,,,,
+SUGT1P1,,,,,,
+TIMM23B,,,,,,
+ZEB1-AS1,,,,,,
+ZNF862,,,,,,
