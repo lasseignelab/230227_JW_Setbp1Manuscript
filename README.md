@@ -35,8 +35,8 @@ All data for this project is publicly avialable on Zenodo or [GEO](https://www.n
 - [@blasseigne](https://github.com/blasseigne) [(Lasseigne Lab)](https://www.lasseigne.org/)
 
 ## Overview
-![Fig1 (8)](https://github.com/lasseignelab/230227_JW_Setbp1Manuscript/assets/62023125/866508b6-aa6c-4380-83d2-be6142d40f27)
-    
+![Copy of Fig1 (1)](https://github.com/lasseignelab/230227_JW_Setbp1Manuscript/assets/62023125/330fce42-bf88-4c88-9bc3-cc433bfd8272)
+   
 ## Approach
 
 This repository provides a framework for investigating the cell-type-specific impact of genetic variants on gene expression and regulation.  
