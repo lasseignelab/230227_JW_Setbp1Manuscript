@@ -227,8 +227,7 @@ astrocytes_heterozygouscortexexpression_PANDA.Rdata
 #### Network Rewiring:
 We investigated the magnitude and direction of the regulatory network and changes in cooperativity network edge weights through quantifying proteins working together (i.e., cooperating), where SETBP1 is acting as a TF on its known target genes. Similar to the regulatory network, a more positive edge weight between two proteins indicates a greater likelihood they cooperate together. In contrast, a more negative edge weight indicates greater confidence that the two proteins do not cooperate. We used these regulatory or cooperativity edge weight magnitude and direction changes to infer potential regulatory rewiring due to the variant.
 
-![Untitled (4)](https://github.com/lasseignelab/230227_JW_Setbp1Manuscript/assets/62023125/9817a65d-9d6f-44e1-8011-f09400b358a6)
-
+![Untitled (5)](https://github.com/lasseignelab/230227_JW_Setbp1Manuscript/assets/62023125/4fd8deaf-2f71-4b51-b8b1-3855aa3fb01b)
 
     ## network_scripts/ppi_rewiring
     ## \-- 01_Setbp1_RegCoopNet.Rmd
