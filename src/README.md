@@ -19,6 +19,9 @@ using R version 4.1.3.
 
 ### Scripts:
 
+![Copy of Fig1 (2)](https://github.com/lasseignelab/230227_JW_Setbp1Manuscript/assets/62023125/9931bd70-5094-48b2-90cd-ebdbc00cc51a)
+
+
 Detailed information on the goal and purpose can be found within each
 processing script.
 
@@ -69,6 +72,12 @@ cell-type-specific community structures, etc.
 
 ### Scripts:
 
+--------
+
+### Part 1:
+![Untitled (3)](https://github.com/lasseignelab/230227_JW_Setbp1Manuscript/assets/62023125/e2e73c4a-eb26-4b96-9847-0b81004bf1a7)
+
+
 #### decoupleR Input Construction and TF Activity Analysis:
 
 This directory contains all scripts needed for setting up required
@@ -107,6 +116,11 @@ array job are included here to provide detailed information on the jobs.
     [03_TF_Activity_cortex.Rmd](https://github.com/lasseignelab/230227_JW_Setbp1Manuscript/blob/main/src/network_scripts/decoupleR/03_TF_activity_cortex.Rmd)
     and
     [03_TF_Activity_kidney.Rmd](https://github.com/lasseignelab/230227_JW_Setbp1Manuscript/blob/main/src/network_scripts/decoupleR/04_TF_activity_kidney.Rmd)
+
+--------
+
+### Part 2
+![Untitled (2)](https://github.com/lasseignelab/230227_JW_Setbp1Manuscript/assets/62023125/c0c5f7e3-6284-4c82-be6b-512a97bc94a1)
 
 #### PANDA Input Construction:
 
