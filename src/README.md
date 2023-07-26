@@ -225,22 +225,10 @@ astrocytes_heterozygouscortexexpression_PANDA.Rdata
     between Setbp1 differential Communities in S858R cell types.
 
 #### Network Rewiring:
+We investigated the magnitude and direction of the regulatory network and changes in cooperativity network edge weights through quantifying proteins working together (i.e., cooperating), where SETBP1 is acting as a TF on its known target genes. Similar to the regulatory network, a more positive edge weight between two proteins indicates a greater likelihood they cooperate together. In contrast, a more negative edge weight indicates greater confidence that the two proteins do not cooperate. We used these regulatory or cooperativity edge weight magnitude and direction changes to infer potential regulatory rewiring due to the variant.
 
-While little is known about the role of specific patient variants,
-several mechanisms are hypothesized to contribute to altered
-neurodevelopment in SGS, including chromatin remodeling, disrupted cell
-cycle control, increased DNA damage, and modified PP2A complex activity.
-To further evaluate the molecular impact of the S858R variant, we
-investigated the magnitude and direction of the regulatory network and
-changes in cooperativity network edge weights through quantifying
-proteins working together (i.e., cooperating), where SETBP1 is acting as
-a TF on its known target genes. Similar to the regulatory network, a
-more positive edge weight between two proteins indicates a greater
-likelihood they cooperate together. In contrast, a more negative edge
-weight indicates greater confidence that the two proteins do not
-cooperate. We used these regulatory or cooperativity edge weight
-magnitude and direction changes to infer potential regulatory rewiring
-due to the S858R variant.
+![Untitled (4)](https://github.com/lasseignelab/230227_JW_Setbp1Manuscript/assets/62023125/9817a65d-9d6f-44e1-8011-f09400b358a6)
+
 
     ## network_scripts/ppi_rewiring
     ## \-- 01_Setbp1_RegCoopNet.Rmd
