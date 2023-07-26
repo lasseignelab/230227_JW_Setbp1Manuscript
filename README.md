@@ -35,8 +35,9 @@ All data for this project is publicly avialable on Zenodo or [GEO](https://www.n
 - [@blasseigne](https://github.com/blasseigne) [(Lasseigne Lab)](https://www.lasseigne.org/)
 
 ## Overview
+                    <figcaption align = "center"><b>Schematic Overview of our Approach</b></figcaption>
 ![Fig1 (8)](https://github.com/lasseignelab/230227_JW_Setbp1Manuscript/assets/62023125/866508b6-aa6c-4380-83d2-be6142d40f27)
-    <figcaption align = "center"><b>Schematic Overview of our Approach</b></figcaption>
+    
 
 
 ## Approach
