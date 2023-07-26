@@ -19,7 +19,7 @@ using R version 4.1.3.
 
 ### Scripts:
 
-![Copy of Fig1 (3)](https://github.com/lasseignelab/230227_JW_Setbp1Manuscript/assets/62023125/889584fd-fe91-471b-bafb-4f3cd02e9fd2)
+![Copy of Fig1 (4)](https://github.com/lasseignelab/230227_JW_Setbp1Manuscript/assets/62023125/ea117ac4-814d-4f8c-b8e1-d69a02f18cc0)
 
 Detailed information on the goal and purpose can be found within each
 processing script.
