@@ -14,11 +14,11 @@ Goal: Reconstruct TF-motif input to include publicly available ChIP-seq data fro
 * Step 2: Filter SIGNOR data for higher confidence in interactions 
 * Step 3: Enrich TF-motif with Setbp1 ChIP-seq data and save
 
-TRRUST v.2.0 (2017)
+TRRUST v.2.0 (2017) accessed January 2023
 * Mouse: https://www.grnpedia.org/trrust/data/trrust_rawdata.mouse.tsv
 TRRUST is a manually curated reference database of human and mouse TF-target interactions. 
 
-SIGNOR 3.0 (2023)
+SIGNOR 3.0 (2023) accessed January 2023
 * Mouse: https://signor.uniroma2.it/downloads.php 
 SIGNOR is a database of manually annotated relationships between human proteins and known chemicals and their biological relevance. Interactions included were limited to only gene-protein interactions that are classified as "transcriptional regulation" in order to construct the TF-motif input data. SIGNOR scores range from 0.1 - 1.0 and were filtered to only include interactions with a score of at least 0.4. This threshold was based on previously published SIGNOR 3.0 score update, showing the proportion of components and scores, and whether their interaction is annotated to a pathway (https://www.syngoportal.org/convert) After filtration, all scores were converted to 1. This is because all other TF-motif inputs have a binary 1/0 scoring system where 1 indicates a reaction that is present and 0 an interaction that is not. This is done in an effort to avoid bias in network construction, weighting some interactions as more important than others so that expression is the main driver or regulation in PANDA construction. 
 
