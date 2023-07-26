@@ -3,7 +3,7 @@ README
 Jordan Whitlock
 2023-07-26
 
-# snRNA-seq quality control and pre-processibn
+# snRNA-seq quality control and pre-processing
 
 ## Purpose:
 
@@ -60,8 +60,8 @@ cell-type-specific community structures, etc.
 
 **Network Construction and Tf Activity Analysis**
 
--   PANDA jobs were run using UAB Cheaha Supercomputer and it’s SLURM
-    scheduler. Jobs were run as an array, within a
+-   PANDA jobs were run using UAB Cheaha Supercomputer, and its SLURM
+    scheduler. Jobs were run as an array within a
     [Docker](https://hub.docker.com/repository/docker/jordanwhitlock/setbp1_manuscript_panda_1.0.1/general)
     container converted Singularity in order to execute.
 
@@ -84,16 +84,16 @@ This directory contains all scripts needed for setting up required
 inputs for [decoupleR](https://saezlab.github.io/decoupleR/). In order
 to measure TF activity, a prior network containing regulatory
 relationships between TF and genes for all cell types per condition for
-both tissues was constructed using
+both tissues were constructed using
 [CollecTRI](https://github.com/saezlab/CollecTRI) (accessed on 230528,
 prior is provided with this repository for both human and mouse). More
 information
 [here](https://www.biorxiv.org/content/10.1101/2023.03.30.534849v1).
-Additionally a script was included for users to constructed a new prior
+Additionally, a script was included for users to construct a new prior
 using CollecTRI. The prior network for each species was restructured to
-be a 3 column matrix containing “source” (TFs), “target” (genes), and
+be a 3-column matrix containing “source” (TFs), “target” (genes), and
 “mor” (edge weight). In addition to a prior network, decoupleR also
-needs an expression input in the format of a gene x cell matrix for each
+needs an expression input in the gene x cell matrix format for each
 tissue and condition. In addition, the *.err* and *.out* files for each
 array job are included here to provide detailed information on the jobs.
 
@@ -125,10 +125,10 @@ array job are included here to provide detailed information on the jobs.
 #### PANDA Input Construction:
 
 This directory contains all scripts needed to construct the
-protein-protein interaction (ppi), transcription factor motif (TF-motif)
+protein-protein interaction (PPI), transcription factor motif (TF-motif)
 and cell-type specific expression matrices required for
 [PANDA](https://netzoo.github.io/zooanimals/panda/) regulatory networks
-for both human and mouse.
+for mouse.
 
     ## network_scripts/PANDA_input_construction
     ## +-- 01_Mouse_TFmotif.Rmd
@@ -140,9 +140,9 @@ for both human and mouse.
 
 Gene regulatory networks were constructed using the scripts in this
 directory. In addition, the *.err* and *.out* files for each array job
-are included here to provide detailed information on the jobs. Prior to
+are included here to provide detailed information on the jobs. Before
 building PANDA networks, the user must first construct the inputs needed
-(ppi, TF-motif, and expression) and then build the *.txt*, which is a
+(ppi, TF-motif, and expression) and then build the *.txt*, a
 list of expression input file paths needed for the array job.
 
     ## network_scripts/PANDA
@@ -170,18 +170,18 @@ Schinzel-Giedion Syndrome mice are within this directory.
     code used to calculate differential gene targeting within cell types
     between conditions for both tissues
 
-2.  Ufnctional Enrichment Analysis (FEA) on differentially targeted
+2.  Functional Enrichment Analysis (FEA) on differentially targeted
     genes
     [03_Setbp1_DiffTargeting_FEA.Rmd](https://github.com/lasseignelab/230227_JW_Setbp1Manuscript/blob/main/src/network_scripts/differential_targeting/03_Setbp1_DiffTargeting_FEA.Rmd)
 
 #### Community Detection:
 
 In order to understand differences in regulation across communities at
-the cellular level, we detected communities for each cell specific
+the cellular level, we detected communities for each cell-type-specific
 network using [CONDOR](https://netzoo.github.io/zooanimals/condor/) and
 found differential communities between S858R and WT mice using
 [ALPACA](https://netzoo.github.io/zooanimals/alpaca/). Scripts for this
-analysis are found here
+analysis is found here
 
     ## network_scripts/community_detection
     ## +-- 01_alpaca_array_job.sh
@@ -194,9 +194,9 @@ The ALPACA analysis consists of the following scripts:
 
 1.  [file_pairs.txt](https://github.com/lasseignelab/230227_JW_Setbp1Manuscript/blob/main/src/network_scripts/community_detection/file_pairs.txt):
     contains a list of all paired comparisons for differential community
-    detections analysis. One comparison per line containing the exact
+    detection analysis. One comparison per line containing the exact
     name of the PANDA objects you are wanting to use for ALPACA. See
-    below example of how to set up the file pairs to identify cell
+    the example below of setting up the file pairs to identify cell
     type-specific community differences between S858R and WT samples.
 
 astrocytes_controlcortexexpression_PANDA.Rdata
@@ -210,7 +210,7 @@ astrocytes_heterozygouscortexexpression_PANDA.Rdata
 
 3.  [01_alpaca_networks_array.R](https://github.com/lasseignelab/230227_JW_Setbp1Manuscript/blob/main/src/network_scripts/community_detection/alpaca_networks_array.R):
     code to run the actual analysis to identify differential communities
-    using CONDOR and ALPACA. The .Rdata file for the ccommunities
+    using CONDOR and ALPACA. The `.Rdata` file for the communities
     constructed for every cell type is saved in a `membership/`
     directory and all other output files (`_ctrl_memb.txt`,
     `_final_memb.txt`, `_scores.txt` and `_DWBM.txt`) can be found in
