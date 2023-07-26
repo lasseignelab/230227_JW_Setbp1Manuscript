@@ -20,6 +20,7 @@ All data for this project is publicly avialable on Zenodo or [GEO](https://www.n
 
 
 ### Authors 
+<img src="https://www.lasseigne.org/img/main/lablogo.png" width="75" height="75">
 
 - [@jordanwhitlock](https://github.com/jordanwhitlock)
 
@@ -33,15 +34,8 @@ All data for this project is publicly avialable on Zenodo or [GEO](https://www.n
 
 - [@blasseigne](https://github.com/blasseigne) [(Lasseigne Lab)](https://www.lasseigne.org/)
 
-<img src="https://www.lasseigne.org/img/main/lablogo.png" width="75" height="75">
 ## Overview
-
-[image 1 here]
-
-
-
-
-
+![Fig1 (8)](https://github.com/lasseignelab/230227_JW_Setbp1Manuscript/assets/62023125/866508b6-aa6c-4380-83d2-be6142d40f27)
 ## Approach
 
 This repository provides a framework for investigating the cell-type-specific impact of genetic variants on gene expression and regulation.  
