@@ -27,7 +27,8 @@ as well.
 
 ### Part 1:
 
-![Untitled (1)](https://github.com/lasseignelab/230227_JW_Setbp1Manuscript/assets/62023125/225dcd2f-f935-4656-ac13-816f7035b4ab)
+![Untitled (3)](https://github.com/lasseignelab/230227_JW_Setbp1Manuscript/assets/62023125/fdf18b48-3bad-4cfd-a09a-8a0588ff362e)
+
 
 
 #### decoupleR Input Construction and TF Activity Analysis:
