@@ -22,7 +22,7 @@ All data for this project is publicly avialable on Zenodo or [GEO](https://www.n
 
 ### Authors 
 <img src="https://www.lasseigne.org/img/main/lablogo.png" width="75" height="75">
-[__The Lasseigne Lab:__](https://www.lasseigne.org/)
+[The Lasseigne Lab:](https://www.lasseigne.org/)
 
 - [@jordanwhitlock](https://github.com/jordanwhitlock)
 
