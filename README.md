@@ -11,7 +11,7 @@ __The University of Alabama at Birmingham (UAB), Heersink School of Medicine__
 [![GEO](https://img.shields.io/badge/GEO-GSE237816-pink)](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE237816)
 [![SRA](https://img.shields.io/badge/SRA-PRJNA996862-purple)]([https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE237816](https://www.ncbi.nlm.nih.gov/Traces/study/?acc=PRJNA996862&o=acc_s%3Aa))
 
-All data for this project is publicly avialable on Zenodo or [GEO](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE237816)
+All data for this project is publicly available on Zenodo or [GEO](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE237816)
 
 ### Citation
 [![DOI](https://img.shields.io/badge/DOI-add_doi_here!!!-blue)](https://www.biorxiv.org/)
