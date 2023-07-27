@@ -22,6 +22,7 @@ All data for this project is publicly avialable on Zenodo or [GEO](https://www.n
 
 ### Authors 
 <img src="https://www.lasseigne.org/img/main/lablogo.png" width="75" height="75">
+[__The Lasseigne Lab:__](https://www.lasseigne.org/)
 
 - [@jordanwhitlock](https://github.com/jordanwhitlock)
 
@@ -33,7 +34,7 @@ All data for this project is publicly avialable on Zenodo or [GEO](https://www.n
 
 - [@lizzyjoan](https://github.com/lizzyjoan)
 
-- [@blasseigne](https://github.com/blasseigne) [(Lasseigne Lab)](https://www.lasseigne.org/)
+- [@blasseigne](https://github.com/blasseigne) 
 
 ## Overview
 ![Copy of Fig1 (1)](https://github.com/lasseignelab/230227_JW_Setbp1Manuscript/assets/62023125/330fce42-bf88-4c88-9bc3-cc433bfd8272)
