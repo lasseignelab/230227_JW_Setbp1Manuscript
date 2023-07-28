@@ -7,11 +7,13 @@ __Jordan Whitlock, Tabea Soelter, Timothy Howton, Elizabeth Wilk, Vishal Oza, Br
 __The University of Alabama at Birmingham (UAB), Heersink School of Medicine__
 ## Data Availability
 
-[![Zenodo](https://img.shields.io/badge/Zenodo-add_zeondo_here!!!-green)](https://www.biorxiv.org/)
+All data for this project is publicly available on Zenodo or [GEO](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE237816)
 [![GEO](https://img.shields.io/badge/GEO-GSE237816-pink)](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE237816)
 [![SRA](https://img.shields.io/badge/SRA-PRJNA996862-purple)]([https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE237816](https://www.ncbi.nlm.nih.gov/Traces/study/?acc=PRJNA996862&o=acc_s%3Aa))
 
-All data for this project is publicly available on Zenodo or [GEO](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE237816)
+__Repository:__ [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.8190948.svg)](https://doi.org/10.5281/zenodo.8190948)
+__Docker:__ [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.8190923.svg)](https://doi.org/10.5281/zenodo.8190923)
+__Data:__ [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.8192482.svg)](https://doi.org/10.5281/zenodo.8192482)
 
 ### Citation
 [![DOI](https://img.shields.io/badge/DOI-add_doi_here!!!-blue)](https://www.biorxiv.org/)
