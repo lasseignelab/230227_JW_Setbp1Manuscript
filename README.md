@@ -44,7 +44,7 @@ All data for this project is publicly available:
 - [@blasseigne](https://github.com/blasseigne) 
 
 ## Overview
-![Copy of Fig1 (1)](https://github.com/lasseignelab/230227_JW_Setbp1Manuscript/assets/62023125/330fce42-bf88-4c88-9bc3-cc433bfd8272)
+![Copy of Fig1 (5)](https://github.com/lasseignelab/230227_JW_Setbp1Manuscript/assets/62023125/b120d83e-75f4-4bf4-a036-ad78e06828da)
    
 ## Approach
 
