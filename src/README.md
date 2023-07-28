@@ -19,7 +19,7 @@ using R version 4.1.3.
 
 ### Scripts:
 
-![Copy of Fig1 (4)](https://github.com/lasseignelab/230227_JW_Setbp1Manuscript/assets/62023125/ea117ac4-814d-4f8c-b8e1-d69a02f18cc0)
+![Copy of Fig1 (6)](https://github.com/lasseignelab/230227_JW_Setbp1Manuscript/assets/62023125/35b931ba-1c1c-4309-858f-2f7a751181c8)
 
 Detailed information on the goal and purpose can be found within each
 processing script.
@@ -74,8 +74,7 @@ cell-type-specific community structures, etc.
 --------
 
 ### Part 1:
-![Untitled (3)](https://github.com/lasseignelab/230227_JW_Setbp1Manuscript/assets/62023125/e2e73c4a-eb26-4b96-9847-0b81004bf1a7)
-
+![Untitled (6)](https://github.com/lasseignelab/230227_JW_Setbp1Manuscript/assets/62023125/a3911759-acc2-4dd5-bd90-67bda40a7b25)
 
 #### decoupleR Input Construction and TF Activity Analysis:
 
@@ -119,7 +118,7 @@ array job are included here to provide detailed information on the jobs.
 --------
 
 ### Part 2
-![Untitled (2)](https://github.com/lasseignelab/230227_JW_Setbp1Manuscript/assets/62023125/c0c5f7e3-6284-4c82-be6b-512a97bc94a1)
+![Untitled (7)](https://github.com/lasseignelab/230227_JW_Setbp1Manuscript/assets/62023125/b2622d15-2d47-4e0f-8ed4-50b9b3348f99)
 
 #### PANDA Input Construction:
 
@@ -226,7 +225,8 @@ astrocytes_heterozygouscortexexpression_PANDA.Rdata
 #### Network Rewiring:
 We investigated the magnitude and direction of the regulatory network and changes in cooperativity network edge weights through quantifying proteins working together (i.e., cooperating), where SETBP1 is acting as a TF on its known target genes. Similar to the regulatory network, a more positive edge weight between two proteins indicates a greater likelihood they cooperate together. In contrast, a more negative edge weight indicates greater confidence that the two proteins do not cooperate. We used these regulatory or cooperativity edge weight magnitude and direction changes to infer potential regulatory rewiring due to the variant.
 
-![Untitled (5)](https://github.com/lasseignelab/230227_JW_Setbp1Manuscript/assets/62023125/4fd8deaf-2f71-4b51-b8b1-3855aa3fb01b)
+![Untitled (8)](https://github.com/lasseignelab/230227_JW_Setbp1Manuscript/assets/62023125/d0300f44-61d0-453f-ad35-e39fa2f0ea55)
+
 
     ## network_scripts/ppi_rewiring
     ## \-- 01_Setbp1_RegCoopNet.Rmd
