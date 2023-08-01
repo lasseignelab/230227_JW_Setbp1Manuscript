@@ -19,10 +19,14 @@ All data for this project is publicly available:
 
 * __Data:__ [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.8192482.svg)](https://doi.org/10.5281/zenodo.8192482)
 
+* __Cell-type-specific PANDA Networks:__
+   * __kidney__: [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.8199697.svg)](https://doi.org/10.5281/zenodo.8199697)
+   * __cerebral cortex__: [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.8199844.svg)](https://doi.org/10.5281/zenodo.8199844)
+
 ### Citation
 [![DOI](https://img.shields.io/badge/DOI-add_doi_here!!!-blue)](https://www.biorxiv.org/)
 
-> This is a block quote placeholder for the citation
+> Whitlock, Jordan H., Tabea M. Soelter, Timothy C. Howton, Elizabeth J. Wilk, Vishal H. Oza, and Brittany N. Lasseigne. 2023. “Cell-Type-Specific Gene Expression and Regulation in the Cerebral Cortex and Kidney of Atypical Setbp1S858R Schinzel Giedion Syndrome Mice.” bioRxiv. https://doi.org/10.1101/2023.07.31.551338.
 
 
 
