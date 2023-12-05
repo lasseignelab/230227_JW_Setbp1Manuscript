@@ -67,6 +67,10 @@ Here we provide code and data used to investigate SETBP1’s role as an epigenet
 ## Funding 
 
 This work was supported in part by the UAB Lasseigne Lab funds, UAB Pilot Center for Precision Animal Modeling (C-PAM)(1U54OD030167), the UAB Predoctoral Training Grant in Cell, Molecular, and Developmental Biology (CMDB T32)(5T32GM008111-35
+
+## Acknowledgements
+The authors thank the Lasseigne Lab members Amanda Clark, Tabea Soelter, Emma Jones, and Victoria Flanary for their feedback throughout this study. We also thank the UAB Biological Data Science group (RRID:SCR_021766) for providing a script for helping to run containers on the UAB high-performance cluster (https://github.com/U-BDS/training_guides/blob/main/run_rstudio_singularity.sh).
+
 ### License
 [![License](https://img.shields.io/badge/LICENSE-MIT_License-yellow)](https://github.com/lasseignelab/230227_JW_Setbp1Manuscript/blob/main/LICENSE) 
 
